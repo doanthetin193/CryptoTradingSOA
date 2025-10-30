@@ -1,0 +1,2686 @@
+2025-10-30 22:11:16 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   👤 USER SERVICE STARTED                            ║
+  ║                                                       ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:11:16 [user-service] ERROR: ❌ Failed to register service with Consul: bad request
+2025-10-30 22:11:16 [user-service] WARN: ⚠️  Service will run without Consul registration
+2025-10-30 22:11:17 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 22:11:17 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:11:18 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:11:18 [market-service] ERROR: ❌ Failed to register service with Consul: bad request
+2025-10-30 22:11:18 [market-service] WARN: ⚠️  Service will run without Consul registration
+2025-10-30 22:11:21 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║                                                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:11:21 [portfolio-service] ERROR: ❌ Failed to register service with Consul: bad request
+2025-10-30 22:11:21 [portfolio-service] WARN: ⚠️  Service will run without Consul registration
+2025-10-30 22:11:22 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 22:11:22 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:11:25 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║                                                       ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:11:25 [trade-service] ERROR: ❌ Failed to register service with Consul: bad request
+2025-10-30 22:11:25 [trade-service] WARN: ⚠️  Service will run without Consul registration
+2025-10-30 22:11:25 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 22:11:25 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:11:27 [notification-service] INFO: 🕒 Price alert checker started (runs every minute)
+2025-10-30 22:11:27 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║                                                       ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:11:28 [notification-service] ERROR: ❌ Failed to register service with Consul: bad request
+2025-10-30 22:11:28 [notification-service] WARN: ⚠️  Service will run without Consul registration
+2025-10-30 22:11:28 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 22:11:28 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:11:30 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:12:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:14:43 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   👤 USER SERVICE STARTED                            ║
+  ║                                                       ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:14:43 [user-service] ERROR: ❌ Failed to register service with Consul: bad request
+2025-10-30 22:14:43 [user-service] WARN: ⚠️  Service will run without Consul registration
+2025-10-30 22:14:44 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 22:14:44 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:16:45 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   👤 USER SERVICE STARTED                            ║
+  ║                                                       ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:16:45 [user-service] ERROR: ❌ Failed to register service with Consul: bad request
+2025-10-30 22:16:45 [user-service] WARN: ⚠️  Service will run without Consul registration
+2025-10-30 22:16:46 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 22:16:46 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:16:53 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:16:53 [market-service] ERROR: ❌ Failed to register service with Consul: bad request
+2025-10-30 22:16:53 [market-service] WARN: ⚠️  Service will run without Consul registration
+2025-10-30 22:17:00 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║                                                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:17:00 [portfolio-service] ERROR: ❌ Failed to register service with Consul: bad request
+2025-10-30 22:17:00 [portfolio-service] WARN: ⚠️  Service will run without Consul registration
+2025-10-30 22:17:01 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 22:17:01 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:17:07 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║                                                       ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:17:07 [trade-service] ERROR: ❌ Failed to register service with Consul: bad request
+2025-10-30 22:17:07 [trade-service] WARN: ⚠️  Service will run without Consul registration
+2025-10-30 22:17:08 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 22:17:08 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:17:15 [notification-service] INFO: 🕒 Price alert checker started (runs every minute)
+2025-10-30 22:17:15 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║                                                       ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:17:15 [notification-service] ERROR: ❌ Failed to register service with Consul: bad request
+2025-10-30 22:17:15 [notification-service] WARN: ⚠️  Service will run without Consul registration
+2025-10-30 22:17:16 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 22:17:16 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:17:22 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:18:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:19:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:19:53 [user-service] WARN: MongoDB disconnected
+2025-10-30 22:19:59 [portfolio-service] WARN: MongoDB disconnected
+2025-10-30 22:20:02 [trade-service] WARN: MongoDB disconnected
+2025-10-30 22:20:06 [notification-service] WARN: MongoDB disconnected
+2025-10-30 22:20:09 [api-gateway] INFO: SIGINT signal received: closing HTTP server
+2025-10-30 22:20:35 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   👤 USER SERVICE STARTED                            ║
+  ║                                                       ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:20:35 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-10-30 22:20:36 [user-service] INFO: GET /health
+2025-10-30 22:20:36 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 22:20:36 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:20:42 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:20:42 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-10-30 22:20:45 [market-service] INFO: GET /health
+2025-10-30 22:20:46 [user-service] INFO: GET /health
+2025-10-30 22:20:47 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║                                                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:20:48 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-10-30 22:20:48 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 22:20:48 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:20:51 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║                                                       ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:20:51 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-10-30 22:20:52 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 22:20:52 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:20:55 [notification-service] INFO: 🕒 Price alert checker started (runs every minute)
+2025-10-30 22:20:55 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║                                                       ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:20:55 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-10-30 22:20:55 [market-service] INFO: GET /health
+2025-10-30 22:20:56 [user-service] INFO: GET /health
+2025-10-30 22:20:56 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 22:20:56 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:20:56 [trade-service] INFO: GET /health
+2025-10-30 22:20:56 [trade-service] ERROR: ❌ Get trade by ID error: Cast to ObjectId failed for value "health" (type string) at path "_id" for model "Trade"
+2025-10-30 22:20:56 [portfolio-service] INFO: GET /health
+2025-10-30 22:21:03 [notification-service] INFO: GET /health
+2025-10-30 22:21:04 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:21:05 [market-service] INFO: GET /health
+2025-10-30 22:21:06 [user-service] INFO: GET /health
+2025-10-30 22:21:06 [trade-service] INFO: GET /health
+2025-10-30 22:21:06 [trade-service] ERROR: ❌ Get trade by ID error: Cast to ObjectId failed for value "health" (type string) at path "_id" for model "Trade"
+2025-10-30 22:21:06 [portfolio-service] INFO: GET /health
+2025-10-30 22:21:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:21:13 [notification-service] INFO: GET /health
+2025-10-30 22:21:15 [market-service] INFO: GET /health
+2025-10-30 22:21:16 [user-service] INFO: GET /health
+2025-10-30 22:21:16 [trade-service] INFO: GET /health
+2025-10-30 22:21:16 [trade-service] ERROR: ❌ Get trade by ID error: Cast to ObjectId failed for value "health" (type string) at path "_id" for model "Trade"
+2025-10-30 22:21:16 [portfolio-service] INFO: GET /health
+2025-10-30 22:21:23 [notification-service] INFO: GET /health
+2025-10-30 22:21:25 [market-service] INFO: GET /health
+2025-10-30 22:21:26 [user-service] INFO: GET /health
+2025-10-30 22:21:26 [trade-service] INFO: GET /health
+2025-10-30 22:21:26 [trade-service] ERROR: ❌ Get trade by ID error: Cast to ObjectId failed for value "health" (type string) at path "_id" for model "Trade"
+2025-10-30 22:21:26 [portfolio-service] INFO: GET /health
+2025-10-30 22:21:33 [notification-service] INFO: GET /health
+2025-10-30 22:21:35 [market-service] INFO: GET /health
+2025-10-30 22:21:36 [user-service] INFO: GET /health
+2025-10-30 22:21:36 [trade-service] INFO: GET /health
+2025-10-30 22:21:36 [trade-service] ERROR: ❌ Get trade by ID error: Cast to ObjectId failed for value "health" (type string) at path "_id" for model "Trade"
+2025-10-30 22:21:36 [portfolio-service] INFO: GET /health
+2025-10-30 22:21:43 [notification-service] INFO: GET /health
+2025-10-30 22:21:45 [market-service] INFO: GET /health
+2025-10-30 22:21:46 [user-service] INFO: GET /health
+2025-10-30 22:21:46 [trade-service] INFO: GET /health
+2025-10-30 22:21:46 [trade-service] ERROR: ❌ Get trade by ID error: Cast to ObjectId failed for value "health" (type string) at path "_id" for model "Trade"
+2025-10-30 22:21:46 [portfolio-service] INFO: GET /health
+2025-10-30 22:21:53 [notification-service] INFO: GET /health
+2025-10-30 22:21:55 [market-service] INFO: GET /health
+2025-10-30 22:21:56 [user-service] INFO: GET /health
+2025-10-30 22:21:56 [trade-service] INFO: GET /health
+2025-10-30 22:21:56 [trade-service] ERROR: ❌ Get trade by ID error: Cast to ObjectId failed for value "health" (type string) at path "_id" for model "Trade"
+2025-10-30 22:21:56 [portfolio-service] INFO: GET /health
+2025-10-30 22:22:03 [notification-service] INFO: GET /health
+2025-10-30 22:22:05 [market-service] INFO: GET /health
+2025-10-30 22:22:06 [user-service] INFO: GET /health
+2025-10-30 22:22:06 [trade-service] INFO: GET /health
+2025-10-30 22:22:06 [trade-service] ERROR: ❌ Get trade by ID error: Cast to ObjectId failed for value "health" (type string) at path "_id" for model "Trade"
+2025-10-30 22:22:06 [portfolio-service] INFO: GET /health
+2025-10-30 22:22:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:22:13 [notification-service] INFO: GET /health
+2025-10-30 22:22:15 [market-service] INFO: GET /health
+2025-10-30 22:22:16 [user-service] INFO: GET /health
+2025-10-30 22:22:16 [trade-service] INFO: GET /health
+2025-10-30 22:22:16 [trade-service] ERROR: ❌ Get trade by ID error: Cast to ObjectId failed for value "health" (type string) at path "_id" for model "Trade"
+2025-10-30 22:22:16 [portfolio-service] INFO: GET /health
+2025-10-30 22:22:23 [notification-service] INFO: GET /health
+2025-10-30 22:22:25 [market-service] INFO: GET /health
+2025-10-30 22:22:26 [user-service] INFO: GET /health
+2025-10-30 22:22:26 [portfolio-service] INFO: GET /health
+2025-10-30 22:22:33 [notification-service] INFO: GET /health
+2025-10-30 22:22:35 [market-service] INFO: GET /health
+2025-10-30 22:22:36 [user-service] INFO: GET /health
+2025-10-30 22:22:36 [portfolio-service] INFO: GET /health
+2025-10-30 22:22:43 [notification-service] INFO: GET /health
+2025-10-30 22:22:45 [market-service] INFO: GET /health
+2025-10-30 22:22:46 [user-service] INFO: GET /health
+2025-10-30 22:22:46 [portfolio-service] INFO: GET /health
+2025-10-30 22:22:53 [notification-service] INFO: GET /health
+2025-10-30 22:22:55 [market-service] INFO: GET /health
+2025-10-30 22:22:56 [user-service] INFO: GET /health
+2025-10-30 22:22:56 [portfolio-service] INFO: GET /health
+2025-10-30 22:23:03 [notification-service] INFO: GET /health
+2025-10-30 22:23:05 [market-service] INFO: GET /health
+2025-10-30 22:23:06 [user-service] INFO: GET /health
+2025-10-30 22:23:06 [portfolio-service] INFO: GET /health
+2025-10-30 22:23:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:23:13 [notification-service] INFO: GET /health
+2025-10-30 22:23:15 [market-service] INFO: GET /health
+2025-10-30 22:23:16 [user-service] INFO: GET /health
+2025-10-30 22:23:16 [portfolio-service] INFO: GET /health
+2025-10-30 22:23:22 [trade-service] INFO: SIGINT received, deregistering service...
+2025-10-30 22:23:22 [trade-service] ERROR: ❌ Failed to deregister service: not found
+2025-10-30 22:23:23 [notification-service] INFO: GET /health
+2025-10-30 22:23:25 [market-service] INFO: GET /health
+2025-10-30 22:23:26 [user-service] INFO: GET /health
+2025-10-30 22:23:26 [portfolio-service] INFO: GET /health
+2025-10-30 22:23:27 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║                                                       ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:23:27 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-10-30 22:23:28 [trade-service] INFO: GET /health
+2025-10-30 22:23:28 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 22:23:28 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:23:33 [notification-service] INFO: GET /health
+2025-10-30 22:23:35 [notification-service] INFO: SIGINT received, deregistering service...
+2025-10-30 22:23:35 [market-service] INFO: GET /health
+2025-10-30 22:23:36 [user-service] INFO: GET /health
+2025-10-30 22:23:36 [portfolio-service] INFO: GET /health
+2025-10-30 22:23:38 [trade-service] INFO: GET /health
+2025-10-30 22:23:39 [notification-service] INFO: 🕒 Price alert checker started (runs every minute)
+2025-10-30 22:23:39 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║                                                       ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:23:39 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-10-30 22:23:39 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 22:23:39 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:23:42 [notification-service] INFO: GET /health
+2025-10-30 22:23:45 [market-service] INFO: GET /health
+2025-10-30 22:23:46 [user-service] INFO: GET /health
+2025-10-30 22:23:46 [portfolio-service] INFO: GET /health
+2025-10-30 22:23:48 [trade-service] INFO: GET /health
+2025-10-30 22:23:52 [notification-service] INFO: GET /health
+2025-10-30 22:23:55 [market-service] INFO: GET /health
+2025-10-30 22:23:56 [user-service] INFO: GET /health
+2025-10-30 22:23:56 [portfolio-service] INFO: GET /health
+2025-10-30 22:23:58 [trade-service] INFO: GET /health
+2025-10-30 22:24:02 [notification-service] INFO: GET /health
+2025-10-30 22:24:05 [market-service] INFO: GET /health
+2025-10-30 22:24:06 [user-service] INFO: GET /health
+2025-10-30 22:24:06 [portfolio-service] INFO: GET /health
+2025-10-30 22:24:08 [trade-service] INFO: GET /health
+2025-10-30 22:24:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:24:12 [notification-service] INFO: GET /health
+2025-10-30 22:24:15 [market-service] INFO: GET /health
+2025-10-30 22:24:16 [user-service] INFO: GET /health
+2025-10-30 22:24:16 [portfolio-service] INFO: GET /health
+2025-10-30 22:24:18 [trade-service] INFO: GET /health
+2025-10-30 22:24:22 [notification-service] INFO: GET /health
+2025-10-30 22:24:25 [market-service] INFO: GET /health
+2025-10-30 22:24:26 [user-service] INFO: GET /health
+2025-10-30 22:24:26 [portfolio-service] INFO: GET /health
+2025-10-30 22:24:28 [trade-service] INFO: GET /health
+2025-10-30 22:24:32 [notification-service] INFO: GET /health
+2025-10-30 22:24:35 [market-service] INFO: GET /health
+2025-10-30 22:24:36 [user-service] INFO: GET /health
+2025-10-30 22:24:36 [portfolio-service] INFO: GET /health
+2025-10-30 22:24:38 [trade-service] INFO: GET /health
+2025-10-30 22:24:42 [notification-service] INFO: GET /health
+2025-10-30 22:24:45 [market-service] INFO: GET /health
+2025-10-30 22:24:46 [user-service] INFO: GET /health
+2025-10-30 22:24:46 [portfolio-service] INFO: GET /health
+2025-10-30 22:24:48 [trade-service] INFO: GET /health
+2025-10-30 22:24:52 [notification-service] INFO: GET /health
+2025-10-30 22:24:55 [market-service] INFO: GET /health
+2025-10-30 22:24:56 [user-service] INFO: GET /health
+2025-10-30 22:24:56 [portfolio-service] INFO: GET /health
+2025-10-30 22:24:58 [trade-service] INFO: GET /health
+2025-10-30 22:25:02 [notification-service] INFO: GET /health
+2025-10-30 22:25:05 [market-service] INFO: GET /health
+2025-10-30 22:25:06 [user-service] INFO: GET /health
+2025-10-30 22:25:06 [portfolio-service] INFO: GET /health
+2025-10-30 22:25:08 [trade-service] INFO: GET /health
+2025-10-30 22:25:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:25:12 [notification-service] INFO: GET /health
+2025-10-30 22:25:15 [market-service] INFO: GET /health
+2025-10-30 22:25:16 [user-service] INFO: GET /health
+2025-10-30 22:25:16 [portfolio-service] INFO: GET /health
+2025-10-30 22:25:18 [trade-service] INFO: GET /health
+2025-10-30 22:25:22 [notification-service] INFO: GET /health
+2025-10-30 22:25:25 [market-service] INFO: GET /health
+2025-10-30 22:25:26 [user-service] INFO: GET /health
+2025-10-30 22:25:26 [portfolio-service] INFO: GET /health
+2025-10-30 22:25:28 [trade-service] INFO: GET /health
+2025-10-30 22:25:32 [notification-service] INFO: GET /health
+2025-10-30 22:25:35 [market-service] INFO: GET /health
+2025-10-30 22:25:36 [user-service] INFO: GET /health
+2025-10-30 22:25:36 [portfolio-service] INFO: GET /health
+2025-10-30 22:25:38 [trade-service] INFO: GET /health
+2025-10-30 22:25:42 [notification-service] INFO: GET /health
+2025-10-30 22:25:45 [market-service] INFO: GET /health
+2025-10-30 22:25:46 [user-service] INFO: GET /health
+2025-10-30 22:25:46 [portfolio-service] INFO: GET /health
+2025-10-30 22:25:48 [trade-service] INFO: GET /health
+2025-10-30 22:25:52 [notification-service] INFO: GET /health
+2025-10-30 22:25:55 [market-service] INFO: GET /health
+2025-10-30 22:25:56 [user-service] INFO: GET /health
+2025-10-30 22:25:56 [portfolio-service] INFO: GET /health
+2025-10-30 22:25:58 [trade-service] INFO: GET /health
+2025-10-30 22:26:02 [notification-service] INFO: GET /health
+2025-10-30 22:26:05 [market-service] INFO: GET /health
+2025-10-30 22:26:06 [user-service] INFO: GET /health
+2025-10-30 22:26:06 [portfolio-service] INFO: GET /health
+2025-10-30 22:26:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:27:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:28:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:29:05 [user-service] INFO: SIGINT received, deregistering service...
+2025-10-30 22:29:09 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   👤 USER SERVICE STARTED                            ║
+  ║                                                       ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:29:09 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-10-30 22:29:10 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 22:29:10 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:29:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:29:12 [market-service] INFO: SIGINT received, deregistering service...
+2025-10-30 22:29:12 [market-service] ERROR: ❌ Failed to deregister service: not found
+2025-10-30 22:29:13 [user-service] INFO: GET /health
+2025-10-30 22:29:14 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:29:14 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-10-30 22:29:15 [market-service] INFO: GET /health
+2025-10-30 22:29:19 [portfolio-service] INFO: SIGINT received, deregistering service...
+2025-10-30 22:29:23 [user-service] INFO: GET /health
+2025-10-30 22:29:23 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║                                                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:29:23 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-10-30 22:29:24 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 22:29:24 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:29:25 [market-service] INFO: GET /health
+2025-10-30 22:29:25 [portfolio-service] INFO: GET /health
+2025-10-30 22:29:30 [trade-service] INFO: SIGINT received, deregistering service...
+2025-10-30 22:29:33 [user-service] INFO: GET /health
+2025-10-30 22:29:33 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║                                                       ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:29:33 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-10-30 22:29:34 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 22:29:34 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:29:35 [trade-service] INFO: GET /health
+2025-10-30 22:29:35 [market-service] INFO: GET /health
+2025-10-30 22:29:35 [portfolio-service] INFO: GET /health
+2025-10-30 22:29:40 [notification-service] INFO: SIGINT received, deregistering service...
+2025-10-30 22:29:43 [user-service] INFO: GET /health
+2025-10-30 22:29:43 [notification-service] INFO: 🕒 Price alert checker started (runs every minute)
+2025-10-30 22:29:43 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║                                                       ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:29:43 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-10-30 22:29:44 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 22:29:44 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:29:45 [trade-service] INFO: GET /health
+2025-10-30 22:29:45 [notification-service] INFO: GET /health
+2025-10-30 22:29:45 [market-service] INFO: GET /health
+2025-10-30 22:29:45 [portfolio-service] INFO: GET /health
+2025-10-30 22:29:53 [user-service] INFO: GET /health
+2025-10-30 22:29:54 [api-gateway] INFO: SIGINT signal received: closing HTTP server
+2025-10-30 22:29:55 [trade-service] INFO: GET /health
+2025-10-30 22:29:55 [notification-service] INFO: GET /health
+2025-10-30 22:29:55 [market-service] INFO: GET /health
+2025-10-30 22:29:55 [portfolio-service] INFO: GET /health
+2025-10-30 22:29:57 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:30:03 [user-service] INFO: GET /health
+2025-10-30 22:30:05 [trade-service] INFO: GET /health
+2025-10-30 22:30:05 [notification-service] INFO: GET /health
+2025-10-30 22:30:05 [market-service] INFO: GET /health
+2025-10-30 22:30:05 [portfolio-service] INFO: GET /health
+2025-10-30 22:30:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:30:13 [user-service] INFO: GET /health
+2025-10-30 22:30:15 [trade-service] INFO: GET /health
+2025-10-30 22:30:15 [notification-service] INFO: GET /health
+2025-10-30 22:30:15 [market-service] INFO: GET /health
+2025-10-30 22:30:15 [portfolio-service] INFO: GET /health
+2025-10-30 22:30:23 [user-service] INFO: GET /health
+2025-10-30 22:30:25 [trade-service] INFO: GET /health
+2025-10-30 22:30:25 [notification-service] INFO: GET /health
+2025-10-30 22:30:25 [market-service] INFO: GET /health
+2025-10-30 22:30:25 [portfolio-service] INFO: GET /health
+2025-10-30 22:30:33 [user-service] INFO: GET /health
+2025-10-30 22:30:35 [trade-service] INFO: GET /health
+2025-10-30 22:30:35 [notification-service] INFO: GET /health
+2025-10-30 22:30:35 [market-service] INFO: GET /health
+2025-10-30 22:30:35 [portfolio-service] INFO: GET /health
+2025-10-30 22:30:43 [user-service] INFO: GET /health
+2025-10-30 22:30:45 [trade-service] INFO: GET /health
+2025-10-30 22:30:45 [notification-service] INFO: GET /health
+2025-10-30 22:30:45 [market-service] INFO: GET /health
+2025-10-30 22:30:45 [portfolio-service] INFO: GET /health
+2025-10-30 22:30:53 [user-service] INFO: GET /health
+2025-10-30 22:30:55 [trade-service] INFO: GET /health
+2025-10-30 22:30:55 [notification-service] INFO: GET /health
+2025-10-30 22:30:55 [market-service] INFO: GET /health
+2025-10-30 22:30:55 [portfolio-service] INFO: GET /health
+2025-10-30 22:31:03 [user-service] INFO: GET /health
+2025-10-30 22:31:05 [trade-service] INFO: GET /health
+2025-10-30 22:31:05 [notification-service] INFO: GET /health
+2025-10-30 22:31:05 [market-service] INFO: GET /health
+2025-10-30 22:31:05 [portfolio-service] INFO: GET /health
+2025-10-30 22:31:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:32:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:32:27 [user-service] INFO: SIGINT received, deregistering service...
+2025-10-30 22:32:29 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   👤 USER SERVICE STARTED                            ║
+  ║                                                       ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:32:29 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-10-30 22:32:30 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 22:32:30 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:32:31 [user-service] INFO: GET /health
+2025-10-30 22:32:32 [market-service] INFO: SIGINT received, deregistering service...
+2025-10-30 22:32:32 [market-service] ERROR: ❌ Failed to deregister service: not found
+2025-10-30 22:32:33 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:32:33 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-10-30 22:32:35 [market-service] INFO: GET /health
+2025-10-30 22:32:36 [portfolio-service] INFO: SIGINT received, deregistering service...
+2025-10-30 22:32:38 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║                                                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:32:39 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-10-30 22:32:39 [portfolio-service] INFO: GET /health
+2025-10-30 22:32:39 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 22:32:39 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:32:40 [trade-service] INFO: SIGINT received, deregistering service...
+2025-10-30 22:32:41 [user-service] INFO: GET /health
+2025-10-30 22:32:43 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║                                                       ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:32:43 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-10-30 22:32:44 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 22:32:44 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:32:45 [market-service] INFO: GET /health
+2025-10-30 22:32:45 [notification-service] INFO: SIGINT received, deregistering service...
+2025-10-30 22:32:47 [notification-service] INFO: 🕒 Price alert checker started (runs every minute)
+2025-10-30 22:32:48 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║                                                       ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:32:48 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-10-30 22:32:48 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 22:32:48 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:32:49 [portfolio-service] INFO: GET /health
+2025-10-30 22:32:50 [api-gateway] INFO: SIGINT signal received: closing HTTP server
+2025-10-30 22:32:50 [trade-service] INFO: GET /health
+2025-10-30 22:32:51 [user-service] INFO: GET /health
+2025-10-30 22:32:52 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:32:53 [notification-service] INFO: GET /health
+2025-10-30 22:32:55 [market-service] INFO: GET /health
+2025-10-30 22:32:59 [portfolio-service] INFO: GET /health
+2025-10-30 22:33:00 [trade-service] INFO: GET /health
+2025-10-30 22:33:01 [user-service] INFO: GET /health
+2025-10-30 22:33:03 [notification-service] INFO: GET /health
+2025-10-30 22:33:05 [market-service] INFO: GET /health
+2025-10-30 22:33:09 [portfolio-service] INFO: GET /health
+2025-10-30 22:33:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:33:10 [trade-service] INFO: GET /health
+2025-10-30 22:33:11 [user-service] INFO: GET /health
+2025-10-30 22:33:13 [notification-service] INFO: GET /health
+2025-10-30 22:33:15 [market-service] INFO: GET /health
+2025-10-30 22:33:19 [portfolio-service] INFO: GET /health
+2025-10-30 22:33:20 [trade-service] INFO: GET /health
+2025-10-30 22:33:21 [user-service] INFO: GET /health
+2025-10-30 22:33:23 [notification-service] INFO: GET /health
+2025-10-30 22:33:25 [market-service] INFO: GET /health
+2025-10-30 22:33:29 [portfolio-service] INFO: GET /health
+2025-10-30 22:33:30 [trade-service] INFO: GET /health
+2025-10-30 22:33:31 [user-service] INFO: GET /health
+2025-10-30 22:33:33 [notification-service] INFO: GET /health
+2025-10-30 22:33:35 [market-service] INFO: GET /health
+2025-10-30 22:33:35 [api-gateway] INFO: ✅ Discovered user-service at http://localhost:3001 via Consul
+2025-10-30 22:33:39 [portfolio-service] INFO: GET /health
+2025-10-30 22:33:40 [trade-service] INFO: GET /health
+2025-10-30 22:33:41 [user-service] INFO: GET /health
+2025-10-30 22:33:43 [notification-service] INFO: GET /health
+2025-10-30 22:33:45 [market-service] INFO: GET /health
+2025-10-30 22:33:49 [portfolio-service] INFO: GET /health
+2025-10-30 22:33:50 [trade-service] INFO: GET /health
+2025-10-30 22:33:51 [user-service] INFO: GET /health
+2025-10-30 22:33:53 [notification-service] INFO: GET /health
+2025-10-30 22:33:55 [market-service] INFO: GET /health
+2025-10-30 22:33:57 [api-gateway] INFO: ::1 - - [30/Oct/2025:15:33:57 +0000] "POST /api/users/register HTTP/1.1" - - "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.6899"
+2025-10-30 22:33:59 [portfolio-service] INFO: GET /health
+2025-10-30 22:34:00 [trade-service] INFO: GET /health
+2025-10-30 22:34:01 [user-service] INFO: GET /health
+2025-10-30 22:34:03 [notification-service] INFO: GET /health
+2025-10-30 22:34:05 [market-service] INFO: GET /health
+2025-10-30 22:34:09 [portfolio-service] INFO: GET /health
+2025-10-30 22:34:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:34:10 [trade-service] INFO: GET /health
+2025-10-30 22:34:11 [user-service] INFO: GET /health
+2025-10-30 22:34:13 [notification-service] INFO: GET /health
+2025-10-30 22:34:15 [market-service] INFO: GET /health
+2025-10-30 22:34:19 [portfolio-service] INFO: GET /health
+2025-10-30 22:34:20 [trade-service] INFO: GET /health
+2025-10-30 22:34:21 [user-service] INFO: GET /health
+2025-10-30 22:34:23 [notification-service] INFO: GET /health
+2025-10-30 22:34:25 [market-service] INFO: GET /health
+2025-10-30 22:34:29 [portfolio-service] INFO: GET /health
+2025-10-30 22:34:30 [trade-service] INFO: GET /health
+2025-10-30 22:34:31 [user-service] INFO: GET /health
+2025-10-30 22:34:33 [notification-service] INFO: GET /health
+2025-10-30 22:34:35 [market-service] INFO: GET /health
+2025-10-30 22:34:39 [portfolio-service] INFO: GET /health
+2025-10-30 22:34:40 [trade-service] INFO: GET /health
+2025-10-30 22:34:41 [user-service] INFO: GET /health
+2025-10-30 22:34:43 [notification-service] INFO: GET /health
+2025-10-30 22:34:45 [market-service] INFO: GET /health
+2025-10-30 22:34:49 [portfolio-service] INFO: GET /health
+2025-10-30 22:34:50 [trade-service] INFO: GET /health
+2025-10-30 22:34:51 [user-service] INFO: GET /health
+2025-10-30 22:34:53 [notification-service] INFO: GET /health
+2025-10-30 22:34:55 [market-service] INFO: GET /health
+2025-10-30 22:34:59 [portfolio-service] INFO: GET /health
+2025-10-30 22:35:00 [trade-service] INFO: GET /health
+2025-10-30 22:35:01 [user-service] INFO: GET /health
+2025-10-30 22:35:03 [notification-service] INFO: GET /health
+2025-10-30 22:35:05 [market-service] INFO: GET /health
+2025-10-30 22:35:09 [portfolio-service] INFO: GET /health
+2025-10-30 22:35:10 [trade-service] INFO: GET /health
+2025-10-30 22:35:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:35:11 [user-service] INFO: GET /health
+2025-10-30 22:35:13 [notification-service] INFO: GET /health
+2025-10-30 22:35:15 [market-service] INFO: GET /health
+2025-10-30 22:35:19 [portfolio-service] INFO: GET /health
+2025-10-30 22:35:20 [trade-service] INFO: GET /health
+2025-10-30 22:35:21 [user-service] INFO: GET /health
+2025-10-30 22:35:23 [notification-service] INFO: GET /health
+2025-10-30 22:35:25 [market-service] INFO: GET /health
+2025-10-30 22:35:29 [portfolio-service] INFO: GET /health
+2025-10-30 22:35:30 [trade-service] INFO: GET /health
+2025-10-30 22:35:31 [user-service] INFO: GET /health
+2025-10-30 22:35:33 [notification-service] INFO: GET /health
+2025-10-30 22:35:35 [market-service] INFO: GET /health
+2025-10-30 22:35:37 [api-gateway] INFO: ✅ Discovered user-service at http://localhost:3001 via Consul
+2025-10-30 22:35:39 [portfolio-service] INFO: GET /health
+2025-10-30 22:35:40 [trade-service] INFO: GET /health
+2025-10-30 22:35:41 [user-service] INFO: GET /health
+2025-10-30 22:35:43 [notification-service] INFO: GET /health
+2025-10-30 22:35:45 [market-service] INFO: GET /health
+2025-10-30 22:35:49 [portfolio-service] INFO: GET /health
+2025-10-30 22:35:50 [trade-service] INFO: GET /health
+2025-10-30 22:35:51 [user-service] INFO: GET /health
+2025-10-30 22:35:53 [notification-service] INFO: GET /health
+2025-10-30 22:35:55 [market-service] INFO: GET /health
+2025-10-30 22:35:59 [portfolio-service] INFO: GET /health
+2025-10-30 22:36:00 [trade-service] INFO: GET /health
+2025-10-30 22:36:01 [user-service] INFO: GET /health
+2025-10-30 22:36:03 [notification-service] INFO: GET /health
+2025-10-30 22:36:05 [market-service] INFO: GET /health
+2025-10-30 22:36:09 [portfolio-service] INFO: GET /health
+2025-10-30 22:36:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:36:10 [trade-service] INFO: GET /health
+2025-10-30 22:36:11 [user-service] INFO: GET /health
+2025-10-30 22:36:13 [notification-service] INFO: GET /health
+2025-10-30 22:36:15 [market-service] INFO: GET /health
+2025-10-30 22:36:19 [portfolio-service] INFO: GET /health
+2025-10-30 22:36:20 [trade-service] INFO: GET /health
+2025-10-30 22:36:21 [user-service] INFO: GET /health
+2025-10-30 22:36:23 [notification-service] INFO: GET /health
+2025-10-30 22:36:25 [market-service] INFO: GET /health
+2025-10-30 22:36:29 [portfolio-service] INFO: GET /health
+2025-10-30 22:36:30 [trade-service] INFO: GET /health
+2025-10-30 22:36:31 [user-service] INFO: GET /health
+2025-10-30 22:36:33 [notification-service] INFO: GET /health
+2025-10-30 22:36:35 [market-service] INFO: GET /health
+2025-10-30 22:36:39 [portfolio-service] INFO: GET /health
+2025-10-30 22:36:40 [trade-service] INFO: GET /health
+2025-10-30 22:36:41 [user-service] INFO: GET /health
+2025-10-30 22:36:43 [notification-service] INFO: GET /health
+2025-10-30 22:36:45 [market-service] INFO: GET /health
+2025-10-30 22:36:49 [portfolio-service] INFO: GET /health
+2025-10-30 22:36:50 [trade-service] INFO: GET /health
+2025-10-30 22:36:51 [user-service] INFO: GET /health
+2025-10-30 22:36:53 [notification-service] INFO: GET /health
+2025-10-30 22:36:55 [market-service] INFO: GET /health
+2025-10-30 22:36:59 [portfolio-service] INFO: GET /health
+2025-10-30 22:37:00 [trade-service] INFO: GET /health
+2025-10-30 22:37:01 [user-service] INFO: GET /health
+2025-10-30 22:37:03 [notification-service] INFO: GET /health
+2025-10-30 22:37:05 [market-service] INFO: GET /health
+2025-10-30 22:37:09 [portfolio-service] INFO: GET /health
+2025-10-30 22:37:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:37:10 [trade-service] INFO: GET /health
+2025-10-30 22:37:11 [user-service] INFO: GET /health
+2025-10-30 22:37:13 [notification-service] INFO: GET /health
+2025-10-30 22:37:15 [market-service] INFO: GET /health
+2025-10-30 22:37:19 [portfolio-service] INFO: GET /health
+2025-10-30 22:37:20 [trade-service] INFO: GET /health
+2025-10-30 22:37:21 [user-service] INFO: GET /health
+2025-10-30 22:37:23 [notification-service] INFO: GET /health
+2025-10-30 22:37:25 [user-service] INFO: POST /api/users/register
+2025-10-30 22:37:25 [market-service] INFO: GET /health
+2025-10-30 22:37:29 [portfolio-service] INFO: GET /health
+2025-10-30 22:37:30 [trade-service] INFO: GET /health
+2025-10-30 22:37:31 [user-service] INFO: GET /health
+2025-10-30 22:37:33 [notification-service] INFO: GET /health
+2025-10-30 22:37:35 [market-service] INFO: GET /health
+2025-10-30 22:37:39 [portfolio-service] INFO: GET /health
+2025-10-30 22:37:40 [trade-service] INFO: GET /health
+2025-10-30 22:37:41 [user-service] INFO: GET /health
+2025-10-30 22:37:43 [notification-service] INFO: GET /health
+2025-10-30 22:37:45 [market-service] INFO: GET /health
+2025-10-30 22:37:49 [portfolio-service] INFO: GET /health
+2025-10-30 22:37:50 [trade-service] INFO: GET /health
+2025-10-30 22:37:51 [user-service] INFO: GET /health
+2025-10-30 22:37:53 [notification-service] INFO: GET /health
+2025-10-30 22:37:55 [market-service] INFO: GET /health
+2025-10-30 22:37:59 [portfolio-service] INFO: GET /health
+2025-10-30 22:38:00 [trade-service] INFO: GET /health
+2025-10-30 22:38:01 [user-service] INFO: GET /health
+2025-10-30 22:38:03 [notification-service] INFO: GET /health
+2025-10-30 22:38:05 [market-service] INFO: GET /health
+2025-10-30 22:38:09 [portfolio-service] INFO: GET /health
+2025-10-30 22:38:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:38:10 [trade-service] INFO: GET /health
+2025-10-30 22:38:11 [user-service] INFO: GET /health
+2025-10-30 22:38:13 [notification-service] INFO: GET /health
+2025-10-30 22:38:15 [market-service] INFO: GET /health
+2025-10-30 22:38:18 [user-service] INFO: POST /api/users/register
+2025-10-30 22:38:19 [portfolio-service] INFO: GET /health
+2025-10-30 22:38:20 [trade-service] INFO: GET /health
+2025-10-30 22:38:21 [user-service] INFO: GET /health
+2025-10-30 22:38:23 [notification-service] INFO: GET /health
+2025-10-30 22:38:25 [market-service] INFO: GET /health
+2025-10-30 22:38:29 [portfolio-service] INFO: GET /health
+2025-10-30 22:38:30 [trade-service] INFO: GET /health
+2025-10-30 22:38:31 [user-service] INFO: GET /health
+2025-10-30 22:38:33 [notification-service] INFO: GET /health
+2025-10-30 22:38:34 [user-service] INFO: POST /api/users/register
+2025-10-30 22:38:35 [market-service] INFO: GET /health
+2025-10-30 22:38:39 [portfolio-service] INFO: GET /health
+2025-10-30 22:38:40 [trade-service] INFO: GET /health
+2025-10-30 22:38:41 [user-service] INFO: GET /health
+2025-10-30 22:38:43 [notification-service] INFO: GET /health
+2025-10-30 22:38:45 [market-service] INFO: GET /health
+2025-10-30 22:38:49 [portfolio-service] INFO: GET /health
+2025-10-30 22:38:50 [trade-service] INFO: GET /health
+2025-10-30 22:38:51 [user-service] INFO: GET /health
+2025-10-30 22:38:53 [notification-service] INFO: GET /health
+2025-10-30 22:38:55 [market-service] INFO: GET /health
+2025-10-30 22:38:59 [portfolio-service] INFO: GET /health
+2025-10-30 22:38:59 [user-service] ERROR: ❌ Error: request aborted
+2025-10-30 22:39:00 [trade-service] INFO: GET /health
+2025-10-30 22:39:01 [user-service] INFO: GET /health
+2025-10-30 22:39:03 [notification-service] INFO: GET /health
+2025-10-30 22:39:05 [market-service] INFO: GET /health
+2025-10-30 22:39:09 [portfolio-service] INFO: GET /health
+2025-10-30 22:39:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:39:10 [trade-service] INFO: GET /health
+2025-10-30 22:39:11 [user-service] INFO: GET /health
+2025-10-30 22:39:13 [notification-service] INFO: GET /health
+2025-10-30 22:39:15 [market-service] INFO: GET /health
+2025-10-30 22:39:19 [portfolio-service] INFO: GET /health
+2025-10-30 22:39:20 [trade-service] INFO: GET /health
+2025-10-30 22:39:21 [user-service] INFO: GET /health
+2025-10-30 22:39:23 [notification-service] INFO: GET /health
+2025-10-30 22:39:25 [market-service] INFO: GET /health
+2025-10-30 22:39:29 [portfolio-service] INFO: GET /health
+2025-10-30 22:39:30 [trade-service] INFO: GET /health
+2025-10-30 22:39:31 [user-service] INFO: GET /health
+2025-10-30 22:39:33 [notification-service] INFO: GET /health
+2025-10-30 22:39:35 [market-service] INFO: GET /health
+2025-10-30 22:39:39 [portfolio-service] INFO: GET /health
+2025-10-30 22:39:41 [trade-service] INFO: GET /health
+2025-10-30 22:39:41 [user-service] INFO: GET /health
+2025-10-30 22:39:43 [notification-service] INFO: GET /health
+2025-10-30 22:39:45 [market-service] INFO: GET /health
+2025-10-30 22:39:49 [portfolio-service] INFO: GET /health
+2025-10-30 22:39:51 [trade-service] INFO: GET /health
+2025-10-30 22:39:51 [user-service] INFO: GET /health
+2025-10-30 22:39:53 [notification-service] INFO: GET /health
+2025-10-30 22:39:55 [market-service] INFO: GET /health
+2025-10-30 22:39:55 [user-service] INFO: POST /register
+2025-10-30 22:39:59 [portfolio-service] INFO: GET /health
+2025-10-30 22:40:01 [trade-service] INFO: GET /health
+2025-10-30 22:40:01 [user-service] INFO: GET /health
+2025-10-30 22:40:03 [notification-service] INFO: GET /health
+2025-10-30 22:40:05 [market-service] INFO: GET /health
+2025-10-30 22:40:09 [portfolio-service] INFO: GET /health
+2025-10-30 22:40:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:40:11 [trade-service] INFO: GET /health
+2025-10-30 22:40:11 [user-service] INFO: GET /health
+2025-10-30 22:40:13 [notification-service] INFO: GET /health
+2025-10-30 22:40:15 [market-service] INFO: GET /health
+2025-10-30 22:40:19 [portfolio-service] INFO: GET /health
+2025-10-30 22:40:21 [trade-service] INFO: GET /health
+2025-10-30 22:40:21 [user-service] INFO: GET /health
+2025-10-30 22:40:23 [notification-service] INFO: GET /health
+2025-10-30 22:40:25 [market-service] INFO: GET /health
+2025-10-30 22:40:29 [portfolio-service] INFO: GET /health
+2025-10-30 22:40:31 [trade-service] INFO: GET /health
+2025-10-30 22:40:31 [user-service] INFO: GET /health
+2025-10-30 22:40:33 [notification-service] INFO: GET /health
+2025-10-30 22:40:35 [market-service] INFO: GET /health
+2025-10-30 22:40:37 [user-service] INFO: POST /register
+2025-10-30 22:40:39 [portfolio-service] INFO: GET /health
+2025-10-30 22:40:41 [trade-service] INFO: GET /health
+2025-10-30 22:40:41 [user-service] INFO: GET /health
+2025-10-30 22:40:43 [notification-service] INFO: GET /health
+2025-10-30 22:40:45 [market-service] INFO: GET /health
+2025-10-30 22:40:47 [user-service] ERROR: ❌ Register error: Operation `users.findOne()` buffering timed out after 10000ms
+2025-10-30 22:40:49 [portfolio-service] INFO: GET /health
+2025-10-30 22:40:51 [trade-service] INFO: GET /health
+2025-10-30 22:40:51 [user-service] INFO: GET /health
+2025-10-30 22:40:53 [notification-service] INFO: GET /health
+2025-10-30 22:40:55 [market-service] INFO: GET /health
+2025-10-30 22:40:59 [portfolio-service] INFO: GET /health
+2025-10-30 22:40:59 [user-service] ERROR: ❌ Error: request aborted
+2025-10-30 22:40:59 [api-gateway] INFO: ::ffff:127.0.0.1 - - [30/Oct/2025:15:40:59 +0000] "POST /api/users/register HTTP/1.1" 408 - "-" "Thunder Client (https://www.thunderclient.com)"
+2025-10-30 22:41:01 [trade-service] INFO: GET /health
+2025-10-30 22:41:01 [user-service] INFO: GET /health
+2025-10-30 22:41:03 [notification-service] INFO: GET /health
+2025-10-30 22:41:05 [market-service] INFO: GET /health
+2025-10-30 22:41:09 [portfolio-service] INFO: GET /health
+2025-10-30 22:41:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:41:11 [trade-service] INFO: GET /health
+2025-10-30 22:41:11 [user-service] INFO: GET /health
+2025-10-30 22:41:13 [notification-service] INFO: GET /health
+2025-10-30 22:41:15 [market-service] INFO: GET /health
+2025-10-30 22:41:19 [portfolio-service] INFO: GET /health
+2025-10-30 22:41:21 [trade-service] INFO: GET /health
+2025-10-30 22:41:21 [user-service] INFO: GET /health
+2025-10-30 22:41:23 [notification-service] INFO: GET /health
+2025-10-30 22:41:25 [market-service] INFO: GET /health
+2025-10-30 22:41:29 [portfolio-service] INFO: GET /health
+2025-10-30 22:41:31 [trade-service] INFO: GET /health
+2025-10-30 22:41:31 [user-service] INFO: GET /health
+2025-10-30 22:41:33 [notification-service] INFO: GET /health
+2025-10-30 22:41:35 [market-service] INFO: GET /health
+2025-10-30 22:41:39 [portfolio-service] INFO: GET /health
+2025-10-30 22:41:41 [trade-service] INFO: GET /health
+2025-10-30 22:41:41 [user-service] INFO: GET /health
+2025-10-30 22:41:43 [notification-service] INFO: GET /health
+2025-10-30 22:41:45 [market-service] INFO: GET /health
+2025-10-30 22:41:49 [portfolio-service] INFO: GET /health
+2025-10-30 22:41:51 [trade-service] INFO: GET /health
+2025-10-30 22:41:51 [user-service] INFO: GET /health
+2025-10-30 22:41:53 [notification-service] INFO: GET /health
+2025-10-30 22:41:55 [market-service] INFO: GET /health
+2025-10-30 22:41:59 [portfolio-service] INFO: GET /health
+2025-10-30 22:42:01 [trade-service] INFO: GET /health
+2025-10-30 22:42:01 [user-service] INFO: GET /health
+2025-10-30 22:42:03 [notification-service] INFO: GET /health
+2025-10-30 22:42:05 [market-service] INFO: GET /health
+2025-10-30 22:42:09 [portfolio-service] INFO: GET /health
+2025-10-30 22:42:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:42:11 [trade-service] INFO: GET /health
+2025-10-30 22:42:11 [user-service] INFO: GET /health
+2025-10-30 22:42:13 [notification-service] INFO: GET /health
+2025-10-30 22:42:15 [market-service] INFO: GET /health
+2025-10-30 22:42:19 [portfolio-service] INFO: GET /health
+2025-10-30 22:42:21 [trade-service] INFO: GET /health
+2025-10-30 22:42:21 [user-service] INFO: GET /health
+2025-10-30 22:42:23 [notification-service] INFO: GET /health
+2025-10-30 22:42:25 [market-service] INFO: GET /health
+2025-10-30 22:42:29 [portfolio-service] INFO: GET /health
+2025-10-30 22:42:31 [trade-service] INFO: GET /health
+2025-10-30 22:42:31 [user-service] INFO: GET /health
+2025-10-30 22:42:33 [notification-service] INFO: GET /health
+2025-10-30 22:42:35 [market-service] INFO: GET /health
+2025-10-30 22:42:39 [portfolio-service] INFO: GET /health
+2025-10-30 22:42:41 [trade-service] INFO: GET /health
+2025-10-30 22:42:41 [user-service] INFO: GET /health
+2025-10-30 22:42:43 [notification-service] INFO: GET /health
+2025-10-30 22:42:45 [market-service] INFO: GET /health
+2025-10-30 22:42:49 [portfolio-service] INFO: GET /health
+2025-10-30 22:42:51 [trade-service] INFO: GET /health
+2025-10-30 22:42:51 [user-service] INFO: GET /health
+2025-10-30 22:42:53 [notification-service] INFO: GET /health
+2025-10-30 22:42:55 [market-service] INFO: GET /health
+2025-10-30 22:42:59 [portfolio-service] INFO: GET /health
+2025-10-30 22:43:01 [trade-service] INFO: GET /health
+2025-10-30 22:43:01 [user-service] INFO: GET /health
+2025-10-30 22:43:03 [notification-service] INFO: GET /health
+2025-10-30 22:43:05 [market-service] INFO: GET /health
+2025-10-30 22:43:09 [portfolio-service] INFO: GET /health
+2025-10-30 22:43:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:43:11 [trade-service] INFO: GET /health
+2025-10-30 22:43:11 [user-service] INFO: GET /health
+2025-10-30 22:43:13 [notification-service] INFO: GET /health
+2025-10-30 22:43:15 [market-service] INFO: GET /health
+2025-10-30 22:43:19 [portfolio-service] INFO: GET /health
+2025-10-30 22:43:21 [trade-service] INFO: GET /health
+2025-10-30 22:43:21 [user-service] INFO: GET /health
+2025-10-30 22:43:23 [notification-service] INFO: GET /health
+2025-10-30 22:43:25 [market-service] INFO: GET /health
+2025-10-30 22:43:29 [portfolio-service] INFO: GET /health
+2025-10-30 22:43:31 [trade-service] INFO: GET /health
+2025-10-30 22:43:31 [user-service] INFO: GET /health
+2025-10-30 22:43:33 [notification-service] INFO: GET /health
+2025-10-30 22:43:35 [market-service] INFO: GET /health
+2025-10-30 22:43:39 [portfolio-service] INFO: GET /health
+2025-10-30 22:43:41 [trade-service] INFO: GET /health
+2025-10-30 22:43:41 [user-service] INFO: GET /health
+2025-10-30 22:43:43 [notification-service] INFO: GET /health
+2025-10-30 22:43:45 [market-service] INFO: GET /health
+2025-10-30 22:43:49 [portfolio-service] INFO: GET /health
+2025-10-30 22:43:51 [trade-service] INFO: GET /health
+2025-10-30 22:43:51 [user-service] INFO: GET /health
+2025-10-30 22:43:53 [notification-service] INFO: GET /health
+2025-10-30 22:43:55 [market-service] INFO: GET /health
+2025-10-30 22:43:59 [portfolio-service] INFO: GET /health
+2025-10-30 22:44:01 [trade-service] INFO: GET /health
+2025-10-30 22:44:01 [user-service] INFO: GET /health
+2025-10-30 22:44:03 [notification-service] INFO: GET /health
+2025-10-30 22:44:05 [market-service] INFO: GET /health
+2025-10-30 22:44:09 [portfolio-service] INFO: GET /health
+2025-10-30 22:44:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:44:11 [trade-service] INFO: GET /health
+2025-10-30 22:44:11 [user-service] INFO: GET /health
+2025-10-30 22:44:13 [notification-service] INFO: GET /health
+2025-10-30 22:44:15 [market-service] INFO: GET /health
+2025-10-30 22:44:19 [portfolio-service] INFO: GET /health
+2025-10-30 22:44:21 [trade-service] INFO: GET /health
+2025-10-30 22:44:21 [user-service] INFO: GET /health
+2025-10-30 22:44:23 [notification-service] INFO: GET /health
+2025-10-30 22:44:25 [market-service] INFO: GET /health
+2025-10-30 22:44:29 [portfolio-service] INFO: GET /health
+2025-10-30 22:44:31 [trade-service] INFO: GET /health
+2025-10-30 22:44:31 [user-service] INFO: GET /health
+2025-10-30 22:44:33 [notification-service] INFO: GET /health
+2025-10-30 22:44:35 [market-service] INFO: GET /health
+2025-10-30 22:44:39 [portfolio-service] INFO: GET /health
+2025-10-30 22:44:41 [trade-service] INFO: GET /health
+2025-10-30 22:44:41 [user-service] INFO: GET /health
+2025-10-30 22:44:43 [notification-service] INFO: GET /health
+2025-10-30 22:44:45 [market-service] INFO: GET /health
+2025-10-30 22:44:50 [portfolio-service] INFO: GET /health
+2025-10-30 22:44:51 [trade-service] INFO: GET /health
+2025-10-30 22:44:51 [user-service] INFO: GET /health
+2025-10-30 22:44:53 [notification-service] INFO: GET /health
+2025-10-30 22:44:55 [user-service] INFO: POST /register
+2025-10-30 22:44:55 [market-service] INFO: GET /health
+2025-10-30 22:45:00 [portfolio-service] INFO: GET /health
+2025-10-30 22:45:01 [trade-service] INFO: GET /health
+2025-10-30 22:45:01 [user-service] INFO: GET /health
+2025-10-30 22:45:03 [notification-service] INFO: GET /health
+2025-10-30 22:45:05 [user-service] ERROR: ❌ Register error: Operation `users.findOne()` buffering timed out after 10000ms
+2025-10-30 22:45:05 [market-service] INFO: GET /health
+2025-10-30 22:45:10 [portfolio-service] INFO: GET /health
+2025-10-30 22:45:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:45:11 [trade-service] INFO: GET /health
+2025-10-30 22:45:11 [user-service] INFO: GET /health
+2025-10-30 22:45:13 [notification-service] INFO: GET /health
+2025-10-30 22:45:15 [market-service] INFO: GET /health
+2025-10-30 22:45:20 [portfolio-service] INFO: GET /health
+2025-10-30 22:45:21 [trade-service] INFO: GET /health
+2025-10-30 22:45:21 [user-service] INFO: GET /health
+2025-10-30 22:45:23 [notification-service] INFO: GET /health
+2025-10-30 22:45:25 [market-service] INFO: GET /health
+2025-10-30 22:45:30 [portfolio-service] INFO: GET /health
+2025-10-30 22:45:31 [trade-service] INFO: GET /health
+2025-10-30 22:45:31 [user-service] INFO: GET /health
+2025-10-30 22:45:33 [notification-service] INFO: GET /health
+2025-10-30 22:45:35 [market-service] INFO: GET /health
+2025-10-30 22:45:40 [portfolio-service] INFO: GET /health
+2025-10-30 22:45:41 [trade-service] INFO: GET /health
+2025-10-30 22:45:41 [user-service] INFO: GET /health
+2025-10-30 22:45:43 [notification-service] INFO: GET /health
+2025-10-30 22:45:45 [market-service] INFO: GET /health
+2025-10-30 22:45:50 [portfolio-service] INFO: GET /health
+2025-10-30 22:45:51 [trade-service] INFO: GET /health
+2025-10-30 22:45:51 [user-service] INFO: GET /health
+2025-10-30 22:45:53 [notification-service] INFO: GET /health
+2025-10-30 22:45:55 [market-service] INFO: GET /health
+2025-10-30 22:46:00 [portfolio-service] INFO: GET /health
+2025-10-30 22:46:01 [trade-service] INFO: GET /health
+2025-10-30 22:46:01 [user-service] INFO: GET /health
+2025-10-30 22:46:03 [notification-service] INFO: GET /health
+2025-10-30 22:46:05 [market-service] INFO: GET /health
+2025-10-30 22:46:10 [portfolio-service] INFO: GET /health
+2025-10-30 22:46:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:46:11 [trade-service] INFO: GET /health
+2025-10-30 22:46:11 [user-service] INFO: GET /health
+2025-10-30 22:46:13 [notification-service] INFO: GET /health
+2025-10-30 22:46:15 [market-service] INFO: GET /health
+2025-10-30 22:46:20 [portfolio-service] INFO: GET /health
+2025-10-30 22:46:21 [trade-service] INFO: GET /health
+2025-10-30 22:46:21 [user-service] INFO: GET /health
+2025-10-30 22:46:23 [notification-service] INFO: GET /health
+2025-10-30 22:46:25 [market-service] INFO: GET /health
+2025-10-30 22:46:30 [portfolio-service] INFO: GET /health
+2025-10-30 22:46:31 [trade-service] INFO: GET /health
+2025-10-30 22:46:31 [user-service] INFO: GET /health
+2025-10-30 22:46:33 [notification-service] INFO: GET /health
+2025-10-30 22:46:35 [market-service] INFO: GET /health
+2025-10-30 22:46:40 [portfolio-service] INFO: GET /health
+2025-10-30 22:46:41 [trade-service] INFO: GET /health
+2025-10-30 22:46:41 [user-service] INFO: GET /health
+2025-10-30 22:46:43 [notification-service] INFO: GET /health
+2025-10-30 22:46:45 [market-service] INFO: GET /health
+2025-10-30 22:46:50 [portfolio-service] INFO: GET /health
+2025-10-30 22:46:51 [trade-service] INFO: GET /health
+2025-10-30 22:46:51 [user-service] INFO: GET /health
+2025-10-30 22:46:53 [notification-service] INFO: GET /health
+2025-10-30 22:46:55 [market-service] INFO: GET /health
+2025-10-30 22:47:00 [portfolio-service] INFO: GET /health
+2025-10-30 22:47:01 [trade-service] INFO: GET /health
+2025-10-30 22:47:01 [user-service] INFO: GET /health
+2025-10-30 22:47:03 [notification-service] INFO: GET /health
+2025-10-30 22:47:05 [market-service] INFO: GET /health
+2025-10-30 22:47:10 [portfolio-service] INFO: GET /health
+2025-10-30 22:47:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:47:11 [trade-service] INFO: GET /health
+2025-10-30 22:47:11 [user-service] INFO: GET /health
+2025-10-30 22:47:13 [notification-service] INFO: GET /health
+2025-10-30 22:47:15 [market-service] INFO: GET /health
+2025-10-30 22:47:20 [portfolio-service] INFO: GET /health
+2025-10-30 22:47:21 [trade-service] INFO: GET /health
+2025-10-30 22:47:21 [user-service] INFO: GET /health
+2025-10-30 22:47:23 [notification-service] INFO: GET /health
+2025-10-30 22:47:25 [market-service] INFO: GET /health
+2025-10-30 22:47:30 [portfolio-service] INFO: GET /health
+2025-10-30 22:47:31 [trade-service] INFO: GET /health
+2025-10-30 22:47:31 [user-service] INFO: GET /health
+2025-10-30 22:47:33 [notification-service] INFO: GET /health
+2025-10-30 22:47:35 [market-service] INFO: GET /health
+2025-10-30 22:47:40 [portfolio-service] INFO: GET /health
+2025-10-30 22:47:41 [trade-service] INFO: GET /health
+2025-10-30 22:47:41 [user-service] INFO: GET /health
+2025-10-30 22:47:43 [notification-service] INFO: GET /health
+2025-10-30 22:47:46 [market-service] INFO: GET /health
+2025-10-30 22:47:50 [portfolio-service] INFO: GET /health
+2025-10-30 22:47:51 [trade-service] INFO: GET /health
+2025-10-30 22:47:51 [user-service] INFO: GET /health
+2025-10-30 22:47:53 [notification-service] INFO: GET /health
+2025-10-30 22:47:56 [market-service] INFO: GET /health
+2025-10-30 22:48:00 [portfolio-service] INFO: GET /health
+2025-10-30 22:48:01 [trade-service] INFO: GET /health
+2025-10-30 22:48:01 [user-service] INFO: GET /health
+2025-10-30 22:48:03 [notification-service] INFO: GET /health
+2025-10-30 22:48:06 [market-service] INFO: GET /health
+2025-10-30 22:48:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:48:10 [portfolio-service] INFO: GET /health
+2025-10-30 22:48:11 [trade-service] INFO: GET /health
+2025-10-30 22:48:11 [user-service] INFO: GET /health
+2025-10-30 22:48:13 [notification-service] INFO: GET /health
+2025-10-30 22:48:16 [market-service] INFO: GET /health
+2025-10-30 22:48:20 [portfolio-service] INFO: GET /health
+2025-10-30 22:48:21 [trade-service] INFO: GET /health
+2025-10-30 22:48:21 [user-service] INFO: GET /health
+2025-10-30 22:48:23 [notification-service] INFO: GET /health
+2025-10-30 22:48:26 [market-service] INFO: GET /health
+2025-10-30 22:48:30 [portfolio-service] INFO: GET /health
+2025-10-30 22:48:31 [trade-service] INFO: GET /health
+2025-10-30 22:48:31 [user-service] INFO: GET /health
+2025-10-30 22:48:33 [notification-service] INFO: GET /health
+2025-10-30 22:48:36 [market-service] INFO: GET /health
+2025-10-30 22:48:40 [portfolio-service] INFO: GET /health
+2025-10-30 22:48:41 [trade-service] INFO: GET /health
+2025-10-30 22:48:41 [user-service] INFO: GET /health
+2025-10-30 22:48:43 [notification-service] INFO: GET /health
+2025-10-30 22:48:46 [market-service] INFO: GET /health
+2025-10-30 22:48:50 [portfolio-service] INFO: GET /health
+2025-10-30 22:48:51 [trade-service] INFO: GET /health
+2025-10-30 22:48:51 [user-service] INFO: GET /health
+2025-10-30 22:48:53 [notification-service] INFO: GET /health
+2025-10-30 22:48:56 [market-service] INFO: GET /health
+2025-10-30 22:49:00 [portfolio-service] INFO: GET /health
+2025-10-30 22:49:01 [trade-service] INFO: GET /health
+2025-10-30 22:49:01 [user-service] INFO: GET /health
+2025-10-30 22:49:03 [notification-service] INFO: GET /health
+2025-10-30 22:49:06 [market-service] INFO: GET /health
+2025-10-30 22:49:10 [portfolio-service] INFO: GET /health
+2025-10-30 22:49:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:49:11 [trade-service] INFO: GET /health
+2025-10-30 22:49:11 [user-service] INFO: GET /health
+2025-10-30 22:49:13 [notification-service] INFO: GET /health
+2025-10-30 22:49:16 [market-service] INFO: GET /health
+2025-10-30 22:49:20 [portfolio-service] INFO: GET /health
+2025-10-30 22:49:21 [trade-service] INFO: GET /health
+2025-10-30 22:49:21 [user-service] INFO: GET /health
+2025-10-30 22:49:23 [notification-service] INFO: GET /health
+2025-10-30 22:49:26 [market-service] INFO: GET /health
+2025-10-30 22:49:30 [portfolio-service] INFO: GET /health
+2025-10-30 22:49:31 [trade-service] INFO: GET /health
+2025-10-30 22:49:31 [user-service] INFO: GET /health
+2025-10-30 22:49:33 [notification-service] INFO: GET /health
+2025-10-30 22:49:36 [market-service] INFO: GET /health
+2025-10-30 22:49:40 [portfolio-service] INFO: GET /health
+2025-10-30 22:49:41 [trade-service] INFO: GET /health
+2025-10-30 22:49:41 [user-service] INFO: GET /health
+2025-10-30 22:49:43 [notification-service] INFO: GET /health
+2025-10-30 22:49:46 [market-service] INFO: GET /health
+2025-10-30 22:49:50 [portfolio-service] INFO: GET /health
+2025-10-30 22:49:51 [trade-service] INFO: GET /health
+2025-10-30 22:49:51 [user-service] INFO: GET /health
+2025-10-30 22:50:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:50:30 [user-service] INFO: SIGINT received, deregistering service...
+2025-10-30 22:50:34 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   👤 USER SERVICE STARTED                            ║
+  ║                                                       ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:50:34 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-10-30 22:50:34 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 22:50:34 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:50:36 [market-service] INFO: SIGINT received, deregistering service...
+2025-10-30 22:50:36 [market-service] ERROR: ❌ Failed to deregister service: not found
+2025-10-30 22:50:39 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:50:39 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-10-30 22:50:40 [user-service] INFO: GET /health
+2025-10-30 22:50:41 [portfolio-service] INFO: SIGINT received, deregistering service...
+2025-10-30 22:50:42 [market-service] INFO: GET /health
+2025-10-30 22:50:45 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║                                                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:50:45 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-10-30 22:50:45 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 22:50:45 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:50:46 [portfolio-service] INFO: GET /health
+2025-10-30 22:50:50 [user-service] INFO: GET /health
+2025-10-30 22:50:52 [market-service] INFO: GET /health
+2025-10-30 22:50:56 [portfolio-service] INFO: GET /health
+2025-10-30 22:51:00 [user-service] INFO: GET /health
+2025-10-30 22:51:02 [market-service] INFO: GET /health
+2025-10-30 22:51:04 [trade-service] INFO: SIGINT received, deregistering service...
+2025-10-30 22:51:06 [portfolio-service] INFO: GET /health
+2025-10-30 22:51:07 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║                                                       ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:51:07 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-10-30 22:51:08 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 22:51:08 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:51:08 [trade-service] INFO: GET /health
+2025-10-30 22:51:09 [notification-service] INFO: SIGINT received, deregistering service...
+2025-10-30 22:51:10 [user-service] INFO: GET /health
+2025-10-30 22:51:12 [market-service] INFO: GET /health
+2025-10-30 22:51:12 [notification-service] INFO: 🕒 Price alert checker started (runs every minute)
+2025-10-30 22:51:12 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║                                                       ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:51:12 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-10-30 22:51:13 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 22:51:13 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:51:15 [api-gateway] INFO: SIGINT signal received: closing HTTP server
+2025-10-30 22:51:15 [notification-service] INFO: GET /health
+2025-10-30 22:51:16 [portfolio-service] INFO: GET /health
+2025-10-30 22:51:17 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:51:18 [trade-service] INFO: GET /health
+2025-10-30 22:51:20 [user-service] INFO: GET /health
+2025-10-30 22:51:22 [market-service] INFO: GET /health
+2025-10-30 22:51:24 [user-service] INFO: POST /register
+2025-10-30 22:51:26 [notification-service] INFO: GET /health
+2025-10-30 22:51:26 [portfolio-service] INFO: GET /health
+2025-10-30 22:51:28 [trade-service] INFO: GET /health
+2025-10-30 22:51:30 [user-service] INFO: GET /health
+2025-10-30 22:51:32 [market-service] INFO: GET /health
+2025-10-30 22:51:34 [user-service] ERROR: ❌ Register error: Operation `users.findOne()` buffering timed out after 10000ms
+2025-10-30 22:51:36 [notification-service] INFO: GET /health
+2025-10-30 22:51:36 [portfolio-service] INFO: GET /health
+2025-10-30 22:51:38 [trade-service] INFO: GET /health
+2025-10-30 22:51:40 [user-service] INFO: GET /health
+2025-10-30 22:51:42 [market-service] INFO: GET /health
+2025-10-30 22:51:46 [notification-service] INFO: GET /health
+2025-10-30 22:51:46 [portfolio-service] INFO: GET /health
+2025-10-30 22:51:48 [trade-service] INFO: GET /health
+2025-10-30 22:51:50 [user-service] INFO: GET /health
+2025-10-30 22:51:52 [market-service] INFO: GET /health
+2025-10-30 22:51:56 [notification-service] INFO: GET /health
+2025-10-30 22:51:56 [portfolio-service] INFO: GET /health
+2025-10-30 22:51:59 [trade-service] INFO: GET /health
+2025-10-30 22:52:00 [user-service] INFO: GET /health
+2025-10-30 22:52:02 [market-service] INFO: GET /health
+2025-10-30 22:52:06 [notification-service] INFO: GET /health
+2025-10-30 22:52:06 [portfolio-service] INFO: GET /health
+2025-10-30 22:52:09 [trade-service] INFO: GET /health
+2025-10-30 22:52:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:52:10 [user-service] INFO: GET /health
+2025-10-30 22:52:12 [market-service] INFO: GET /health
+2025-10-30 22:52:16 [notification-service] INFO: GET /health
+2025-10-30 22:52:16 [portfolio-service] INFO: GET /health
+2025-10-30 22:52:19 [trade-service] INFO: GET /health
+2025-10-30 22:52:20 [user-service] INFO: GET /health
+2025-10-30 22:52:22 [market-service] INFO: GET /health
+2025-10-30 22:52:26 [notification-service] INFO: GET /health
+2025-10-30 22:52:26 [portfolio-service] INFO: GET /health
+2025-10-30 22:52:29 [trade-service] INFO: GET /health
+2025-10-30 22:52:30 [user-service] INFO: GET /health
+2025-10-30 22:52:32 [market-service] INFO: GET /health
+2025-10-30 22:52:36 [notification-service] INFO: GET /health
+2025-10-30 22:52:36 [portfolio-service] INFO: GET /health
+2025-10-30 22:52:39 [trade-service] INFO: GET /health
+2025-10-30 22:52:40 [user-service] INFO: GET /health
+2025-10-30 22:52:42 [market-service] INFO: GET /health
+2025-10-30 22:52:46 [notification-service] INFO: GET /health
+2025-10-30 22:52:46 [portfolio-service] INFO: GET /health
+2025-10-30 22:52:49 [trade-service] INFO: GET /health
+2025-10-30 22:52:50 [user-service] INFO: GET /health
+2025-10-30 22:52:52 [market-service] INFO: GET /health
+2025-10-30 22:52:56 [notification-service] INFO: GET /health
+2025-10-30 22:52:56 [portfolio-service] INFO: GET /health
+2025-10-30 22:52:59 [trade-service] INFO: GET /health
+2025-10-30 22:53:00 [user-service] INFO: GET /health
+2025-10-30 22:53:02 [market-service] INFO: GET /health
+2025-10-30 22:53:06 [notification-service] INFO: GET /health
+2025-10-30 22:53:06 [portfolio-service] INFO: GET /health
+2025-10-30 22:53:09 [trade-service] INFO: GET /health
+2025-10-30 22:53:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:53:10 [user-service] INFO: GET /health
+2025-10-30 22:53:12 [market-service] INFO: GET /health
+2025-10-30 22:53:16 [notification-service] INFO: GET /health
+2025-10-30 22:53:16 [portfolio-service] INFO: GET /health
+2025-10-30 22:53:19 [trade-service] INFO: GET /health
+2025-10-30 22:53:20 [user-service] INFO: GET /health
+2025-10-30 22:53:22 [market-service] INFO: GET /health
+2025-10-30 22:53:26 [notification-service] INFO: GET /health
+2025-10-30 22:53:26 [portfolio-service] INFO: GET /health
+2025-10-30 22:53:29 [trade-service] INFO: GET /health
+2025-10-30 22:53:30 [user-service] INFO: GET /health
+2025-10-30 22:53:32 [market-service] INFO: GET /health
+2025-10-30 22:53:36 [notification-service] INFO: GET /health
+2025-10-30 22:53:36 [portfolio-service] INFO: GET /health
+2025-10-30 22:53:39 [trade-service] INFO: GET /health
+2025-10-30 22:53:40 [user-service] INFO: GET /health
+2025-10-30 22:53:42 [market-service] INFO: GET /health
+2025-10-30 22:53:46 [notification-service] INFO: GET /health
+2025-10-30 22:53:46 [portfolio-service] INFO: GET /health
+2025-10-30 22:53:49 [trade-service] INFO: GET /health
+2025-10-30 22:53:52 [market-service] INFO: GET /health
+2025-10-30 22:53:56 [notification-service] INFO: GET /health
+2025-10-30 22:53:56 [portfolio-service] INFO: GET /health
+2025-10-30 22:53:59 [trade-service] INFO: GET /health
+2025-10-30 22:54:02 [market-service] INFO: GET /health
+2025-10-30 22:54:06 [notification-service] INFO: GET /health
+2025-10-30 22:54:06 [portfolio-service] INFO: GET /health
+2025-10-30 22:54:09 [trade-service] INFO: GET /health
+2025-10-30 22:54:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:54:12 [market-service] INFO: GET /health
+2025-10-30 22:54:16 [notification-service] INFO: GET /health
+2025-10-30 22:54:16 [portfolio-service] INFO: GET /health
+2025-10-30 22:54:19 [trade-service] INFO: GET /health
+2025-10-30 22:54:22 [market-service] INFO: GET /health
+2025-10-30 22:54:26 [notification-service] INFO: GET /health
+2025-10-30 22:54:26 [portfolio-service] INFO: GET /health
+2025-10-30 22:54:29 [trade-service] INFO: GET /health
+2025-10-30 22:54:32 [market-service] INFO: GET /health
+2025-10-30 22:54:36 [notification-service] INFO: GET /health
+2025-10-30 22:54:36 [portfolio-service] INFO: GET /health
+2025-10-30 22:54:39 [trade-service] INFO: GET /health
+2025-10-30 22:54:42 [market-service] INFO: GET /health
+2025-10-30 22:54:46 [notification-service] INFO: GET /health
+2025-10-30 22:54:46 [portfolio-service] INFO: GET /health
+2025-10-30 22:54:49 [trade-service] INFO: GET /health
+2025-10-30 22:54:52 [market-service] INFO: GET /health
+2025-10-30 22:54:56 [notification-service] INFO: GET /health
+2025-10-30 22:54:56 [portfolio-service] INFO: GET /health
+2025-10-30 22:54:59 [trade-service] INFO: GET /health
+2025-10-30 22:55:02 [market-service] INFO: GET /health
+2025-10-30 22:55:06 [notification-service] INFO: GET /health
+2025-10-30 22:55:06 [portfolio-service] INFO: GET /health
+2025-10-30 22:55:09 [trade-service] INFO: GET /health
+2025-10-30 22:55:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:55:12 [market-service] INFO: GET /health
+2025-10-30 22:55:16 [notification-service] INFO: GET /health
+2025-10-30 22:55:16 [portfolio-service] INFO: GET /health
+2025-10-30 22:55:19 [trade-service] INFO: GET /health
+2025-10-30 22:55:22 [market-service] INFO: GET /health
+2025-10-30 22:55:26 [notification-service] INFO: GET /health
+2025-10-30 22:55:26 [portfolio-service] INFO: GET /health
+2025-10-30 22:55:29 [trade-service] INFO: GET /health
+2025-10-30 22:55:32 [market-service] INFO: GET /health
+2025-10-30 22:55:36 [notification-service] INFO: GET /health
+2025-10-30 22:55:36 [portfolio-service] INFO: GET /health
+2025-10-30 22:55:39 [trade-service] INFO: GET /health
+2025-10-30 22:55:42 [market-service] INFO: GET /health
+2025-10-30 22:55:46 [notification-service] INFO: GET /health
+2025-10-30 22:55:46 [portfolio-service] INFO: GET /health
+2025-10-30 22:55:49 [trade-service] INFO: GET /health
+2025-10-30 22:55:52 [market-service] INFO: GET /health
+2025-10-30 22:55:56 [notification-service] INFO: GET /health
+2025-10-30 22:55:56 [portfolio-service] INFO: GET /health
+2025-10-30 22:55:59 [trade-service] INFO: GET /health
+2025-10-30 22:56:02 [market-service] INFO: GET /health
+2025-10-30 22:56:06 [notification-service] INFO: GET /health
+2025-10-30 22:56:06 [portfolio-service] INFO: GET /health
+2025-10-30 22:56:09 [trade-service] INFO: GET /health
+2025-10-30 22:56:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:56:12 [market-service] INFO: GET /health
+2025-10-30 22:56:16 [notification-service] INFO: GET /health
+2025-10-30 22:56:16 [portfolio-service] INFO: GET /health
+2025-10-30 22:56:19 [trade-service] INFO: GET /health
+2025-10-30 22:56:22 [market-service] INFO: GET /health
+2025-10-30 22:56:26 [notification-service] INFO: GET /health
+2025-10-30 22:56:26 [portfolio-service] INFO: GET /health
+2025-10-30 22:56:29 [trade-service] INFO: GET /health
+2025-10-30 22:56:32 [market-service] INFO: GET /health
+2025-10-30 22:56:36 [notification-service] INFO: GET /health
+2025-10-30 22:56:36 [portfolio-service] INFO: GET /health
+2025-10-30 22:56:39 [trade-service] INFO: GET /health
+2025-10-30 22:56:42 [market-service] INFO: GET /health
+2025-10-30 22:56:46 [notification-service] INFO: GET /health
+2025-10-30 22:56:46 [portfolio-service] INFO: GET /health
+2025-10-30 22:56:49 [trade-service] INFO: GET /health
+2025-10-30 22:56:52 [market-service] INFO: GET /health
+2025-10-30 22:56:56 [notification-service] INFO: GET /health
+2025-10-30 22:56:56 [portfolio-service] INFO: GET /health
+2025-10-30 22:56:59 [trade-service] INFO: GET /health
+2025-10-30 22:57:02 [market-service] INFO: GET /health
+2025-10-30 22:57:06 [notification-service] INFO: GET /health
+2025-10-30 22:57:06 [portfolio-service] INFO: GET /health
+2025-10-30 22:57:09 [trade-service] INFO: GET /health
+2025-10-30 22:57:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:57:23 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:57:23 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:57:23 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-10-30 22:57:24 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║                                                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:57:24 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-10-30 22:57:24 [notification-service] INFO: 🕒 Price alert checker started (runs every minute)
+2025-10-30 22:57:24 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║                                                       ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:57:25 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-10-30 22:57:24 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   👤 USER SERVICE STARTED                            ║
+  ║                                                       ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:57:25 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-10-30 22:57:24 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║                                                       ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 22:57:25 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-10-30 22:57:25 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 22:57:25 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 22:57:25 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:57:25 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:57:25 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 22:57:25 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:57:25 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 22:57:25 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 22:57:26 [notification-service] INFO: GET /health
+2025-10-30 22:57:31 [market-service] INFO: GET /health
+2025-10-30 22:57:32 [trade-service] INFO: GET /health
+2025-10-30 22:57:34 [portfolio-service] INFO: GET /health
+2025-10-30 22:57:34 [user-service] INFO: GET /health
+2025-10-30 22:57:36 [notification-service] INFO: GET /health
+2025-10-30 22:57:41 [market-service] INFO: GET /health
+2025-10-30 22:57:42 [trade-service] INFO: GET /health
+2025-10-30 22:57:44 [portfolio-service] INFO: GET /health
+2025-10-30 22:57:44 [user-service] INFO: GET /health
+2025-10-30 22:57:46 [notification-service] INFO: GET /health
+2025-10-30 22:57:51 [market-service] INFO: GET /health
+2025-10-30 22:57:52 [trade-service] INFO: GET /health
+2025-10-30 22:57:54 [portfolio-service] INFO: GET /health
+2025-10-30 22:57:54 [user-service] INFO: GET /health
+2025-10-30 22:57:56 [notification-service] INFO: GET /health
+2025-10-30 22:58:01 [market-service] INFO: GET /health
+2025-10-30 22:58:02 [trade-service] INFO: GET /health
+2025-10-30 22:58:04 [portfolio-service] INFO: GET /health
+2025-10-30 22:58:04 [user-service] INFO: GET /health
+2025-10-30 22:58:06 [notification-service] INFO: GET /health
+2025-10-30 22:58:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:58:11 [market-service] INFO: GET /health
+2025-10-30 22:58:12 [trade-service] INFO: GET /health
+2025-10-30 22:58:14 [portfolio-service] INFO: GET /health
+2025-10-30 22:58:14 [user-service] INFO: GET /health
+2025-10-30 22:58:16 [notification-service] INFO: GET /health
+2025-10-30 22:58:21 [market-service] INFO: GET /health
+2025-10-30 22:58:22 [trade-service] INFO: GET /health
+2025-10-30 22:58:24 [portfolio-service] INFO: GET /health
+2025-10-30 22:58:25 [user-service] INFO: GET /health
+2025-10-30 22:58:26 [notification-service] INFO: GET /health
+2025-10-30 22:58:31 [market-service] INFO: GET /health
+2025-10-30 22:58:32 [trade-service] INFO: GET /health
+2025-10-30 22:58:34 [portfolio-service] INFO: GET /health
+2025-10-30 22:58:35 [user-service] INFO: GET /health
+2025-10-30 22:58:36 [notification-service] INFO: GET /health
+2025-10-30 22:58:41 [market-service] INFO: GET /health
+2025-10-30 22:58:42 [trade-service] INFO: GET /health
+2025-10-30 22:58:44 [portfolio-service] INFO: GET /health
+2025-10-30 22:58:45 [user-service] INFO: GET /health
+2025-10-30 22:58:46 [notification-service] INFO: GET /health
+2025-10-30 22:58:51 [market-service] INFO: GET /health
+2025-10-30 22:58:52 [trade-service] INFO: GET /health
+2025-10-30 22:58:54 [portfolio-service] INFO: GET /health
+2025-10-30 22:58:55 [user-service] INFO: GET /health
+2025-10-30 22:58:56 [notification-service] INFO: GET /health
+2025-10-30 22:59:01 [market-service] INFO: GET /health
+2025-10-30 22:59:02 [trade-service] INFO: GET /health
+2025-10-30 22:59:04 [portfolio-service] INFO: GET /health
+2025-10-30 22:59:05 [user-service] INFO: GET /health
+2025-10-30 22:59:06 [notification-service] INFO: GET /health
+2025-10-30 22:59:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 22:59:11 [market-service] INFO: GET /health
+2025-10-30 22:59:12 [trade-service] INFO: GET /health
+2025-10-30 22:59:14 [portfolio-service] INFO: GET /health
+2025-10-30 22:59:15 [user-service] INFO: GET /health
+2025-10-30 22:59:16 [notification-service] INFO: GET /health
+2025-10-30 22:59:21 [market-service] INFO: GET /health
+2025-10-30 22:59:22 [trade-service] INFO: GET /health
+2025-10-30 22:59:24 [portfolio-service] INFO: GET /health
+2025-10-30 22:59:25 [user-service] INFO: GET /health
+2025-10-30 22:59:26 [notification-service] INFO: GET /health
+2025-10-30 22:59:31 [market-service] INFO: GET /health
+2025-10-30 22:59:32 [trade-service] INFO: GET /health
+2025-10-30 22:59:34 [portfolio-service] INFO: GET /health
+2025-10-30 22:59:35 [user-service] INFO: GET /health
+2025-10-30 22:59:36 [notification-service] INFO: GET /health
+2025-10-30 22:59:41 [market-service] INFO: GET /health
+2025-10-30 22:59:42 [trade-service] INFO: GET /health
+2025-10-30 22:59:44 [portfolio-service] INFO: GET /health
+2025-10-30 22:59:45 [user-service] INFO: GET /health
+2025-10-30 22:59:46 [notification-service] INFO: GET /health
+2025-10-30 22:59:51 [market-service] INFO: GET /health
+2025-10-30 22:59:52 [trade-service] INFO: GET /health
+2025-10-30 22:59:54 [portfolio-service] INFO: GET /health
+2025-10-30 22:59:55 [user-service] INFO: GET /health
+2025-10-30 22:59:56 [notification-service] INFO: GET /health
+2025-10-30 22:59:56 [user-service] INFO: POST /register
+2025-10-30 23:00:01 [market-service] INFO: GET /health
+2025-10-30 23:00:02 [trade-service] INFO: GET /health
+2025-10-30 23:00:04 [portfolio-service] INFO: GET /health
+2025-10-30 23:00:05 [user-service] INFO: GET /health
+2025-10-30 23:00:06 [notification-service] INFO: GET /health
+2025-10-30 23:00:06 [user-service] ERROR: ❌ Register error: Operation `users.findOne()` buffering timed out after 10000ms
+2025-10-30 23:00:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 23:00:11 [market-service] INFO: GET /health
+2025-10-30 23:00:12 [trade-service] INFO: GET /health
+2025-10-30 23:00:14 [portfolio-service] INFO: GET /health
+2025-10-30 23:00:15 [user-service] INFO: GET /health
+2025-10-30 23:00:16 [notification-service] INFO: GET /health
+2025-10-30 23:00:21 [market-service] INFO: GET /health
+2025-10-30 23:00:22 [trade-service] INFO: GET /health
+2025-10-30 23:00:24 [portfolio-service] INFO: GET /health
+2025-10-30 23:00:25 [user-service] INFO: GET /health
+2025-10-30 23:00:26 [notification-service] INFO: GET /health
+2025-10-30 23:00:31 [market-service] INFO: GET /health
+2025-10-30 23:00:32 [trade-service] INFO: GET /health
+2025-10-30 23:00:34 [portfolio-service] INFO: GET /health
+2025-10-30 23:00:35 [user-service] INFO: GET /health
+2025-10-30 23:00:36 [notification-service] INFO: GET /health
+2025-10-30 23:00:42 [market-service] INFO: GET /health
+2025-10-30 23:00:42 [trade-service] INFO: GET /health
+2025-10-30 23:00:44 [portfolio-service] INFO: GET /health
+2025-10-30 23:00:45 [user-service] INFO: GET /health
+2025-10-30 23:00:46 [notification-service] INFO: GET /health
+2025-10-30 23:00:52 [market-service] INFO: GET /health
+2025-10-30 23:01:06 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:01:06 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-10-30 23:01:06 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:01:07 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║                                                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:01:07 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-10-30 23:01:07 [notification-service] INFO: 🕒 Price alert checker started (runs every minute)
+2025-10-30 23:01:07 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║                                                       ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:01:07 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-10-30 23:01:07 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   👤 USER SERVICE STARTED                            ║
+  ║                                                       ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:01:07 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-10-30 23:01:07 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║                                                       ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:01:07 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-10-30 23:01:08 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 23:01:08 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:01:08 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 23:01:08 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:01:08 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 23:01:08 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:01:08 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 23:01:08 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:01:09 [user-service] INFO: GET /health
+2025-10-30 23:01:10 [market-service] INFO: GET /health
+2025-10-30 23:01:12 [trade-service] INFO: GET /health
+2025-10-30 23:01:13 [notification-service] INFO: GET /health
+2025-10-30 23:01:17 [portfolio-service] INFO: GET /health
+2025-10-30 23:01:19 [user-service] INFO: GET /health
+2025-10-30 23:01:20 [market-service] INFO: GET /health
+2025-10-30 23:01:22 [trade-service] INFO: GET /health
+2025-10-30 23:01:23 [notification-service] INFO: GET /health
+2025-10-30 23:01:27 [portfolio-service] INFO: GET /health
+2025-10-30 23:01:29 [user-service] INFO: GET /health
+2025-10-30 23:01:30 [market-service] INFO: GET /health
+2025-10-30 23:01:32 [trade-service] INFO: GET /health
+2025-10-30 23:01:33 [notification-service] INFO: GET /health
+2025-10-30 23:01:37 [portfolio-service] INFO: GET /health
+2025-10-30 23:01:39 [user-service] INFO: GET /health
+2025-10-30 23:01:40 [market-service] INFO: GET /health
+2025-10-30 23:01:42 [trade-service] INFO: GET /health
+2025-10-30 23:01:43 [notification-service] INFO: GET /health
+2025-10-30 23:01:47 [portfolio-service] INFO: GET /health
+2025-10-30 23:01:49 [user-service] INFO: GET /health
+2025-10-30 23:01:50 [market-service] INFO: GET /health
+2025-10-30 23:01:52 [trade-service] INFO: GET /health
+2025-10-30 23:01:53 [notification-service] INFO: GET /health
+2025-10-30 23:01:57 [portfolio-service] INFO: GET /health
+2025-10-30 23:01:59 [user-service] INFO: GET /health
+2025-10-30 23:02:00 [market-service] INFO: GET /health
+2025-10-30 23:02:02 [trade-service] INFO: GET /health
+2025-10-30 23:02:03 [notification-service] INFO: GET /health
+2025-10-30 23:02:07 [portfolio-service] INFO: GET /health
+2025-10-30 23:02:09 [user-service] INFO: GET /health
+2025-10-30 23:02:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 23:02:10 [market-service] INFO: GET /health
+2025-10-30 23:02:12 [trade-service] INFO: GET /health
+2025-10-30 23:02:13 [notification-service] INFO: GET /health
+2025-10-30 23:02:17 [portfolio-service] INFO: GET /health
+2025-10-30 23:02:19 [user-service] INFO: GET /health
+2025-10-30 23:02:20 [market-service] INFO: GET /health
+2025-10-30 23:02:22 [trade-service] INFO: GET /health
+2025-10-30 23:02:23 [notification-service] INFO: GET /health
+2025-10-30 23:02:27 [portfolio-service] INFO: GET /health
+2025-10-30 23:02:29 [user-service] INFO: GET /health
+2025-10-30 23:02:30 [market-service] INFO: GET /health
+2025-10-30 23:02:32 [trade-service] INFO: GET /health
+2025-10-30 23:02:33 [notification-service] INFO: GET /health
+2025-10-30 23:02:37 [portfolio-service] INFO: GET /health
+2025-10-30 23:02:39 [user-service] INFO: GET /health
+2025-10-30 23:02:40 [market-service] INFO: GET /health
+2025-10-30 23:02:42 [trade-service] INFO: GET /health
+2025-10-30 23:02:43 [notification-service] INFO: GET /health
+2025-10-30 23:02:47 [portfolio-service] INFO: GET /health
+2025-10-30 23:02:49 [user-service] INFO: GET /health
+2025-10-30 23:02:50 [market-service] INFO: GET /health
+2025-10-30 23:02:52 [trade-service] INFO: GET /health
+2025-10-30 23:02:53 [notification-service] INFO: GET /health
+2025-10-30 23:02:57 [portfolio-service] INFO: GET /health
+2025-10-30 23:02:59 [user-service] INFO: GET /health
+2025-10-30 23:03:00 [market-service] INFO: GET /health
+2025-10-30 23:03:02 [trade-service] INFO: GET /health
+2025-10-30 23:03:03 [notification-service] INFO: GET /health
+2025-10-30 23:03:07 [portfolio-service] INFO: GET /health
+2025-10-30 23:03:09 [user-service] INFO: GET /health
+2025-10-30 23:03:10 [market-service] INFO: GET /health
+2025-10-30 23:03:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 23:03:12 [trade-service] INFO: GET /health
+2025-10-30 23:03:13 [notification-service] INFO: GET /health
+2025-10-30 23:03:17 [portfolio-service] INFO: GET /health
+2025-10-30 23:03:19 [user-service] INFO: GET /health
+2025-10-30 23:03:20 [market-service] INFO: GET /health
+2025-10-30 23:03:22 [trade-service] INFO: GET /health
+2025-10-30 23:03:23 [notification-service] INFO: GET /health
+2025-10-30 23:03:27 [portfolio-service] INFO: GET /health
+2025-10-30 23:03:29 [user-service] INFO: GET /health
+2025-10-30 23:03:30 [market-service] INFO: GET /health
+2025-10-30 23:03:32 [trade-service] INFO: GET /health
+2025-10-30 23:03:33 [notification-service] INFO: GET /health
+2025-10-30 23:03:37 [portfolio-service] INFO: GET /health
+2025-10-30 23:03:39 [user-service] INFO: GET /health
+2025-10-30 23:03:40 [market-service] INFO: GET /health
+2025-10-30 23:03:42 [trade-service] INFO: GET /health
+2025-10-30 23:03:43 [notification-service] INFO: GET /health
+2025-10-30 23:03:47 [portfolio-service] INFO: GET /health
+2025-10-30 23:03:49 [user-service] INFO: GET /health
+2025-10-30 23:03:50 [market-service] INFO: GET /health
+2025-10-30 23:03:52 [trade-service] INFO: GET /health
+2025-10-30 23:03:53 [notification-service] INFO: GET /health
+2025-10-30 23:03:57 [portfolio-service] INFO: GET /health
+2025-10-30 23:03:58 [portfolio-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:03:58 [trade-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:03:58 [notification-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:03:58 [user-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:03:58 [market-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:03:58 [api-gateway] INFO: SIGINT signal received: closing HTTP server
+2025-10-30 23:03:58 [market-service] INFO: ✅ Service deregistered from Consul: market-service-3002
+2025-10-30 23:04:06 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:04:06 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-10-30 23:04:06 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:04:07 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║                                                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:04:07 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-10-30 23:04:07 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   👤 USER SERVICE STARTED                            ║
+  ║                                                       ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:04:07 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-10-30 23:04:07 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║                                                       ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:04:07 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-10-30 23:04:07 [notification-service] INFO: 🕒 Price alert checker started (runs every minute)
+2025-10-30 23:04:07 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║                                                       ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:04:07 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-10-30 23:04:08 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 23:04:08 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:04:08 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 23:04:08 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:04:08 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 23:04:08 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:04:09 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 23:04:09 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:04:42 [user-service] INFO: POST /register
+2025-10-30 23:04:52 [user-service] ERROR: ❌ Register error: Operation `users.findOne()` buffering timed out after 10000ms
+2025-10-30 23:05:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 23:06:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 23:06:38 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:06:38 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-10-30 23:06:38 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:06:39 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║                                                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:06:39 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-10-30 23:06:39 [notification-service] INFO: 🕒 Price alert checker started (runs every minute)
+2025-10-30 23:06:39 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║                                                       ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:06:39 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-10-30 23:06:39 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   👤 USER SERVICE STARTED                            ║
+  ║                                                       ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:06:39 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-10-30 23:06:39 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║                                                       ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:06:40 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-10-30 23:06:40 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 23:06:40 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:06:41 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 23:06:41 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:06:41 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 23:06:41 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:06:41 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 23:06:41 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:07:11 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 23:07:40 [notification-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:07:40 [trade-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:07:40 [market-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:07:40 [user-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:07:40 [portfolio-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:07:40 [api-gateway] INFO: SIGINT signal received: closing HTTP server
+2025-10-30 23:07:40 [market-service] INFO: ✅ Service deregistered from Consul: market-service-3002
+2025-10-30 23:07:52 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:07:52 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-10-30 23:07:52 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:07:53 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║                                                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:07:53 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-10-30 23:07:53 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   👤 USER SERVICE STARTED                            ║
+  ║                                                       ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:07:53 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-10-30 23:07:53 [notification-service] INFO: 🕒 Price alert checker started (runs every minute)
+2025-10-30 23:07:53 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║                                                       ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:07:53 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║                                                       ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:07:53 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-10-30 23:07:53 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-10-30 23:07:54 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 23:07:54 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:07:54 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 23:07:54 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:07:54 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 23:07:54 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:07:54 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 23:07:54 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:08:06 [user-service] INFO: POST /register
+2025-10-30 23:08:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 23:08:16 [user-service] ERROR: ❌ Register error: Operation `users.findOne()` buffering timed out after 10000ms
+2025-10-30 23:09:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 23:10:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 23:11:10 [user-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:11:10 [portfolio-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:11:10 [notification-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:11:10 [trade-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:11:10 [api-gateway] INFO: SIGINT signal received: closing HTTP server
+2025-10-30 23:11:10 [market-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:11:10 [market-service] INFO: ✅ Service deregistered from Consul: market-service-3002
+2025-10-30 23:11:43 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:11:43 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-10-30 23:11:43 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:11:45 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 23:11:45 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 23:11:45 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:11:45 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║                                                       ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:11:45 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:11:45 [notification-service] INFO: 🕒 Price alert checker started (runs every minute)
+2025-10-30 23:11:45 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║                                                       ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:11:45 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-10-30 23:11:45 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-10-30 23:11:45 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 23:11:45 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 23:11:45 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:11:45 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║                                                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:11:45 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:11:45 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   👤 USER SERVICE STARTED                            ║
+  ║                                                       ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:11:45 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-10-30 23:11:45 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-10-30 23:12:02 [user-service] INFO: POST /register
+2025-10-30 23:12:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 23:12:12 [user-service] ERROR: ❌ Register error: Operation `users.findOne()` buffering timed out after 10000ms
+2025-10-30 23:12:25 [api-gateway] INFO: SIGINT signal received: closing HTTP server
+2025-10-30 23:12:25 [market-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:12:25 [user-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:12:25 [notification-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:12:25 [trade-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:12:25 [portfolio-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:12:25 [market-service] INFO: ✅ Service deregistered from Consul: market-service-3002
+2025-10-30 23:13:39 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:13:39 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-10-30 23:13:39 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:13:41 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 23:13:41 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:13:41 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 23:13:41 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 23:13:41 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:13:41 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:13:41 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 23:13:41 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:13:41 [notification-service] INFO: 🏓 MongoDB ping successful - connection is ready
+2025-10-30 23:13:41 [notification-service] INFO: 🕒 Price alert checker started (runs every minute)
+2025-10-30 23:13:41 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║                                                       ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:13:41 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-10-30 23:13:41 [user-service] INFO: 🏓 MongoDB ping successful - connection is ready
+2025-10-30 23:13:41 [portfolio-service] INFO: 🏓 MongoDB ping successful - connection is ready
+2025-10-30 23:13:41 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   👤 USER SERVICE STARTED                            ║
+  ║                                                       ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:13:41 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-10-30 23:13:41 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║                                                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:13:41 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-10-30 23:13:41 [trade-service] INFO: 🏓 MongoDB ping successful - connection is ready
+2025-10-30 23:13:41 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║                                                       ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:13:41 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-10-30 23:13:57 [user-service] INFO: POST /register
+2025-10-30 23:14:07 [user-service] ERROR: ❌ Register error: Operation `users.findOne()` buffering timed out after 10000ms
+2025-10-30 23:14:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 23:15:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 23:15:59 [api-gateway] INFO: SIGINT signal received: closing HTTP server
+2025-10-30 23:15:59 [notification-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:15:59 [trade-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:15:59 [market-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:15:59 [user-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:15:59 [portfolio-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:15:59 [market-service] INFO: ✅ Service deregistered from Consul: market-service-3002
+2025-10-30 23:16:05 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:16:05 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-10-30 23:16:05 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:16:07 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 23:16:07 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:16:07 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 23:16:07 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:16:07 [portfolio-service] INFO: 🏓 MongoDB ping successful - connection is ready
+2025-10-30 23:16:07 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║                                                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:16:07 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-10-30 23:16:07 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 23:16:07 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:16:07 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 23:16:07 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:16:07 [user-service] INFO: 🏓 MongoDB ping successful - connection is ready
+2025-10-30 23:16:07 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   👤 USER SERVICE STARTED                            ║
+  ║                                                       ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:16:07 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-10-30 23:16:07 [notification-service] INFO: 🏓 MongoDB ping successful - connection is ready
+2025-10-30 23:16:07 [trade-service] INFO: 🏓 MongoDB ping successful - connection is ready
+2025-10-30 23:16:07 [notification-service] INFO: 🕒 Price alert checker started (runs every minute)
+2025-10-30 23:16:07 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║                                                       ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:16:07 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-10-30 23:16:07 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║                                                       ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:16:07 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-10-30 23:16:13 [user-service] INFO: POST /register
+2025-10-30 23:16:13 [user-service] ERROR: ❌ Register error: Cannot call `users.findOne()` before initial connection is complete if `bufferCommands = false`. Make sure you `await mongoose.connect()` if you have `bufferCommands = false`.
+2025-10-30 23:17:00 [notification-service] ERROR: ❌ Check price alerts error: Cannot call `pricealerts.find()` before initial connection is complete if `bufferCommands = false`. Make sure you `await mongoose.connect()` if you have `bufferCommands = false`.
+2025-10-30 23:18:00 [notification-service] ERROR: ❌ Check price alerts error: Cannot call `pricealerts.find()` before initial connection is complete if `bufferCommands = false`. Make sure you `await mongoose.connect()` if you have `bufferCommands = false`.
+2025-10-30 23:18:50 [api-gateway] INFO: SIGINT signal received: closing HTTP server
+2025-10-30 23:18:50 [notification-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:18:50 [trade-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:18:50 [market-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:18:50 [portfolio-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:18:50 [user-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:18:50 [market-service] INFO: ✅ Service deregistered from Consul: market-service-3002
+2025-10-30 23:18:56 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:18:56 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-10-30 23:18:56 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:18:58 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-10-30 23:18:58 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:18:58 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 23:18:58 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 23:18:58 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:18:58 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:18:58 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-10-30 23:18:58 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:18:58 [user-service] INFO: 🏓 MongoDB ping successful - connection is ready
+2025-10-30 23:18:58 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   👤 USER SERVICE STARTED                            ║
+  ║                                                       ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:18:58 [trade-service] INFO: 🏓 MongoDB ping successful - connection is ready
+2025-10-30 23:18:58 [notification-service] INFO: 🏓 MongoDB ping successful - connection is ready
+2025-10-30 23:18:58 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-10-30 23:18:58 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║                                                       ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:18:58 [portfolio-service] INFO: 🏓 MongoDB ping successful - connection is ready
+2025-10-30 23:18:58 [notification-service] INFO: 🕒 Price alert checker started (runs every minute)
+2025-10-30 23:18:58 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║                                                       ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:18:58 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-10-30 23:18:58 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-10-30 23:18:58 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║                                                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:18:58 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-10-30 23:19:00 [notification-service] ERROR: ❌ Check price alerts error: Cannot call `pricealerts.find()` before initial connection is complete if `bufferCommands = false`. Make sure you `await mongoose.connect()` if you have `bufferCommands = false`.
+2025-10-30 23:19:13 [user-service] INFO: POST /register
+2025-10-30 23:19:13 [user-service] ERROR: ❌ Register error: Cannot call `users.findOne()` before initial connection is complete if `bufferCommands = false`. Make sure you `await mongoose.connect()` if you have `bufferCommands = false`.
+2025-10-30 23:20:00 [notification-service] ERROR: ❌ Check price alerts error: Cannot call `pricealerts.find()` before initial connection is complete if `bufferCommands = false`. Make sure you `await mongoose.connect()` if you have `bufferCommands = false`.
+2025-10-30 23:21:00 [notification-service] ERROR: ❌ Check price alerts error: Cannot call `pricealerts.find()` before initial connection is complete if `bufferCommands = false`. Make sure you `await mongoose.connect()` if you have `bufferCommands = false`.
+2025-10-30 23:22:00 [notification-service] ERROR: ❌ Check price alerts error: Cannot call `pricealerts.find()` before initial connection is complete if `bufferCommands = false`. Make sure you `await mongoose.connect()` if you have `bufferCommands = false`.
+2025-10-30 23:22:16 [api-gateway] INFO: SIGINT signal received: closing HTTP server
+2025-10-30 23:22:16 [portfolio-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:22:16 [market-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:22:16 [notification-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:22:16 [user-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:22:16 [trade-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:22:16 [market-service] INFO: ✅ Service deregistered from Consul: market-service-3002
+2025-10-30 23:22:21 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:22:21 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-10-30 23:22:21 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:22:24 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 23:22:24 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:22:24 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 23:22:24 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:22:24 [user-service] INFO: 🏓 MongoDB ping successful - connection is ready
+2025-10-30 23:22:24 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 23:22:24 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-30 23:22:24 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:22:24 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-30 23:22:24 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   👤 USER SERVICE STARTED                            ║
+  ║                                                       ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:22:24 [trade-service] INFO: 🏓 MongoDB ping successful - connection is ready
+2025-10-30 23:22:24 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-10-30 23:22:24 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║                                                       ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:22:24 [notification-service] INFO: 🏓 MongoDB ping successful - connection is ready
+2025-10-30 23:22:24 [portfolio-service] INFO: 🏓 MongoDB ping successful - connection is ready
+2025-10-30 23:22:24 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-10-30 23:22:24 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║                                                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:22:24 [notification-service] INFO: 🕒 Price alert checker started (runs every minute)
+2025-10-30 23:22:24 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║                                                       ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-30 23:22:24 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-10-30 23:22:24 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-10-30 23:22:41 [user-service] INFO: POST /register
+2025-10-30 23:22:51 [user-service] ERROR: ❌ Register error: Operation `users.findOne()` buffering timed out after 10000ms
+2025-10-30 23:23:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-30 23:23:29 [notification-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:23:29 [api-gateway] INFO: SIGINT signal received: closing HTTP server
+2025-10-30 23:23:29 [market-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:23:29 [user-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:23:29 [trade-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:23:29 [portfolio-service] INFO: SIGINT received, deregistering service...
+2025-10-30 23:23:29 [market-service] INFO: ✅ Service deregistered from Consul: market-service-3002
