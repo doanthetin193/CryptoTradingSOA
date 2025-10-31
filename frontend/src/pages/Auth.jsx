@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Mail, Lock, User, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -12,13 +15,52 @@ const Auth = () => {
     fullName: "",
   });
   const navigate = useNavigate();
+  const { login, register } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Mock authentication - sẽ kết nối backend sau
-    console.log("Form submitted:", formData);
-    // Giả lập đăng nhập thành công
-    navigate("/");
+    setError("");
+
+    // Validation
+    if (!isLogin) {
+      if (formData.password !== formData.confirmPassword) {
+        setError("Mật khẩu xác nhận không khớp");
+        return;
+      }
+      if (formData.password.length < 6) {
+        setError("Mật khẩu phải có ít nhất 6 ký tự");
+        return;
+      }
+      if (!formData.fullName.trim()) {
+        setError("Vui lòng nhập họ tên");
+        return;
+      }
+    }
+
+    setLoading(true);
+
+    try {
+      let result;
+      if (isLogin) {
+        result = await login(formData.email, formData.password);
+      } else {
+        result = await register(
+          formData.email,
+          formData.password,
+          formData.fullName
+        );
+      }
+
+      if (result.success) {
+        navigate("/");
+      } else {
+        setError(result.message || "Đã xảy ra lỗi");
+      }
+    } catch (err) {
+      setError(err.message || "Đã xảy ra lỗi");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -56,6 +98,14 @@ const Auth = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Error Message */}
+            {error && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
             {/* Full Name (Register only) */}
             {!isLogin && (
               <div>
@@ -150,9 +200,17 @@ const Auth = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              {isLogin ? "Đăng nhập" : "Đăng ký"}
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  <span>Đang xử lý...</span>
+                </>
+              ) : (
+                <span>{isLogin ? "Đăng nhập" : "Đăng ký"}</span>
+              )}
             </button>
           </form>
 

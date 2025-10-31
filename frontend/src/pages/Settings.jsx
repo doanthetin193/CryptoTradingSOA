@@ -1,6 +1,9 @@
 import { Bell, User, Shield, Key } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
 
 const Settings = () => {
+  const { user } = useAuth();
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -22,18 +25,20 @@ const Settings = () => {
             </label>
             <input
               type="email"
-              defaultValue="user@example.com"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+              value={user?.email || ""}
+              disabled
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tên đầy đủ
+              Số dư USDT
             </label>
             <input
               type="text"
-              defaultValue="Crypto Trader"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+              value={`$${user?.balance?.toLocaleString() || 0} USDT`}
+              disabled
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 font-semibold"
             />
           </div>
         </div>

@@ -1,129 +1,147 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   TrendingUp,
   TrendingDown,
-  ShoppingCart,
-  DollarSign,
+  AlertCircle,
+  CheckCircle,
 } from "lucide-react";
-
-// Mock data - sẽ thay bằng data thực từ CoinGecko API
-const mockCoins = [
-  {
-    symbol: "BTC",
-    name: "Bitcoin",
-    price: 67500,
-    change: 5.32,
-    icon: "₿",
-    volume: "28.5B",
-  },
-  {
-    symbol: "ETH",
-    name: "Ethereum",
-    price: 3450,
-    change: 3.87,
-    icon: "Ξ",
-    volume: "15.2B",
-  },
-  {
-    symbol: "BNB",
-    name: "Binance Coin",
-    price: 605,
-    change: 4.31,
-    icon: "B",
-    volume: "2.8B",
-  },
-  {
-    symbol: "SOL",
-    name: "Solana",
-    price: 145,
-    change: -2.15,
-    icon: "◎",
-    volume: "3.5B",
-  },
-  {
-    symbol: "XRP",
-    name: "Ripple",
-    price: 0.75,
-    change: 1.23,
-    icon: "X",
-    volume: "1.9B",
-  },
-  {
-    symbol: "ADA",
-    name: "Cardano",
-    price: 0.58,
-    change: -1.45,
-    icon: "₳",
-    volume: "850M",
-  },
-  {
-    symbol: "DOGE",
-    name: "Dogecoin",
-    price: 0.12,
-    change: 2.87,
-    icon: "Ð",
-    volume: "1.2B",
-  },
-  {
-    symbol: "DOT",
-    name: "Polkadot",
-    price: 7.85,
-    change: 0.56,
-    icon: "●",
-    volume: "650M",
-  },
-];
+import { useAuth } from "../hooks/useAuth";
+import { marketAPI, tradeAPI } from "../services/api";
 
 const Trade = () => {
-  const [tradeType, setTradeType] = useState("buy"); // 'buy' or 'sell'
-  const [selectedCoin, setSelectedCoin] = useState(mockCoins[0]);
+  const { user, refreshUser } = useAuth();
+  const [tradeType, setTradeType] = useState("buy");
+  const [coins, setCoins] = useState([]);
+  const [selectedCoin, setSelectedCoin] = useState(null);
   const [amount, setAmount] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [trading, setTrading] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
 
-  const userBalance = 1000; // USDT balance
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  const filteredCoins = mockCoins.filter(
+  const fetchData = async () => {
+    try {
+      const coinsRes = await marketAPI.getPrices();
+      if (coinsRes.success) {
+        const coinsList = coinsRes.data;
+        setCoins(coinsList);
+        if (coinsList.length > 0) setSelectedCoin(coinsList[0]);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const userBalance = user?.balance || 0;
+
+  const filteredCoins = coins.filter(
     (coin) =>
       coin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       coin.symbol.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const calculateTotal = () => {
+    if (!selectedCoin) return 0;
     return (parseFloat(amount) || 0) * selectedCoin.price;
   };
 
-  const handleTrade = (e) => {
+  const handleTrade = async (e) => {
     e.preventDefault();
-    // Mock trade execution - sẽ kết nối backend sau
-    console.log("Trade executed:", {
-      type: tradeType,
-      coin: selectedCoin.symbol,
-      amount: amount,
-      total: calculateTotal(),
-    });
-    alert(
-      `${tradeType === "buy" ? "Mua" : "Bán"} ${amount} ${
-        selectedCoin.symbol
-      } thành công!`
-    );
-    setAmount("");
+    if (!selectedCoin || !amount || parseFloat(amount) <= 0) {
+      setMessage({ type: "error", text: "Vui lòng nhập số lượng hợp lệ" });
+      return;
+    }
+
+    setTrading(true);
+    setMessage({ type: "", text: "" });
+
+    try {
+      const tradeData = {
+        symbol: selectedCoin.symbol,
+        coinId: selectedCoin.coinId,
+        amount: parseFloat(amount),
+      };
+
+      let response;
+      if (tradeType === "buy") {
+        response = await tradeAPI.buy(tradeData);
+      } else {
+        response = await tradeAPI.sell(tradeData);
+      }
+
+      if (response.success) {
+        setMessage({
+          type: "success",
+          text: `${tradeType === "buy" ? "Mua" : "Bán"} ${amount} ${
+            selectedCoin.symbol
+          } thành công!`,
+        });
+        setAmount("");
+        await refreshUser();
+        await fetchData();
+      } else {
+        setMessage({ type: "error", text: response.message });
+      }
+    } catch (error) {
+      setMessage({ type: "error", text: error.message });
+    } finally {
+      setTrading(false);
+    }
   };
 
   const setMaxAmount = () => {
+    if (!selectedCoin) return;
     if (tradeType === "buy") {
       const maxAmount = (userBalance / selectedCoin.price).toFixed(8);
       setAmount(maxAmount);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Đang tải dữ liệu...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-800">Trade</h1>
-        <p className="text-gray-600 mt-1">Mua và bán crypto ảo</p>
+        <p className="text-gray-600 mt-1">
+          Mua và bán crypto ảo • Số dư: <span className="font-semibold text-blue-600">${userBalance.toFixed(2)}</span>
+        </p>
       </div>
+
+      {/* Message */}
+      {message.text && (
+        <div
+          className={`flex items-center gap-3 p-4 rounded-lg ${
+            message.type === "success"
+              ? "bg-green-50 border border-green-200 text-green-700"
+              : "bg-red-50 border border-red-200 text-red-700"
+          }`}
+        >
+          {message.type === "success" ? (
+            <CheckCircle className="w-5 h-5" />
+          ) : (
+            <AlertCircle className="w-5 h-5" />
+          )}
+          <span>{message.text}</span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Trading Form */}
@@ -196,7 +214,7 @@ const Trade = () => {
             <form onSubmit={handleTrade} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Số lượng {selectedCoin.symbol}
+                  Số lượng {selectedCoin?.symbol || ""}
                 </label>
                 <div className="relative">
                   <input
@@ -207,14 +225,18 @@ const Trade = () => {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
                     placeholder="0.00"
                     required
+                    disabled={trading}
                   />
-                  <button
-                    type="button"
-                    onClick={setMaxAmount}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-600 text-sm font-semibold hover:text-purple-700"
-                  >
-                    MAX
-                  </button>
+                  {tradeType === "buy" && (
+                    <button
+                      type="button"
+                      onClick={setMaxAmount}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-600 text-sm font-semibold hover:text-purple-700 disabled:opacity-50"
+                      disabled={trading}
+                    >
+                      MAX
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -244,18 +266,23 @@ const Trade = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                className={`w-full py-4 rounded-lg font-bold text-white transition-all shadow-lg hover:shadow-xl ${
+                disabled={trading || !selectedCoin || !amount}
+                className={`w-full py-4 rounded-lg font-bold text-white transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed ${
                   tradeType === "buy"
                     ? "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
                     : "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
                 }`}
               >
-                <div className="flex items-center justify-center space-x-2">
-                  <ShoppingCart className="w-5 h-5" />
+                {trading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Đang xử lý...</span>
+                  </div>
+                ) : (
                   <span>
-                    {tradeType === "buy" ? "Mua" : "Bán"} {selectedCoin.symbol}
+                    {tradeType === "buy" ? "Mua" : "Bán"} {selectedCoin?.symbol || ""}
                   </span>
-                </div>
+                )}
               </button>
             </form>
           </div>

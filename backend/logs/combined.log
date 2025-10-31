@@ -2684,3 +2684,544 @@
 2025-10-30 23:23:29 [trade-service] INFO: SIGINT received, deregistering service...
 2025-10-30 23:23:29 [portfolio-service] INFO: SIGINT received, deregistering service...
 2025-10-30 23:23:29 [market-service] INFO: ✅ Service deregistered from Consul: market-service-3002
+2025-10-31 23:57:00 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-31 23:57:00 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-10-31 23:57:00 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-10-31 23:57:02 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-31 23:57:02 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-31 23:57:02 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-10-31 23:57:02 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-10-31 23:57:02 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-31 23:57:02 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-31 23:57:02 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   👤 USER SERVICE STARTED                            ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-10-31 23:57:02 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-10-31 23:57:02 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-31 23:57:02 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-31 23:57:02 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-10-31 23:57:02 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-10-31 23:57:02 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-10-31 23:57:02 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-10-31 23:57:02 [notification-service] INFO: 🕒 Price alert checker started
+2025-10-31 23:57:02 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-10-31 23:57:02 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-10-31 23:58:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-10-31 23:59:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:00:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:00:10 [notification-service] ERROR: ❌ Error cleaning up notifications: Operation `notifications.deleteMany()` buffering timed out after 10000ms
+2025-11-01 00:01:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:01:49 [notification-service] INFO: SIGINT received, deregistering service...
+2025-11-01 00:01:49 [market-service] INFO: SIGINT received, deregistering service...
+2025-11-01 00:01:49 [api-gateway] INFO: SIGINT signal received: closing HTTP server
+2025-11-01 00:01:49 [portfolio-service] INFO: SIGINT received, deregistering service...
+2025-11-01 00:01:49 [user-service] INFO: SIGINT received, deregistering service...
+2025-11-01 00:01:49 [trade-service] INFO: SIGINT received, deregistering service...
+2025-11-01 00:01:49 [market-service] INFO: ✅ Service deregistered from Consul: market-service-3002
+2025-11-01 00:05:44 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-01 00:05:55 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-11-01 00:05:55 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:05:55 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   👤 USER SERVICE STARTED                            ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:05:55 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-11-01 00:06:06 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-01 00:06:06 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-11-01 00:06:17 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-11-01 00:06:17 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:06:17 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:06:17 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-11-01 00:06:25 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-11-01 00:06:25 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:06:25 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:06:25 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-11-01 00:06:32 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-11-01 00:06:32 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:06:32 [notification-service] INFO: 🕒 Price alert checker started
+2025-11-01 00:06:32 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:06:32 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-11-01 00:07:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:08:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:08:16 [api-gateway] INFO: ::1 - - [31/Oct/2025:17:08:16 +0000] "GET /api/portfolio HTTP/1.1" 401 66 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+2025-11-01 00:08:16 [api-gateway] INFO: ::1 - - [31/Oct/2025:17:08:16 +0000] "GET /api/portfolio HTTP/1.1" 401 66 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+2025-11-01 00:08:16 [api-gateway] INFO: ✅ Discovered market-service at http://localhost:3002 via Consul
+2025-11-01 00:08:16 [market-service] INFO: GET /prices
+2025-11-01 00:08:16 [market-service] INFO: ✅ Fetched prices for 8 coins from CoinGecko
+2025-11-01 00:08:16 [api-gateway] INFO: ::1 - - [31/Oct/2025:17:08:16 +0000] "GET /api/market/prices HTTP/1.1" 200 1672 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+2025-11-01 00:08:16 [market-service] INFO: GET /prices
+2025-11-01 00:08:16 [api-gateway] INFO: ::1 - - [31/Oct/2025:17:08:16 +0000] "GET /api/market/prices HTTP/1.1" 200 1661 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+2025-11-01 00:09:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:09:47 [api-gateway] INFO: ✅ Discovered user-service at http://localhost:3001 via Consul
+2025-11-01 00:10:02 [api-gateway] INFO: ::1 - - [31/Oct/2025:17:10:02 +0000] "POST /api/users/register HTTP/1.1" - - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+2025-11-01 00:10:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:10:45 [api-gateway] INFO: ::1 - - [31/Oct/2025:17:10:45 +0000] "GET /health HTTP/1.1" 200 149 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.6899"
+2025-11-01 00:11:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:11:36 [api-gateway] INFO: ✅ Discovered user-service at http://localhost:3001 via Consul
+2025-11-01 00:12:06 [api-gateway] INFO: ::1 - - [31/Oct/2025:17:12:06 +0000] "POST /api/users/register HTTP/1.1" - - "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.6899"
+2025-11-01 00:12:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:12:26 [user-service] INFO: POST /register
+2025-11-01 00:12:36 [user-service] ERROR: ❌ Register error: Operation `users.findOne()` buffering timed out after 10000ms
+2025-11-01 00:13:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:14:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:14:55 [user-service] ERROR: ❌ Error: request aborted
+2025-11-01 00:15:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:16:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:16:55 [user-service] ERROR: ❌ Error: request aborted
+2025-11-01 00:17:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:18:06 [user-service] INFO: SIGINT received, deregistering service...
+2025-11-01 00:18:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:18:12 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-11-01 00:18:12 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:18:12 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   👤 USER SERVICE STARTED                            ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:18:12 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-11-01 00:19:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:19:32 [user-service] INFO: POST /register
+2025-11-01 00:19:42 [user-service] ERROR: ❌ Register error: Operation `users.findOne()` buffering timed out after 10000ms
+2025-11-01 00:20:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:20:22 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-11-01 00:20:22 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:21:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:21:18 [user-service] INFO: SIGINT received, deregistering service...
+2025-11-01 00:21:23 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-11-01 00:21:23 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:21:24 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   👤 USER SERVICE STARTED                            ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:21:24 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-11-01 00:21:46 [user-service] INFO: POST /register
+2025-11-01 00:21:56 [user-service] ERROR: ❌ Register error: Operation `users.findOne()` buffering timed out after 10000ms
+2025-11-01 00:22:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:23:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:23:15 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-11-01 00:23:15 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:24:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:25:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:25:22 [user-service] INFO: SIGINT received, deregistering service...
+2025-11-01 00:25:28 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-11-01 00:25:28 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:25:29 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   👤 USER SERVICE STARTED                            ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:25:29 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-11-01 00:25:35 [user-service] INFO: POST /register
+2025-11-01 00:25:45 [user-service] ERROR: ❌ Register error: Operation `users.findOne()` buffering timed out after 10000ms
+2025-11-01 00:26:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:26:57 [user-service] INFO: SIGINT received, deregistering service...
+2025-11-01 00:27:03 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-11-01 00:27:03 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:27:03 [user-service] INFO: 🔍 Mongoose connection state: 0
+2025-11-01 00:27:03 [user-service] INFO: 🔍 Connection name: undefined
+2025-11-01 00:27:04 [user-service] INFO: 🔍 Mongoose state after wait: 0
+2025-11-01 00:27:04 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   👤 USER SERVICE STARTED                            ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:27:04 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-11-01 00:27:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:28:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:29:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:30:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:31:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:31:43 [user-service] INFO: SIGINT received, deregistering service...
+2025-11-01 00:31:49 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-11-01 00:31:49 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:31:49 [user-service] INFO: 🔍 Mongoose connection state: 1
+2025-11-01 00:31:49 [user-service] INFO: 🔍 Connection name: crypto_trading_soa
+2025-11-01 00:31:49 [user-service] INFO: 🔍 Mongoose state after wait: 1
+2025-11-01 00:31:49 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   👤 USER SERVICE STARTED                            ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:31:49 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-11-01 00:32:00 [user-service] INFO: POST /register
+2025-11-01 00:32:01 [user-service] INFO: ✅ New user registered: user1@test.com
+2025-11-01 00:32:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:33:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:34:10 [notification-service] ERROR: ❌ Check price alerts error: Operation `pricealerts.find()` buffering timed out after 10000ms
+2025-11-01 00:34:37 [market-service] INFO: SIGINT received, deregistering service...
+2025-11-01 00:34:37 [market-service] INFO: ✅ Service deregistered from Consul: market-service-3002
+2025-11-01 00:34:41 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-01 00:34:41 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-11-01 00:34:50 [portfolio-service] INFO: SIGINT received, deregistering service...
+2025-11-01 00:34:53 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-11-01 00:34:53 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:34:53 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:34:53 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-11-01 00:34:55 [trade-service] INFO: SIGINT received, deregistering service...
+2025-11-01 00:34:58 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-11-01 00:34:58 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:34:58 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:34:58 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-11-01 00:34:59 [notification-service] INFO: SIGINT received, deregistering service...
+2025-11-01 00:35:04 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-11-01 00:35:04 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:35:04 [notification-service] INFO: 🕒 Price alert checker started
+2025-11-01 00:35:04 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:35:04 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-11-01 00:35:34 [api-gateway] INFO: ✅ Discovered user-service at http://localhost:3001 via Consul
+2025-11-01 00:35:49 [api-gateway] INFO: ::1 - - [31/Oct/2025:17:35:49 +0000] "POST /api/users/register HTTP/1.1" - - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+2025-11-01 00:37:06 [api-gateway] INFO: ✅ Discovered user-service at http://localhost:3001 via Consul
+2025-11-01 00:37:21 [api-gateway] INFO: ::1 - - [31/Oct/2025:17:37:21 +0000] "POST /api/users/login HTTP/1.1" - - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+2025-11-01 00:37:41 [api-gateway] INFO: ::1 - - [31/Oct/2025:17:37:41 +0000] "POST /api/users/login HTTP/1.1" - - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+2025-11-01 00:38:28 [api-gateway] INFO: ::1 - - [31/Oct/2025:17:38:28 +0000] "GET /health HTTP/1.1" 200 149 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.6899"
+2025-11-01 00:40:49 [user-service] ERROR: ❌ Error: request aborted
+2025-11-01 00:40:59 [api-gateway] INFO: ✅ Discovered user-service at http://localhost:3001 via Consul
+2025-11-01 00:42:19 [user-service] ERROR: ❌ Error: request aborted
+2025-11-01 00:42:49 [user-service] ERROR: ❌ Error: request aborted
+2025-11-01 00:43:10 [api-gateway] INFO: ::1 - - [31/Oct/2025:17:43:10 +0000] "POST /api/users/register HTTP/1.1" - - "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.6899"
+2025-11-01 00:44:42 [user-service] ERROR: ❌ Error: request aborted
+2025-11-01 00:45:15 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-01 00:46:13 [api-gateway] INFO: ✅ Discovered user-service at http://localhost:3001 via Consul
+2025-11-01 00:46:28 [api-gateway] INFO: ::1 - - [31/Oct/2025:17:46:28 +0000] "POST /api/users/register HTTP/1.1" - - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+2025-11-01 00:47:08 [api-gateway] INFO: SIGINT signal received: closing HTTP server
+2025-11-01 00:47:08 [user-service] ERROR: ❌ Error: request aborted
+2025-11-01 00:48:07 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-11-01 00:48:07 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:48:07 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   👤 USER SERVICE STARTED                            ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:48:07 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-11-01 00:49:34 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-01 00:49:34 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-11-01 00:49:49 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-01 00:50:14 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-11-01 00:50:14 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:50:14 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:50:14 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-11-01 00:50:20 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-11-01 00:50:20 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:50:20 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:50:20 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-11-01 00:50:26 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-11-01 00:50:26 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:50:26 [notification-service] INFO: 🕒 Price alert checker started
+2025-11-01 00:50:26 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:50:26 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-11-01 00:50:53 [api-gateway] INFO: 🔀 Proxy: /api/users/register -> user-services/register
+2025-11-01 00:50:53 [user-service] INFO: POST /s/register
+2025-11-01 00:50:53 [api-gateway] INFO: ✅ Response from user-service: 404
+2025-11-01 00:50:53 [api-gateway] INFO: ::1 - - [31/Oct/2025:17:50:53 +0000] "POST /api/users/register HTTP/1.1" 404 150 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+2025-11-01 00:51:52 [user-service] INFO: SIGINT received, deregistering service...
+2025-11-01 00:52:16 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-11-01 00:52:16 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:52:16 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   👤 USER SERVICE STARTED                            ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:52:16 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-11-01 00:52:26 [api-gateway] INFO: SIGINT signal received: closing HTTP server
+2025-11-01 00:52:29 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-01 00:52:51 [api-gateway] INFO: 📤 Proxying to user-service: POST s/register
+2025-11-01 00:53:06 [api-gateway] INFO: ::1 - - [31/Oct/2025:17:53:06 +0000] "POST /api/users/register HTTP/1.1" - - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+2025-11-01 00:53:34 [user-service] INFO: SIGINT received, deregistering service...
+2025-11-01 00:54:22 [user-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-11-01 00:54:22 [user-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:54:22 [user-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   👤 USER SERVICE STARTED                            ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:54:22 [user-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-11-01 00:54:35 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-01 00:54:48 [market-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-01 00:54:49 [market-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-11-01 00:54:56 [portfolio-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-11-01 00:54:56 [portfolio-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:54:56 [portfolio-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:54:56 [portfolio-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-11-01 00:55:02 [trade-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-11-01 00:55:02 [trade-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:55:02 [trade-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:55:02 [trade-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-11-01 00:55:09 [notification-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-11-01 00:55:09 [notification-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-01 00:55:09 [notification-service] INFO: 🕒 Price alert checker started
+2025-11-01 00:55:09 [notification-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Enabled                         ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-01 00:55:09 [notification-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-11-01 00:55:42 [api-gateway] INFO: 📤 Proxying to user-service: POST s/register
+2025-11-01 00:55:57 [api-gateway] INFO: ::1 - - [31/Oct/2025:17:55:57 +0000] "POST /api/users/register HTTP/1.1" - - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+2025-11-01 00:56:06 [user-service] ERROR: ❌ Error: request aborted

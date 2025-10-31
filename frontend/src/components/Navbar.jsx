@@ -1,11 +1,14 @@
 import { Bell, User, Wallet, LogOut } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 const Navbar = () => {
-  // Mock data - sẽ thay bằng data thực từ backend sau
-  const user = {
-    email: "user@example.com",
-    balance: 1000,
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/auth");
   };
 
   return (
@@ -30,7 +33,7 @@ const Navbar = () => {
               <div className="flex flex-col">
                 <span className="text-xs text-gray-600">Số dư</span>
                 <span className="text-sm font-semibold text-gray-800">
-                  ${user.balance.toLocaleString()} USDT
+                  ${user?.balance?.toLocaleString() || '0'} USDT
                 </span>
               </div>
             </div>
@@ -45,14 +48,18 @@ const Navbar = () => {
             <div className="flex items-center space-x-3">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-medium text-gray-800">
-                  {user.email}
+                  {user?.email || 'Guest'}
                 </p>
                 <p className="text-xs text-gray-500">Trader</p>
               </div>
               <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
                 <User className="w-6 h-6 text-white" />
               </div>
-              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+              <button 
+                onClick={handleLogout}
+                className="p-2 text-gray-600 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors"
+                title="Đăng xuất"
+              >
                 <LogOut className="w-5 h-5" />
               </button>
             </div>

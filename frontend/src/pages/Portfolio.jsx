@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   PieChart,
   Pie,
@@ -6,91 +7,63 @@ import {
   Legend,
   Tooltip,
 } from "recharts";
-import { TrendingUp, TrendingDown, Plus } from "lucide-react";
+import { TrendingUp, TrendingDown, Plus, RefreshCw } from "lucide-react";
 import { Link } from "react-router-dom";
+import { portfolioAPI } from "../services/api";
 
-// Mock data - sẽ thay bằng data thực từ backend
-const mockPortfolio = [
-  {
-    symbol: "BTC",
-    name: "Bitcoin",
-    amount: 0.5,
-    avgPrice: 65000,
-    currentPrice: 67500,
-    icon: "₿",
-    color: "#3b82f6",
-  },
-  {
-    symbol: "ETH",
-    name: "Ethereum",
-    amount: 2.5,
-    avgPrice: 3200,
-    currentPrice: 3450,
-    icon: "Ξ",
-    color: "#8b5cf6",
-  },
-  {
-    symbol: "BNB",
-    name: "Binance Coin",
-    amount: 5,
-    avgPrice: 580,
-    currentPrice: 605,
-    icon: "B",
-    color: "#f59e0b",
-  },
-  {
-    symbol: "SOL",
-    name: "Solana",
-    amount: 10,
-    avgPrice: 140,
-    currentPrice: 145,
-    icon: "◎",
-    color: "#10b981",
-  },
-  {
-    symbol: "XRP",
-    name: "Ripple",
-    amount: 1000,
-    avgPrice: 0.7,
-    currentPrice: 0.75,
-    icon: "X",
-    color: "#ef4444",
-  },
-];
+const COLORS = ["#3b82f6", "#8b5cf6", "#f59e0b", "#10b981", "#ef4444", "#06b6d4", "#ec4899", "#84cc16"];
 
 const Portfolio = () => {
-  // Calculate portfolio data
-  const portfolioData = mockPortfolio.map((coin) => {
-    const totalValue = coin.amount * coin.currentPrice;
-    const totalCost = coin.amount * coin.avgPrice;
-    const profit = totalValue - totalCost;
-    const profitPercent = ((profit / totalCost) * 100).toFixed(2);
+  const [portfolio, setPortfolio] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-    return {
-      ...coin,
-      totalValue,
-      totalCost,
-      profit,
-      profitPercent,
-    };
-  });
+  useEffect(() => {
+    fetchPortfolio();
+  }, []);
 
-  const totalPortfolioValue = portfolioData.reduce(
-    (sum, coin) => sum + coin.totalValue,
-    0
-  );
-  const totalInvested = portfolioData.reduce(
-    (sum, coin) => sum + coin.totalCost,
-    0
-  );
-  const totalProfit = totalPortfolioValue - totalInvested;
-  const totalProfitPercent = ((totalProfit / totalInvested) * 100).toFixed(2);
+  const fetchPortfolio = async () => {
+    try {
+      const response = await portfolioAPI.getPortfolio();
+      if (response.success) {
+        setPortfolio(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching portfolio:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchPortfolio();
+    setRefreshing(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Đang tải danh mục...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const holdings = portfolio?.holdings || [];
+  const summary = portfolio?.summary || {};
+  const totalPortfolioValue = summary.totalValue || 0;
+  const totalInvested = summary.totalInvested || 0;
+  const totalProfit = summary.totalProfit || 0;
+  const totalProfitPercent = summary.profitPercentage || 0;
 
   // Data for pie chart
-  const pieData = portfolioData.map((coin) => ({
+  const pieData = holdings.map((coin, index) => ({
     name: coin.symbol,
-    value: coin.totalValue,
-    color: coin.color,
+    value: coin.currentValue,
+    color: COLORS[index % COLORS.length],
   }));
 
   return (
@@ -101,12 +74,21 @@ const Portfolio = () => {
           <h1 className="text-3xl font-bold text-gray-800">Portfolio</h1>
           <p className="text-gray-600 mt-1">Quản lý danh mục đầu tư của bạn</p>
         </div>
-        <Link to="/trade">
-          <button className="flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg">
-            <Plus className="w-5 h-5" />
-            <span>Giao dịch</span>
+        <div className="flex gap-3">
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
           </button>
-        </Link>
+          <Link to="/trade">
+            <button className="flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg">
+              <Plus className="w-5 h-5" />
+              <span>Giao dịch</span>
+            </button>
+          </Link>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -154,7 +136,7 @@ const Portfolio = () => {
         <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
           <p className="text-gray-600 text-sm mb-2">Số lượng coin</p>
           <h3 className="text-3xl font-bold text-gray-800 mb-1">
-            {portfolioData.length}
+            {holdings.length}
           </h3>
           <p className="text-xs text-gray-500">Đa dạng hóa danh mục</p>
         </div>
@@ -196,29 +178,37 @@ const Portfolio = () => {
           <h2 className="text-xl font-bold text-gray-800 mb-4">
             Tổng quan nắm giữ
           </h2>
-          <div className="space-y-3">
-            {portfolioData.map((coin) => (
-              <div
-                key={coin.symbol}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-              >
-                <div className="flex items-center space-x-3">
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white text-lg font-bold"
-                    style={{ backgroundColor: coin.color }}
-                  >
-                    {coin.icon}
+          {holdings.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p>Chưa có coin nào trong danh mục</p>
+              <Link to="/trade" className="text-blue-600 hover:underline mt-2 inline-block">
+                Bắt đầu giao dịch →
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {holdings.map((coin, index) => (
+                <div
+                  key={coin.symbol}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-white text-lg font-bold"
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    >
+                      {coin.symbol.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800">{coin.symbol}</p>
+                      <p className="text-xs text-gray-500">
+                        {coin.amount} {coin.symbol}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-gray-800">{coin.symbol}</p>
-                    <p className="text-xs text-gray-500">
-                      {coin.amount} {coin.symbol}
-                    </p>
-                  </div>
-                </div>
                 <div className="text-right">
                   <p className="font-semibold text-gray-800">
-                    ${coin.totalValue.toFixed(2)}
+                    ${coin.currentValue.toFixed(2)}
                   </p>
                   <p
                     className={`text-xs ${
@@ -226,12 +216,13 @@ const Portfolio = () => {
                     }`}
                   >
                     {coin.profit >= 0 ? "+" : ""}
-                    {coin.profitPercent}%
+                    {coin.profitPercentage?.toFixed(2)}%
                   </p>
                 </div>
               </div>
             ))}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -265,7 +256,7 @@ const Portfolio = () => {
               </tr>
             </thead>
             <tbody>
-              {portfolioData.map((coin) => (
+              {holdings.map((coin, index) => (
                 <tr
                   key={coin.symbol}
                   className="border-b border-gray-100 hover:bg-gray-50 transition"
@@ -274,9 +265,9 @@ const Portfolio = () => {
                     <div className="flex items-center space-x-3">
                       <div
                         className="w-10 h-10 rounded-full flex items-center justify-center text-white text-lg font-bold"
-                        style={{ backgroundColor: coin.color }}
+                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
                       >
-                        {coin.icon}
+                        {coin.symbol.charAt(0)}
                       </div>
                       <div>
                         <p className="font-semibold text-gray-800">
@@ -290,13 +281,13 @@ const Portfolio = () => {
                     {coin.amount}
                   </td>
                   <td className="text-right py-4 px-4 text-gray-800">
-                    ${coin.avgPrice.toLocaleString()}
+                    ${coin.averageBuyPrice.toLocaleString()}
                   </td>
                   <td className="text-right py-4 px-4 font-semibold text-gray-800">
                     ${coin.currentPrice.toLocaleString()}
                   </td>
                   <td className="text-right py-4 px-4 font-semibold text-gray-800">
-                    ${coin.totalValue.toFixed(2)}
+                    ${coin.currentValue.toFixed(2)}
                   </td>
                   <td className="text-right py-4 px-4">
                     <div
@@ -316,7 +307,7 @@ const Portfolio = () => {
                       </span>
                       <span>
                         ({coin.profit >= 0 ? "+" : ""}
-                        {coin.profitPercent}%)
+                        {coin.profitPercentage?.toFixed(2)}%)
                       </span>
                     </div>
                   </td>
