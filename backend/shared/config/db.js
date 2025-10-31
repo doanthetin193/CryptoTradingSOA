@@ -6,14 +6,20 @@ const logger = require('../utils/logger');
  * @param {string} dbUri - MongoDB connection string
  */
 const connectDB = async (dbUri) => {
+  // Nếu đã connected rồi thì return
+  if (mongoose.connection.readyState === 1) {
+    logger.info('✅ MongoDB already connected');
+    return mongoose;
+  }
+
   try {
-    const conn = await mongoose.connect(dbUri, {
+    await mongoose.connect(dbUri, {
       serverSelectionTimeoutMS: 30000,
       socketTimeoutMS: 45000,
     });
 
-    logger.info(`✅ MongoDB Connected: ${conn.connection.host}`);
-    logger.info(`📦 Database: ${conn.connection.name}`);
+    logger.info(`✅ MongoDB Connected: ${mongoose.connection.host}`);
+    logger.info(`📦 Database: ${mongoose.connection.name}`);
     
     // Handle connection events
     mongoose.connection.on('error', (err) => {
@@ -31,11 +37,13 @@ const connectDB = async (dbUri) => {
       process.exit(0);
     });
 
-    return conn;
+    return mongoose;
   } catch (error) {
     logger.error(`❌ MongoDB connection failed: ${error.message}`);
     process.exit(1);
   }
 };
 
+// Export both connectDB and mongoose instance
 module.exports = connectDB;
+module.exports.mongoose = mongoose;

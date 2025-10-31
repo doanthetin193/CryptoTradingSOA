@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const { mongoose } = require('../../../shared/config/db');
 
 /**
  * Notification Schema - Collection: notifications

@@ -8,9 +8,7 @@
     "start:portfolio": "cd services/portfolio-service && npm start",
     "start:trade": "cd services/trade-service && npm start",
     "start:notification": "cd services/notification-service && npm start",
-    "start:gateway": "cd api-gateway && npm start",
-    "start:all": "concurrently \"npm run start:user\" \"npm run start:market\" \"npm run start:portfolio\" \"npm run start:trade\" \"npm run start:notification\" \"npm run start:gateway\"",
-    "dev": "npm run start:all"
+    "start:gateway": "cd api-gateway && npm start"
   },
   "keywords": [],
   "author": "",

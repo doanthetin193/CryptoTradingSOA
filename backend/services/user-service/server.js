@@ -5,6 +5,9 @@ const userRoutes = require('./routes/userRoutes');
 const ServiceRegistry = require('./utils/registerService');
 const logger = require('../../shared/utils/logger');
 
+// Load models before routes
+require('./models/User');
+
 // Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -43,7 +46,12 @@ app.use((err, req, res, next) => {
 // Start Server
 // ===========================
 const startServer = async () => {
-  await connectDB(process.env.MONGODB_URI);
+  try {
+    await connectDB(process.env.MONGODB_URI);
+  } catch (error) {
+    logger.error(`❌ MongoDB connection failed: ${error.message}`);
+    process.exit(1);
+  }
 
   app.listen(PORT, async () => {
     logger.info(`

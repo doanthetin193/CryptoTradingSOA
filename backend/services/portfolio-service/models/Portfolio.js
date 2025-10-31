@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const { mongoose } = require('../../../shared/config/db');
 
 /**
  * Portfolio Schema - Collection: portfolios

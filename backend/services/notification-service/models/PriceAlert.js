@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const { mongoose } = require('../../../shared/config/db');
 
 /**
  * Price Alert Schema - Collection: price_alerts
