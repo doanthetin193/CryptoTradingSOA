@@ -3,7 +3,7 @@ const express = require('express');
 const cron = require('node-cron');
 const connectDB = require('../../shared/config/db');
 const notificationRoutes = require('./routes/notificationRoutes');
-const notificationController = require('./controllers/notificationController');
+const priceAlertChecker = require('./utils/priceAlertChecker');
 const ServiceRegistry = require('./utils/registerService');
 const logger = require('../../shared/utils/logger');
 
@@ -50,10 +50,11 @@ const startServer = async () => {
 
   // Background Jobs
   if (process.env.ENABLE_PRICE_ALERTS === 'true') {
+    // Check price alerts every minute
     cron.schedule('* * * * *', async () => {
-      await notificationController.checkPriceAlerts();
+      await priceAlertChecker.checkPriceAlerts();
     });
-    logger.info('🕒 Price alert checker started');
+    logger.info('🕒 Price alert checker started (every minute)');
   }
 
   cron.schedule('0 0 * * *', async () => {

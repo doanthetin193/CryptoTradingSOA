@@ -1,6 +1,7 @@
 const axios = require('axios');
 const Joi = require('joi');
 const logger = require('../../shared/utils/logger');
+const websocket = require('../../shared/utils/websocket');
 
 /**
  * Trade Orchestration
@@ -175,6 +176,18 @@ exports.buyCoin = async (req, res) => {
       }
     ).catch(err => logger.warn(`Failed to send notification: ${err.message}`));
 
+    // STEP 7: Send real-time WebSocket notification
+    logger.info(`🔄 [BUY] Step 7: Sending WebSocket notification`);
+    websocket.sendTradeConfirmation(userId, {
+      type: 'buy',
+      symbol,
+      amount,
+      price: currentPrice,
+      totalCost: finalCost,
+      newBalance,
+      timestamp: new Date(),
+    });
+
     logger.info(`✅ [BUY] Completed: ${amount} ${symbol} for user ${userId}`);
 
     res.status(200).json({
@@ -334,6 +347,19 @@ exports.sellCoin = async (req, res) => {
         headers: { 'X-User-Id': userId },
       }
     ).catch(err => logger.warn(`Failed to send notification: ${err.message}`));
+
+    // STEP 8: Send real-time WebSocket notification
+    logger.info(`🔄 [SELL] Step 8: Sending WebSocket notification`);
+    websocket.sendTradeConfirmation(userId, {
+      type: 'sell',
+      symbol,
+      amount,
+      price: currentPrice,
+      totalProceeds: finalProceeds,
+      profitLoss,
+      newBalance,
+      timestamp: new Date(),
+    });
 
     logger.info(`✅ [SELL] Completed: ${amount} ${symbol} for user ${userId}`);
 
