@@ -5,9 +5,10 @@ const router = express.Router();
 
 /**
  * Trade Service Routes
+ * CHỈ quản lý trade records - không có business logic
  */
 
-// Health check (must be before /:tradeId to avoid conflict)
+// Health check
 router.get('/health', (req, res) => {
   res.json({
     success: true,
@@ -17,11 +18,8 @@ router.get('/health', (req, res) => {
   });
 });
 
-// Buy coin
-router.post('/buy', tradeController.buyCoin);
-
-// Sell coin
-router.post('/sell', tradeController.sellCoin);
+// Create trade record (Internal - called by API Gateway)
+router.post('/', tradeController.createTrade);
 
 // Get trade history
 router.get('/history', tradeController.getTradeHistory);
@@ -29,7 +27,7 @@ router.get('/history', tradeController.getTradeHistory);
 // Get trade statistics
 router.get('/stats', tradeController.getTradeStats);
 
-// Get specific trade (must be last to avoid catching other routes)
-router.get('/:tradeId', tradeController.getTradeById);
+// Get specific trade
+router.get('/:id', tradeController.getTradeById);
 
 module.exports = router;

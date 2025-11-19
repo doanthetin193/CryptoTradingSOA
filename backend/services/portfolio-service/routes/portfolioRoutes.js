@@ -7,21 +7,6 @@ const router = express.Router();
  * Portfolio Service Routes
  */
 
-// Get user portfolio
-router.get('/', portfolioController.getPortfolio);
-
-// Get portfolio summary
-router.get('/summary', portfolioController.getPortfolioSummary);
-
-// Get specific holding
-router.get('/holding/:symbol', portfolioController.getHolding);
-
-// Add or update holding (Internal - called by Trade Service)
-router.post('/holding', portfolioController.addHolding);
-
-// Reduce holding (Internal - called by Trade Service)
-router.put('/holding/reduce', portfolioController.reduceHolding);
-
 // Health check
 router.get('/health', (req, res) => {
   res.json({
@@ -31,5 +16,20 @@ router.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// Get user portfolio
+router.get('/', portfolioController.getPortfolio);
+
+// Update portfolio value (Internal - called by API Gateway)
+router.put('/value', portfolioController.updatePortfolioValue);
+
+// Get specific holding
+router.get('/holding/:symbol', portfolioController.getHolding);
+
+// Add holding (Internal - called by API Gateway)
+router.post('/holding', portfolioController.addHolding);
+
+// Reduce holding (Internal - called by API Gateway)
+router.put('/holding', portfolioController.reduceHolding);
 
 module.exports = router;

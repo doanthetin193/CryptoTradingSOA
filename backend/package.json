@@ -1,22 +1,43 @@
 {
-  "name": "crypto-trading-backend",
+  "name": "crypto-trading-soa-backend",
   "version": "1.0.0",
-  "description": "Backend for Crypto Trading SOA",
+  "description": "CryptoTrading SOA Backend - All services in one workspace",
+  "main": "index.js",
   "scripts": {
-    "start:user": "cd services/user-service && npm start",
-    "start:market": "cd services/market-service && npm start",
-    "start:portfolio": "cd services/portfolio-service && npm start",
-    "start:trade": "cd services/trade-service && npm start",
-    "start:notification": "cd services/notification-service && npm start",
-    "start:gateway": "cd api-gateway && npm start"
+    "start:gateway": "node api-gateway/server.js",
+    "start:user": "node services/user-service/server.js",
+    "start:market": "node services/market-service/server.js",
+    "start:portfolio": "node services/portfolio-service/server.js",
+    "start:trade": "node services/trade-service/server.js",
+    "start:notification": "node services/notification-service/server.js"
   },
-  "keywords": [],
+  "keywords": [
+    "soa",
+    "crypto",
+    "trading",
+    "backend"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "mongoose": "^8.19.2"
+    "axios": "^1.6.0",
+    "bcryptjs": "^2.4.3",
+    "consul": "^2.0.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "http-proxy-middleware": "^2.0.6",
+    "joi": "^17.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.2",
+    "morgan": "^1.10.0",
+    "node-cache": "^5.1.2",
+    "node-cron": "^4.2.1",
+    "winston": "^3.11.0"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "nodemon": "^3.0.2"
   }
 }

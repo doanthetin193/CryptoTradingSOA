@@ -7,7 +7,7 @@ const router = express.Router();
  * Notification Service Routes
  */
 
-// Health check (must be first to avoid conflict with /:notificationId)
+// Health check
 router.get('/health', (req, res) => {
   res.json({
     success: true,
@@ -17,24 +17,24 @@ router.get('/health', (req, res) => {
   });
 });
 
-// Send notification (Internal - called by other services)
+// Send notification (Internal - called by API Gateway)
 router.post('/send', notificationController.sendNotification);
 
 // Get user notifications
 router.get('/', notificationController.getNotifications);
 
-// Mark all as read (must be before /:notificationId/read)
+// Mark all as read
 router.put('/read-all', notificationController.markAllAsRead);
 
 // Mark notification as read
-router.put('/:notificationId/read', notificationController.markAsRead);
+router.put('/:id/read', notificationController.markAsRead);
 
 // Delete notification
-router.delete('/:notificationId', notificationController.deleteNotification);
+router.delete('/:id', notificationController.deleteNotification);
 
 // Price Alerts
-router.post('/alerts', notificationController.createPriceAlert);
+router.post('/alert', notificationController.createPriceAlert);
 router.get('/alerts', notificationController.getPriceAlerts);
-router.delete('/alerts/:alertId', notificationController.deletePriceAlert);
+router.delete('/alert/:id', notificationController.deletePriceAlert);
 
 module.exports = router;

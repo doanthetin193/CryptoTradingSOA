@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '../../', '.env') });
 const express = require('express');
 const cron = require('node-cron');
 const connectDB = require('../../shared/config/db');
@@ -9,7 +9,8 @@ const logger = require('../../shared/utils/logger');
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 3005;
+const PORT = process.env.NOTIFICATION_SERVICE_PORT || 3005;
+const SERVICE_NAME = 'notification-service';
 
 // ===========================
 // Middleware
@@ -76,7 +77,7 @@ const startServer = async () => {
     `);
 
     const serviceRegistry = new ServiceRegistry({
-      name: process.env.SERVICE_NAME || 'notification-service',
+      name: SERVICE_NAME,
       host: 'localhost',
       port: PORT,
       healthCheck: '/health',
