@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '../../', '.env') });
 const express = require('express');
 const connectDB = require('../../shared/config/db');
 const portfolioRoutes = require('./routes/portfolioRoutes');
@@ -7,7 +7,8 @@ const logger = require('../../shared/utils/logger');
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 3003;
+const PORT = process.env.PORTFOLIO_SERVICE_PORT || 3003;
+const SERVICE_NAME = 'portfolio-service';
 
 // ===========================
 // Middleware
@@ -56,7 +57,7 @@ const startServer = async () => {
     `);
 
     const serviceRegistry = new ServiceRegistry({
-      name: process.env.SERVICE_NAME || 'portfolio-service',
+      name: SERVICE_NAME,
       host: 'localhost',
       port: PORT,
       healthCheck: '/health',

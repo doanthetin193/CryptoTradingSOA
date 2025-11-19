@@ -140,3 +140,17 @@
 2025-11-01 00:44:42 [user-service] ERROR: ❌ Error: request aborted
 2025-11-01 00:47:08 [user-service] ERROR: ❌ Error: request aborted
 2025-11-01 00:56:06 [user-service] ERROR: ❌ Error: request aborted
+2025-11-19 16:25:52 [unknown-service] ERROR: ❌ Failed to register service with Consul: 
+2025-11-19 16:46:39 [unknown-service] ERROR: ❌ Failed to register service with Consul: 
+2025-11-19 17:03:24 [unknown-service] ERROR: ❌ Failed to register service with Consul: 
+2025-11-19 17:05:17 [unknown-service] ERROR: ❌ Failed to register service with Consul: 
+2025-11-19 17:05:18 [unknown-service] ERROR: ❌ Failed to register service with Consul: 
+2025-11-19 17:05:21 [unknown-service] ERROR: ❌ Failed to register service with Consul: 
+2025-11-19 17:05:23 [unknown-service] ERROR: ❌ Failed to register service with Consul: 
+2025-11-19 17:13:37 [unknown-service] ERROR: ❌ Failed to register service with Consul: 
+2025-11-19 17:29:15 [unknown-service] ERROR: ❌ Error: request aborted
+2025-11-19 17:31:20 [unknown-service] ERROR: ❌ Error: request aborted
+2025-11-19 17:33:33 [unknown-service] ERROR: ❌ Error: request aborted
+2025-11-19 17:37:38 [unknown-service] ERROR: ❌ Error: request aborted
+2025-11-19 17:37:38 [unknown-service] ERROR: ❌ Error: request aborted
+2025-11-19 17:51:35 [unknown-service] ERROR: ❌ Get prices error: read ECONNRESET

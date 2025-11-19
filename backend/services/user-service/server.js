@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '../../', '.env') });
 const express = require('express');
 const connectDB = require('../../shared/config/db');
 const userRoutes = require('./routes/userRoutes');
@@ -10,7 +10,8 @@ require('./models/User');
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.USER_SERVICE_PORT || 3001;
+const SERVICE_NAME = 'user-service';
 
 // ===========================
 // Middleware
@@ -64,7 +65,7 @@ const startServer = async () => {
     `);
 
     const serviceRegistry = new ServiceRegistry({
-      name: process.env.SERVICE_NAME || 'user-service',
+      name: SERVICE_NAME,
       host: 'localhost',
       port: PORT,
       healthCheck: '/health',

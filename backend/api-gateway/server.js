@@ -1,21 +1,23 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 
-// Import routes and middleware
-const apiRoutes = require('./routes');
-const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
-const serviceDiscovery = require('./utils/serviceDiscovery');
-
-// Logger setup
+// Import shared utilities and middleware
 const logger = require('../shared/utils/logger');
+const { errorHandler, notFoundHandler } = require('../shared/middleware/errorHandler');
+const { authMiddleware, optionalAuth } = require('../shared/middleware/auth');
+const serviceDiscovery = require('../shared/utils/serviceDiscovery');
+
+// Import orchestration
+const tradeOrchestration = require('./orchestration/tradeOrchestration');
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.API_GATEWAY_PORT || 3000;
 
 // ===========================
 // Middleware Configuration
@@ -31,10 +33,6 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
-
-// Body parser
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // HTTP request logger
 app.use(morgan('combined', {
@@ -57,6 +55,74 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 // ===========================
+// Proxy Configuration
+// ===========================
+
+/**
+ * Get service port by name
+ */
+function getServicePort(serviceName) {
+  const ports = {
+    'user-service': 3001,
+    'market-service': 3002,
+    'portfolio-service': 3003,
+    'trade-service': 3004,
+    'notification-service': 3005,
+  };
+  return ports[serviceName] || 3000;
+}
+
+/**
+ * Create static proxy for each service
+ */
+const createServiceProxy = (serviceName, apiPrefix) => {
+  return createProxyMiddleware({
+    target: `http://localhost:${getServicePort(serviceName)}`,
+    changeOrigin: true,
+    pathRewrite: (path, req) => {
+      // Remove /api/{prefix} from path
+      // /api/users/register -> /register
+      const newPath = path.replace(`/api/${apiPrefix}`, '');
+      logger.debug(`🔄 Path rewrite: ${path} -> ${newPath}`);
+      return newPath;
+    },
+    logLevel: 'debug',
+    onProxyReq: (proxyReq, req, res) => {
+      logger.info(`📤 Proxying to ${serviceName}: ${req.method} ${req.url}`);
+      
+      // Forward user info to service
+      if (req.userId) {
+        proxyReq.setHeader('X-User-Id', req.userId);
+      }
+      if (req.user) {
+        proxyReq.setHeader('X-User-Data', JSON.stringify(req.user));
+      }
+    },
+    onProxyRes: (proxyRes, req, res) => {
+      logger.info(`✅ Response from ${serviceName}: ${proxyRes.statusCode}`);
+    },
+    onError: (err, req, res) => {
+      logger.error(`❌ Proxy error for ${serviceName}: ${err.message}`);
+      if (!res.headersSent) {
+        res.status(503).json({
+          success: false,
+          message: `Service ${serviceName} is currently unavailable`,
+          error: err.message
+        });
+      }
+    },
+    timeout: 30000, // 30 seconds timeout
+  });
+};
+
+// Create proxies with correct API prefixes
+const userProxy = createServiceProxy('user-service', 'users');
+const marketProxy = createServiceProxy('market-service', 'market');
+const portfolioProxy = createServiceProxy('portfolio-service', 'portfolio');
+const tradeProxy = createServiceProxy('trade-service', 'trade');
+const notificationProxy = createServiceProxy('notification-service', 'notifications');
+
+// ===========================
 // Health Check Endpoint
 // ===========================
 app.get('/health', async (req, res) => {
@@ -70,11 +136,6 @@ app.get('/health', async (req, res) => {
     consul: consulHealth,
   });
 });
-
-// ===========================
-// API Routes
-// ===========================
-app.use('/api', apiRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {
@@ -92,6 +153,30 @@ app.get('/', (req, res) => {
     },
   });
 });
+
+// ===========================
+// API Routes - Service Proxies
+// ===========================
+
+// USER SERVICE - Single route pattern
+app.use('/api/users', userProxy);
+
+// MARKET SERVICE
+app.use('/api/market', optionalAuth, marketProxy);
+
+// PORTFOLIO SERVICE
+app.use('/api/portfolio', authMiddleware, portfolioProxy);
+
+// TRADE SERVICE - Orchestrated routes (before proxy)
+// Need body parser for orchestration
+app.post('/api/trade/buy', express.json(), authMiddleware, tradeOrchestration.buyCoin);
+app.post('/api/trade/sell', express.json(), authMiddleware, tradeOrchestration.sellCoin);
+
+// TRADE SERVICE - Other routes via proxy
+app.use('/api/trade', authMiddleware, tradeProxy);
+
+// NOTIFICATION SERVICE
+app.use('/api/notifications', authMiddleware, notificationProxy);
 
 // ===========================
 // Error Handling

@@ -3225,3 +3225,691 @@
 2025-11-01 00:55:42 [api-gateway] INFO: 📤 Proxying to user-service: POST s/register
 2025-11-01 00:55:57 [api-gateway] INFO: ::1 - - [31/Oct/2025:17:55:57 +0000] "POST /api/users/register HTTP/1.1" - - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
 2025-11-01 00:56:06 [user-service] ERROR: ❌ Error: request aborted
+2025-11-19 16:14:08 [api-gateway] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-19 16:20:36 [api-gateway] INFO: SIGINT signal received: closing HTTP server
+2025-11-19 16:25:52 [unknown-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-11-19 16:25:52 [unknown-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-19 16:25:52 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   👤 USER SERVICE STARTED                            ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-19 16:25:52 [unknown-service] ERROR: ❌ Failed to register service with Consul: 
+2025-11-19 16:25:52 [unknown-service] WARN: ⚠️  Service will run without Consul registration
+2025-11-19 16:26:07 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-19 16:46:39 [unknown-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-11-19 16:46:39 [unknown-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-19 16:46:39 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   👤 USER SERVICE STARTED                            ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-19 16:46:39 [unknown-service] ERROR: ❌ Failed to register service with Consul: 
+2025-11-19 16:46:39 [unknown-service] WARN: ⚠️  Service will run without Consul registration
+2025-11-19 16:50:18 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-19 16:51:34 [unknown-service] INFO: SIGINT signal received: closing HTTP server
+2025-11-19 17:02:57 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-19 17:03:24 [unknown-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-11-19 17:03:24 [unknown-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-19 17:03:24 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   👤 USER SERVICE STARTED                            ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-19 17:03:24 [unknown-service] ERROR: ❌ Failed to register service with Consul: 
+2025-11-19 17:03:24 [unknown-service] WARN: ⚠️  Service will run without Consul registration
+2025-11-19 17:05:14 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-19 17:05:17 [unknown-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-11-19 17:05:17 [unknown-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-19 17:05:17 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   👤 USER SERVICE STARTED                            ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-19 17:05:17 [unknown-service] ERROR: ❌ Failed to register service with Consul: 
+2025-11-19 17:05:17 [unknown-service] WARN: ⚠️  Service will run without Consul registration
+2025-11-19 17:05:18 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-19 17:05:18 [unknown-service] ERROR: ❌ Failed to register service with Consul: 
+2025-11-19 17:05:18 [unknown-service] WARN: ⚠️  Service will run without Consul registration
+2025-11-19 17:05:21 [unknown-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-11-19 17:05:21 [unknown-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-19 17:05:21 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-19 17:05:21 [unknown-service] ERROR: ❌ Failed to register service with Consul: 
+2025-11-19 17:05:21 [unknown-service] WARN: ⚠️  Service will run without Consul registration
+2025-11-19 17:05:23 [unknown-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-11-19 17:05:23 [unknown-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-19 17:05:23 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-19 17:05:23 [unknown-service] ERROR: ❌ Failed to register service with Consul: 
+2025-11-19 17:05:23 [unknown-service] WARN: ⚠️  Service will run without Consul registration
+2025-11-19 17:05:51 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:05:51 [unknown-service] INFO: GET /prices
+2025-11-19 17:05:51 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:05:51 +0000] "GET /api/portfolio HTTP/1.1" 401 66 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:05:51 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:05:51 +0000] "GET /api/portfolio HTTP/1.1" 401 66 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:05:51 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:05:51 +0000] "GET /api/market/prices HTTP/1.1" - - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:05:51 [unknown-service] INFO: ✅ Fetched prices for 8 coins from CoinGecko
+2025-11-19 17:05:51 [unknown-service] INFO: ✅ Response from market-service: 200
+2025-11-19 17:13:37 [unknown-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-11-19 17:13:37 [unknown-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-19 17:13:37 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Disabled                         ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-19 17:13:37 [unknown-service] ERROR: ❌ Failed to register service with Consul: 
+2025-11-19 17:13:37 [unknown-service] WARN: ⚠️  Service will run without Consul registration
+2025-11-19 17:17:02 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-19 17:17:15 [unknown-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-11-19 17:17:15 [unknown-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-19 17:17:15 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   👤 USER SERVICE STARTED                            ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-19 17:17:15 [unknown-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-11-19 17:17:30 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-19 17:17:30 [unknown-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-11-19 17:17:44 [unknown-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-11-19 17:17:44 [unknown-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-19 17:17:44 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-19 17:17:44 [unknown-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-11-19 17:18:32 [unknown-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-11-19 17:18:32 [unknown-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-19 17:18:32 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-19 17:18:32 [unknown-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-11-19 17:18:47 [unknown-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-02.g69mfzf.mongodb.net
+2025-11-19 17:18:47 [unknown-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-19 17:18:47 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Disabled                         ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-19 17:18:47 [unknown-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-11-19 17:20:09 [unknown-service] INFO: 📤 Proxying to user-service: POST s/register
+2025-11-19 17:20:24 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:20:24 +0000] "POST /api/users/register HTTP/1.1" - - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:23:17 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-19 17:23:45 [unknown-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-11-19 17:23:45 [unknown-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-19 17:23:45 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   👤 USER SERVICE STARTED                            ║
+  ║   Port: 3001                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-19 17:23:45 [unknown-service] INFO: ✅ Service registered with Consul: user-service (user-service-3001)
+2025-11-19 17:24:36 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   📊 MARKET SERVICE STARTED                          ║
+  ║                                                       ║
+  ║   Port: 3002                                      ║
+  ║   Environment: development              ║
+  ║   CoinGecko API: Connected                            ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-19 17:24:36 [unknown-service] INFO: ✅ Service registered with Consul: market-service (market-service-3002)
+2025-11-19 17:25:18 [unknown-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-00.g69mfzf.mongodb.net
+2025-11-19 17:25:18 [unknown-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-19 17:25:18 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   💼 PORTFOLIO SERVICE STARTED                       ║
+  ║   Port: 3003                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-19 17:25:18 [unknown-service] INFO: ✅ Service registered with Consul: portfolio-service (portfolio-service-3003)
+2025-11-19 17:25:51 [unknown-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-11-19 17:25:51 [unknown-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-19 17:25:51 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   💰 TRADE SERVICE STARTED                           ║
+  ║   Port: 3004                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Trading Fee: 0.1%                              ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-19 17:25:51 [unknown-service] INFO: ✅ Service registered with Consul: trade-service (trade-service-3004)
+2025-11-19 17:26:06 [unknown-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-11-19 17:26:06 [unknown-service] INFO: 📦 Database: crypto_trading_soa
+2025-11-19 17:26:06 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║   🔔 NOTIFICATION SERVICE STARTED                    ║
+  ║   Port: 3005                                      ║
+  ║   Environment: development              ║
+  ║   Database: Connected                                 ║
+  ║   Price Alerts: Disabled                         ║
+  ╚═══════════════════════════════════════════════════════╝
+    
+2025-11-19 17:26:06 [unknown-service] INFO: ✅ Service registered with Consul: notification-service (notification-service-3005)
+2025-11-19 17:27:11 [unknown-service] INFO: 📤 Proxying to user-service: POST s/register
+2025-11-19 17:27:26 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:27:26 +0000] "POST /api/users/register HTTP/1.1" - - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:29:15 [unknown-service] INFO: SIGINT signal received: closing HTTP server
+2025-11-19 17:29:15 [unknown-service] ERROR: ❌ Error: request aborted
+2025-11-19 17:29:18 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-19 17:29:25 [unknown-service] INFO: 📤 Proxying to user-service: POST /users/register
+2025-11-19 17:29:40 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:29:40 +0000] "POST /api/users/register HTTP/1.1" - - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:30:28 [unknown-service] INFO: POST /users/register
+2025-11-19 17:31:20 [unknown-service] INFO: SIGINT signal received: closing HTTP server
+2025-11-19 17:31:20 [unknown-service] ERROR: ❌ Error: request aborted
+2025-11-19 17:31:22 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-19 17:31:54 [unknown-service] INFO: 📤 Proxying to user-service: POST s/register
+2025-11-19 17:32:09 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:32:09 +0000] "POST /api/users/register HTTP/1.1" - - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:33:33 [unknown-service] INFO: SIGINT signal received: closing HTTP server
+2025-11-19 17:33:33 [unknown-service] ERROR: ❌ Error: request aborted
+2025-11-19 17:33:39 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-19 17:33:44 [unknown-service] INFO: 📤 Proxying to user-service: POST /register
+2025-11-19 17:33:59 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:33:59 +0000] "POST /api/users/register HTTP/1.1" - - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:34:38 [unknown-service] INFO: POST /register
+2025-11-19 17:34:38 [unknown-service] INFO: ✅ New user registered: testdirect@example.com
+2025-11-19 17:35:23 [unknown-service] INFO: 📤 Proxying to user-service: POST /register
+2025-11-19 17:35:53 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:35:53 +0000] "POST /api/users/register HTTP/1.1" - - "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.7019"
+2025-11-19 17:37:38 [unknown-service] INFO: SIGINT signal received: closing HTTP server
+2025-11-19 17:37:38 [unknown-service] ERROR: ❌ Error: request aborted
+2025-11-19 17:37:38 [unknown-service] ERROR: ❌ Error: request aborted
+2025-11-19 17:37:41 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-19 17:38:08 [unknown-service] INFO: 📤 Proxying to user-service: POST /register
+2025-11-19 17:38:08 [unknown-service] INFO: POST /register
+2025-11-19 17:38:08 [unknown-service] INFO: ✅ New user registered: hao@gmail.com
+2025-11-19 17:38:08 [unknown-service] INFO: ✅ Response from user-service: 201
+2025-11-19 17:38:08 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:08 +0000] "POST /api/users/register HTTP/1.1" 201 359 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:38:08 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:38:08 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:38:08 [unknown-service] INFO: GET /prices
+2025-11-19 17:38:08 [unknown-service] INFO: GET /
+2025-11-19 17:38:08 [unknown-service] INFO: ✅ Response from portfolio-service: 200
+2025-11-19 17:38:08 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:08 +0000] "GET /api/portfolio HTTP/1.1" 200 308 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:38:08 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:38:08 [unknown-service] INFO: GET /
+2025-11-19 17:38:08 [unknown-service] INFO: ✅ Response from portfolio-service: 200
+2025-11-19 17:38:08 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:08 +0000] "GET /api/portfolio HTTP/1.1" 200 308 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:38:08 [unknown-service] INFO: ✅ Fetched prices for 8 coins from CoinGecko
+2025-11-19 17:38:08 [unknown-service] INFO: ✅ Response from market-service: 200
+2025-11-19 17:38:08 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:08 +0000] "GET /api/market/prices HTTP/1.1" 200 1675 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:38:08 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:38:08 [unknown-service] INFO: GET /prices
+2025-11-19 17:38:08 [unknown-service] INFO: ✅ Response from market-service: 200
+2025-11-19 17:38:09 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:09 +0000] "GET /api/market/prices HTTP/1.1" 200 1664 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:38:20 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:38:20 [unknown-service] INFO: GET /
+2025-11-19 17:38:20 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:38:20 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:20 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:38:20 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:38:20 [unknown-service] INFO: GET /
+2025-11-19 17:38:20 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:38:20 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:20 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:38:23 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:38:23 [unknown-service] INFO: GET /prices
+2025-11-19 17:38:23 [unknown-service] INFO: ✅ Response from market-service: 304
+2025-11-19 17:38:23 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:23 +0000] "GET /api/market/prices HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:38:23 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:38:23 [unknown-service] INFO: GET /prices
+2025-11-19 17:38:23 [unknown-service] INFO: ✅ Response from market-service: 304
+2025-11-19 17:38:23 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:23 +0000] "GET /api/market/prices HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:38:30 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:38:30 [unknown-service] INFO: GET /
+2025-11-19 17:38:30 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:38:30 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:30 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:38:30 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:38:30 [unknown-service] INFO: GET /
+2025-11-19 17:38:30 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:38:30 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:30 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:38:32 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:38:32 [unknown-service] INFO: GET /prices
+2025-11-19 17:38:32 [unknown-service] INFO: ✅ Response from market-service: 304
+2025-11-19 17:38:32 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:32 +0000] "GET /api/market/prices HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:38:32 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:38:32 [unknown-service] INFO: GET /prices
+2025-11-19 17:38:32 [unknown-service] INFO: ✅ Response from market-service: 304
+2025-11-19 17:38:32 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:32 +0000] "GET /api/market/prices HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:38:35 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:38:35 [unknown-service] INFO: GET /
+2025-11-19 17:38:35 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:38:35 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:35 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:38:35 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:38:35 [unknown-service] INFO: GET /
+2025-11-19 17:38:35 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:38:35 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:35 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:38:37 [unknown-service] INFO: 📤 Proxying to trade-service: GET /history
+2025-11-19 17:38:37 [unknown-service] INFO: GET /history
+2025-11-19 17:38:37 [unknown-service] INFO: ✅ Response from trade-service: 200
+2025-11-19 17:38:37 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:37 +0000] "GET /api/trade/history HTTP/1.1" 200 92 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:38:37 [unknown-service] INFO: 📤 Proxying to trade-service: GET /history
+2025-11-19 17:38:37 [unknown-service] INFO: GET /history
+2025-11-19 17:38:37 [unknown-service] INFO: ✅ Response from trade-service: 304
+2025-11-19 17:38:37 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:37 +0000] "GET /api/trade/history HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:38:40 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:38:40 [unknown-service] INFO: GET /
+2025-11-19 17:38:40 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:38:40 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:40 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:38:40 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:38:40 [unknown-service] INFO: GET /
+2025-11-19 17:38:40 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:38:41 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:38:41 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:39:26 [unknown-service] INFO: 📤 Proxying to user-service: POST /login
+2025-11-19 17:39:26 [unknown-service] INFO: POST /login
+2025-11-19 17:39:26 [unknown-service] INFO: ✅ Response from user-service: 401
+2025-11-19 17:39:26 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:39:26 +0000] "POST /api/users/login HTTP/1.1" 401 55 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:39:33 [unknown-service] INFO: 📤 Proxying to user-service: POST /login
+2025-11-19 17:39:33 [unknown-service] INFO: POST /login
+2025-11-19 17:39:33 [unknown-service] INFO: ✅ User logged in: hao@gmail.com
+2025-11-19 17:39:33 [unknown-service] INFO: ✅ Response from user-service: 200
+2025-11-19 17:39:33 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:39:33 +0000] "POST /api/users/login HTTP/1.1" 200 347 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:39:33 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:39:33 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:39:33 [unknown-service] INFO: GET /prices
+2025-11-19 17:39:33 [unknown-service] INFO: GET /
+2025-11-19 17:39:33 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:39:33 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:39:33 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:39:33 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:39:33 [unknown-service] INFO: GET /
+2025-11-19 17:39:33 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:39:33 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:39:33 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:39:34 [unknown-service] INFO: ✅ Fetched prices for 8 coins from CoinGecko
+2025-11-19 17:39:34 [unknown-service] INFO: ✅ Response from market-service: 200
+2025-11-19 17:39:34 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:39:34 +0000] "GET /api/market/prices HTTP/1.1" 200 1678 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:39:34 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:39:34 [unknown-service] INFO: GET /prices
+2025-11-19 17:39:34 [unknown-service] INFO: ✅ Response from market-service: 200
+2025-11-19 17:39:34 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:39:34 +0000] "GET /api/market/prices HTTP/1.1" 200 1667 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:40:02 [unknown-service] INFO: 📤 Proxying to trade-service: GET /history
+2025-11-19 17:40:02 [unknown-service] INFO: GET /history
+2025-11-19 17:40:02 [unknown-service] INFO: ✅ Response from trade-service: 304
+2025-11-19 17:40:02 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:40:02 +0000] "GET /api/trade/history HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:40:02 [unknown-service] INFO: 📤 Proxying to trade-service: GET /history
+2025-11-19 17:40:02 [unknown-service] INFO: GET /history
+2025-11-19 17:40:03 [unknown-service] INFO: ✅ Response from trade-service: 304
+2025-11-19 17:40:03 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:40:03 +0000] "GET /api/trade/history HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:40:05 [unknown-service] INFO: 📤 Proxying to trade-service: GET /history
+2025-11-19 17:40:05 [unknown-service] INFO: GET /history
+2025-11-19 17:40:05 [unknown-service] INFO: ✅ Response from trade-service: 304
+2025-11-19 17:40:05 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:40:05 +0000] "GET /api/trade/history HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:40:05 [unknown-service] INFO: 📤 Proxying to trade-service: GET /history
+2025-11-19 17:40:05 [unknown-service] INFO: GET /history
+2025-11-19 17:40:05 [unknown-service] INFO: ✅ Response from trade-service: 304
+2025-11-19 17:40:05 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:40:05 +0000] "GET /api/trade/history HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:40:07 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:40:07 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:40:07 [unknown-service] INFO: GET /prices
+2025-11-19 17:40:07 [unknown-service] INFO: GET /
+2025-11-19 17:40:07 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:40:07 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:40:07 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:40:07 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:40:07 [unknown-service] INFO: GET /
+2025-11-19 17:40:07 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:40:07 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:40:07 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:40:07 [unknown-service] INFO: ✅ Fetched prices for 8 coins from CoinGecko
+2025-11-19 17:40:07 [unknown-service] INFO: ✅ Response from market-service: 200
+2025-11-19 17:40:07 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:40:07 +0000] "GET /api/market/prices HTTP/1.1" 200 1678 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:40:07 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:40:07 [unknown-service] INFO: GET /prices
+2025-11-19 17:40:07 [unknown-service] INFO: ✅ Response from market-service: 200
+2025-11-19 17:40:07 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:40:07 +0000] "GET /api/market/prices HTTP/1.1" 200 1667 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:41:05 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:41:05 [unknown-service] INFO: GET /prices
+2025-11-19 17:41:05 [unknown-service] INFO: ✅ Fetched prices for 8 coins from CoinGecko
+2025-11-19 17:41:05 [unknown-service] INFO: ✅ Response from market-service: 200
+2025-11-19 17:41:05 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:41:05 +0000] "GET /api/market/prices HTTP/1.1" 200 1676 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.7019"
+2025-11-19 17:41:12 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:41:12 [unknown-service] INFO: GET /prices
+2025-11-19 17:41:12 [unknown-service] INFO: ✅ Response from market-service: 200
+2025-11-19 17:41:12 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:41:12 +0000] "GET /api/market/prices HTTP/1.1" 200 1665 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.7019"
+2025-11-19 17:42:41 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:42:41 [unknown-service] INFO: GET /prices
+2025-11-19 17:42:41 [unknown-service] INFO: ✅ Fetched prices for 8 coins from CoinGecko
+2025-11-19 17:42:41 [unknown-service] INFO: ✅ Response from market-service: 200
+2025-11-19 17:42:41 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:42:41 +0000] "GET /api/market/prices HTTP/1.1" 200 1677 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:42:41 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:42:41 [unknown-service] INFO: GET /prices
+2025-11-19 17:42:41 [unknown-service] INFO: ✅ Response from market-service: 200
+2025-11-19 17:42:41 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:42:41 +0000] "GET /api/market/prices HTTP/1.1" 200 1666 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:42:43 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:42:43 [unknown-service] INFO: GET /prices
+2025-11-19 17:42:43 [unknown-service] INFO: ✅ Response from market-service: 304
+2025-11-19 17:42:43 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:42:43 +0000] "GET /api/market/prices HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:42:43 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:42:43 [unknown-service] INFO: GET /prices
+2025-11-19 17:42:43 [unknown-service] INFO: ✅ Response from market-service: 304
+2025-11-19 17:42:43 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:42:43 +0000] "GET /api/market/prices HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:42:47 [unknown-service] INFO: 📤 Proxying to trade-service: GET /history
+2025-11-19 17:42:47 [unknown-service] INFO: GET /history
+2025-11-19 17:42:47 [unknown-service] INFO: ✅ Response from trade-service: 304
+2025-11-19 17:42:47 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:42:47 +0000] "GET /api/trade/history HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:42:47 [unknown-service] INFO: 📤 Proxying to trade-service: GET /history
+2025-11-19 17:42:47 [unknown-service] INFO: GET /history
+2025-11-19 17:42:47 [unknown-service] INFO: ✅ Response from trade-service: 304
+2025-11-19 17:42:47 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:42:47 +0000] "GET /api/trade/history HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:42:49 [unknown-service] INFO: 📤 Proxying to trade-service: GET /history
+2025-11-19 17:42:49 [unknown-service] INFO: GET /history
+2025-11-19 17:42:49 [unknown-service] INFO: ✅ Response from trade-service: 304
+2025-11-19 17:42:49 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:42:49 +0000] "GET /api/trade/history HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:42:49 [unknown-service] INFO: 📤 Proxying to trade-service: GET /history
+2025-11-19 17:42:49 [unknown-service] INFO: GET /history
+2025-11-19 17:42:49 [unknown-service] INFO: ✅ Response from trade-service: 304
+2025-11-19 17:42:49 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:42:49 +0000] "GET /api/trade/history HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:45:53 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:45:53 [unknown-service] INFO: GET /prices
+2025-11-19 17:45:54 [unknown-service] INFO: ✅ Fetched prices for 8 coins from CoinGecko
+2025-11-19 17:45:54 [unknown-service] INFO: ✅ Response from market-service: 200
+2025-11-19 17:45:54 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:45:54 +0000] "GET /api/market/prices HTTP/1.1" 200 1673 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.7019"
+2025-11-19 17:46:36 [unknown-service] INFO: 📤 Proxying to trade-service: GET /history
+2025-11-19 17:46:36 [unknown-service] INFO: GET /history
+2025-11-19 17:46:36 [unknown-service] INFO: ✅ Response from trade-service: 304
+2025-11-19 17:46:36 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:46:36 +0000] "GET /api/trade/history HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:46:36 [unknown-service] INFO: 📤 Proxying to trade-service: GET /history
+2025-11-19 17:46:36 [unknown-service] INFO: GET /history
+2025-11-19 17:46:37 [unknown-service] INFO: ✅ Response from trade-service: 304
+2025-11-19 17:46:37 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:46:37 +0000] "GET /api/trade/history HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:46:42 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:46:42 [unknown-service] INFO: GET /prices
+2025-11-19 17:46:42 [unknown-service] INFO: ✅ Fetched prices for 8 coins from CoinGecko
+2025-11-19 17:46:42 [unknown-service] INFO: ✅ Response from market-service: 200
+2025-11-19 17:46:42 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:46:42 +0000] "GET /api/market/prices HTTP/1.1" 200 1673 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:46:42 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:46:42 [unknown-service] INFO: GET /prices
+2025-11-19 17:46:42 [unknown-service] INFO: ✅ Response from market-service: 200
+2025-11-19 17:46:42 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:46:42 +0000] "GET /api/market/prices HTTP/1.1" 200 1662 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:46:48 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:46:48 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:46:48 [unknown-service] INFO: GET /prices
+2025-11-19 17:46:48 [unknown-service] INFO: GET /
+2025-11-19 17:46:48 [unknown-service] INFO: ✅ Response from market-service: 304
+2025-11-19 17:46:48 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:46:48 +0000] "GET /api/market/prices HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:46:48 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:46:48 [unknown-service] INFO: GET /prices
+2025-11-19 17:46:48 [unknown-service] INFO: ✅ Response from market-service: 304
+2025-11-19 17:46:48 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:46:48 +0000] "GET /api/market/prices HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:46:48 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:46:48 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:46:48 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:46:48 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:46:48 [unknown-service] INFO: GET /
+2025-11-19 17:46:48 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:46:48 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:46:48 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:48:35 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-19 17:49:07 [unknown-service] INFO: SIGINT signal received: closing HTTP server
+2025-11-19 17:49:38 [unknown-service] INFO: ✅ MongoDB Connected: ac-wberqjv-shard-00-01.g69mfzf.mongodb.net
+2025-11-19 17:51:08 [unknown-service] INFO: 
+  ╔═══════════════════════════════════════════════════════╗
+  ║                                                       ║
+  ║   🚀 API GATEWAY STARTED SUCCESSFULLY                ║
+  ║                                                       ║
+  ║   Port: 3000                                      ║
+  ║   Environment: development              ║
+  ║   Consul: localhost:8500                  ║
+  ║                                                       ║
+  ║   📡 Ready to proxy requests to microservices        ║
+  ║                                                       ║
+  ╚═══════════════════════════════════════════════════════╝
+  
+2025-11-19 17:51:13 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:51:13 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:51:13 [unknown-service] INFO: GET /prices
+2025-11-19 17:51:13 [unknown-service] INFO: GET /
+2025-11-19 17:51:13 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:51:13 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:51:13 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:51:13 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:51:13 [unknown-service] INFO: GET /
+2025-11-19 17:51:13 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:51:13 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:51:13 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:51:28 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:51:28 +0000] "GET /api/market/prices HTTP/1.1" - - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:51:28 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:51:28 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:51:28 +0000] "GET /api/market/prices HTTP/1.1" - - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:51:28 [unknown-service] INFO: GET /prices
+2025-11-19 17:51:29 [unknown-service] INFO: ✅ Fetched prices for 8 coins from CoinGecko
+2025-11-19 17:51:29 [unknown-service] INFO: ✅ Response from market-service: 200
+2025-11-19 17:51:35 [unknown-service] ERROR: ❌ Get prices error: read ECONNRESET
+2025-11-19 17:51:35 [unknown-service] INFO: ✅ Response from market-service: 200
+2025-11-19 17:51:35 [unknown-service] WARN: ⚠️  CoinGecko API failed, returning cached data
+2025-11-19 17:52:09 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:52:09 [unknown-service] INFO: GET /
+2025-11-19 17:52:09 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:52:09 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:52:09 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:52:09 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:52:09 [unknown-service] INFO: GET /
+2025-11-19 17:52:09 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:52:09 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:52:09 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:52:09 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:52:09 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:52:09 [unknown-service] INFO: GET /
+2025-11-19 17:52:09 [unknown-service] INFO: GET /prices
+2025-11-19 17:52:10 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:52:10 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:52:10 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:52:10 [unknown-service] INFO: 📤 Proxying to portfolio-service: GET 
+2025-11-19 17:52:10 [unknown-service] INFO: GET /
+2025-11-19 17:52:10 [unknown-service] INFO: ✅ Response from portfolio-service: 304
+2025-11-19 17:52:10 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:52:10 +0000] "GET /api/portfolio HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:52:10 [unknown-service] INFO: ✅ Fetched prices for 8 coins from CoinGecko
+2025-11-19 17:52:10 [unknown-service] INFO: ✅ Response from market-service: 200
+2025-11-19 17:52:10 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:52:10 +0000] "GET /api/market/prices HTTP/1.1" 200 1672 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:52:10 [unknown-service] INFO: 📤 Proxying to market-service: GET /prices
+2025-11-19 17:52:10 [unknown-service] INFO: GET /prices
+2025-11-19 17:52:10 [unknown-service] INFO: ✅ Response from market-service: 200
+2025-11-19 17:52:10 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:52:10 +0000] "GET /api/market/prices HTTP/1.1" 200 1661 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:52:12 [unknown-service] INFO: 📤 Proxying to trade-service: GET /history
+2025-11-19 17:52:12 [unknown-service] INFO: GET /history
+2025-11-19 17:52:12 [unknown-service] INFO: ✅ Response from trade-service: 304
+2025-11-19 17:52:12 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:52:12 +0000] "GET /api/trade/history HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025-11-19 17:52:12 [unknown-service] INFO: 📤 Proxying to trade-service: GET /history
+2025-11-19 17:52:12 [unknown-service] INFO: GET /history
+2025-11-19 17:52:12 [unknown-service] INFO: ✅ Response from trade-service: 304
+2025-11-19 17:52:12 [unknown-service] INFO: ::1 - - [19/Nov/2025:10:52:12 +0000] "GET /api/trade/history HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"

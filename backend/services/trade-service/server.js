@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '../../', '.env') });
 const express = require('express');
 const connectDB = require('../../shared/config/db');
 const tradeRoutes = require('./routes/tradeRoutes');
@@ -7,7 +7,8 @@ const logger = require('../../shared/utils/logger');
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 3004;
+const PORT = process.env.TRADE_SERVICE_PORT || 3004;
+const SERVICE_NAME = 'trade-service';
 
 // ===========================
 // Middleware
@@ -57,7 +58,7 @@ const startServer = async () => {
     `);
 
     const serviceRegistry = new ServiceRegistry({
-      name: process.env.SERVICE_NAME || 'trade-service',
+      name: SERVICE_NAME,
       host: 'localhost',
       port: PORT,
       healthCheck: '/health',

@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '../../', '.env') });
 const express = require('express');
 const marketRoutes = require('./routes/marketRoutes');
 const ServiceRegistry = require('./utils/registerService');
@@ -6,7 +6,8 @@ const logger = require('../../shared/utils/logger');
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.MARKET_SERVICE_PORT || 3002;
+const SERVICE_NAME = 'market-service';
 
 // ===========================
 // Middleware
@@ -44,8 +45,8 @@ const server = app.listen(PORT, async () => {
   `);
 
   // Register with Consul
-  const serviceRegistry = new ServiceRegistry({
-    name: process.env.SERVICE_NAME || 'market-service',
+    const serviceRegistry = new ServiceRegistry({
+      name: SERVICE_NAME,
     host: 'localhost',
     port: PORT,
     healthCheck: '/health',
