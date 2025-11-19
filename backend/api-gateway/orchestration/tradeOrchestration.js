@@ -32,7 +32,7 @@ const sellSchema = Joi.object({
 
 // Trading configuration
 const TRADING_FEE_PERCENTAGE = 0.1; // 0.1%
-const MIN_TRADE_AMOUNT_USD = 10;
+const MIN_TRADE_AMOUNT_USD = 5; // Minimum $5 USD per trade
 
 /**
  * @desc    Buy coin - Orchestrates multiple service calls
@@ -200,10 +200,18 @@ exports.buyCoin = async (req, res) => {
     });
   } catch (error) {
     logger.error(`❌ [BUY] Error: ${error.message}`);
+    if (error.response) {
+      logger.error(`❌ [BUY] Response error: ${JSON.stringify(error.response.data)}`);
+    }
+    logger.error(`❌ [BUY] Stack: ${error.stack}`);
+    
     res.status(500).json({
       success: false,
-      message: 'Failed to process buy order',
-      error: error.response?.data?.message || error.message,
+      message: error.response?.data?.message || error.message || 'Failed to process buy order',
+      details: process.env.NODE_ENV === 'development' ? {
+        originalError: error.message,
+        serviceError: error.response?.data,
+      } : undefined,
     });
   }
 };

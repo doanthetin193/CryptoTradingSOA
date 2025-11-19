@@ -158,6 +158,7 @@ exports.getCoinPrice = async (req, res) => {
     const priceData = {
       symbol: COIN_MAP[coinId.toLowerCase()] || coinId.toUpperCase(),
       coinId: coinId.toLowerCase(),
+      name: coinId.charAt(0).toUpperCase() + coinId.slice(1),
       price: coinData.usd,
       change24h: coinData.usd_24h_change || 0,
       volume24h: coinData.usd_24h_vol || 0,
