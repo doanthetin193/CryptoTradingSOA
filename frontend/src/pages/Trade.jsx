@@ -7,6 +7,7 @@ import Toast from '../components/Toast';
 export default function Trade() {
   const { user, refreshUser } = useAuth();
   const [tradeType, setTradeType] = useState('buy');
+  const [inputType, setInputType] = useState('amount'); // 'amount' or 'total'
   const [coins, setCoins] = useState([]);
   const [selectedCoin, setSelectedCoin] = useState(null);
   const [amount, setAmount] = useState('');
@@ -47,9 +48,37 @@ export default function Trade() {
 
   const calculateTotal = () => {
     if (!selectedCoin || !amount) return 0;
-    const total = parseFloat(amount) * selectedCoin.price;
-    const fee = total * 0.001; // 0.1% fee
-    return tradeType === 'buy' ? total + fee : total - fee;
+    const numAmount = parseFloat(amount);
+    
+    if (inputType === 'amount') {
+      // User entered coin amount
+      const total = numAmount * selectedCoin.price;
+      const fee = total * 0.001;
+      return tradeType === 'buy' ? total + fee : total - fee;
+    } else {
+      // User entered USD total
+      return numAmount;
+    }
+  };
+
+  const getCoinAmount = () => {
+    if (!selectedCoin || !amount) return 0;
+    const numAmount = parseFloat(amount);
+    
+    if (inputType === 'amount') {
+      // User entered coin amount directly
+      return numAmount;
+    } else {
+      // User entered USD total - need to calculate coin amount
+      // For buy: total = (amount * price) + fee
+      // So: amount = total / (price * 1.001)
+      // For sell: total = (amount * price) - fee
+      // So: amount = total / (price * 0.999)
+      const priceWithFee = tradeType === 'buy' 
+        ? selectedCoin.price * 1.001 
+        : selectedCoin.price * 0.999;
+      return numAmount / priceWithFee;
+    }
   };
 
   const handleTrade = async () => {
@@ -58,28 +87,50 @@ export default function Trade() {
       return;
     }
 
+    const coinAmount = getCoinAmount();
+    
+    // Validate coin amount
+    if (coinAmount <= 0 || !isFinite(coinAmount)) {
+      showToast('error', 'Số lượng không hợp lệ');
+      return;
+    }
+
+    // Check balance for buy orders
+    if (tradeType === 'buy') {
+      const total = calculateTotal();
+      if (total > (user?.balance || 0)) {
+        showToast('error', `Số dư không đủ! Cần ${total.toFixed(2)} USDT nhưng chỉ có ${user?.balance?.toFixed(2) || 0} USDT`);
+        return;
+      }
+    }
+
     setTrading(true);
     try {
       const data = {
         symbol: selectedCoin.symbol,
         coinId: selectedCoin.coinId,
-        amount: parseFloat(amount),
+        amount: coinAmount,
       };
+
+      console.log('Trade request:', data);
 
       const res = tradeType === 'buy' 
         ? await tradeAPI.buy(data)
         : await tradeAPI.sell(data);
 
       if (res.success) {
-        showToast('success', `${tradeType === 'buy' ? 'Mua' : 'Bán'} thành công!`);
-        setAmount('');
-        await refreshUser();
-        await fetchData();
+        showToast('success', `${tradeType === 'buy' ? 'Mua' : 'Bán'} ${coinAmount.toFixed(8)} ${selectedCoin.symbol} thành công!`);
+        
+        // Reload immediately to refresh balance and portfolio
+        setTimeout(() => {
+          window.location.reload();
+        }, 800);
       } else {
-        showToast('error', res.message);
+        showToast('error', res.message || 'Giao dịch thất bại');
       }
     } catch (error) {
-      showToast('error', error.message);
+      console.error('Trade error:', error);
+      showToast('error', error.message || 'Giao dịch thất bại');
     } finally {
       setTrading(false);
     }
@@ -194,33 +245,70 @@ export default function Trade() {
 
               {/* Amount Input */}
               <div>
-                <label className="block text-sm font-medium mb-2">Số lượng</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium">
+                    {inputType === 'amount' ? `Số lượng ${selectedCoin.symbol}` : 'Số tiền (USDT)'}
+                  </label>
+                  <button
+                    onClick={() => {
+                      setInputType(inputType === 'amount' ? 'total' : 'amount');
+                      setAmount('');
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-700"
+                  >
+                    {inputType === 'amount' ? '↔ Nhập theo USDT' : '↔ Nhập theo số lượng'}
+                  </button>
+                </div>
                 <input
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   className="w-full px-4 py-3 border rounded-lg"
-                  placeholder="0.00"
-                  step="0.00000001"
+                  placeholder={inputType === 'amount' ? '0.00000000' : '0.00'}
+                  step={inputType === 'amount' ? '0.00000001' : '0.01'}
                 />
+                {inputType === 'total' && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    ≈ {getCoinAmount().toFixed(8)} {selectedCoin.symbol}
+                  </p>
+                )}
               </div>
 
               {/* Total */}
               <div className="bg-gray-50 p-4 rounded-lg">
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-gray-600">Số dư:</span>
-                  <span className="font-semibold">${user?.balance?.toLocaleString()}</span>
+                  <span className="font-semibold">${user?.balance?.toLocaleString() || '0.00'} USDT</span>
                 </div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-600">Phí (0.1%):</span>
-                  <span className="font-semibold">${(calculateTotal() * 0.001).toFixed(2)}</span>
-                </div>
+                {amount && (
+                  <>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-gray-600">Số lượng:</span>
+                      <span className="font-semibold">{getCoinAmount().toFixed(8)} {selectedCoin.symbol}</span>
+                    </div>
+                    {inputType === 'amount' && (
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-gray-600">Giá trị:</span>
+                        <span className="font-semibold">${(getCoinAmount() * selectedCoin.price).toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-gray-600">Phí giao dịch (0.1%):</span>
+                      <span className="font-semibold">${((getCoinAmount() * selectedCoin.price) * 0.001).toFixed(2)}</span>
+                    </div>
+                  </>
+                )}
                 <div className="border-t pt-2 mt-2">
                   <div className="flex justify-between">
-                    <span className="font-semibold">Tổng:</span>
-                    <span className="text-xl font-bold">${calculateTotal().toFixed(2)}</span>
+                    <span className="font-semibold">Tổng thanh toán:</span>
+                    <span className="text-xl font-bold text-blue-600">${calculateTotal().toFixed(2)} USDT</span>
                   </div>
                 </div>
+                {tradeType === 'buy' && amount && calculateTotal() > (user?.balance || 0) && (
+                  <p className="text-xs text-red-600 mt-2">
+                    ⚠️ Số dư không đủ! Cần thêm ${(calculateTotal() - (user?.balance || 0)).toFixed(2)} USDT
+                  </p>
+                )}
               </div>
 
               {/* Trade Button */}
