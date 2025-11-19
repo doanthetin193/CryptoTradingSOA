@@ -187,7 +187,52 @@ app.use(errorHandler);
 // ===========================
 // Start Server
 // ===========================
-app.listen(PORT, () => {
+const http = require('http');
+const { Server } = require('socket.io');
+
+const server = http.createServer(app);
+
+// Setup Socket.IO for real-time communication
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:5173'],
+    credentials: true,
+  },
+});
+
+// WebSocket authentication middleware
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+  if (!token) {
+    return next(new Error('Authentication error'));
+  }
+
+  try {
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    socket.userId = decoded.userId;
+    next();
+  } catch (error) {
+    next(new Error('Authentication error'));
+  }
+});
+
+// WebSocket connection handling
+io.on('connection', (socket) => {
+  logger.info(`🔌 WebSocket connected: User ${socket.userId}`);
+  
+  // Join user's private room for targeted notifications
+  socket.join(`user_${socket.userId}`);
+  
+  socket.on('disconnect', () => {
+    logger.info(`🔌 WebSocket disconnected: User ${socket.userId}`);
+  });
+});
+
+// Export io for use in other modules
+global.io = io;
+
+server.listen(PORT, () => {
   logger.info(`
   ╔═══════════════════════════════════════════════════════╗
   ║                                                       ║

@@ -1,14 +1,14 @@
 # Script khởi động tất cả Backend Services
 # Chạy script này trong PowerShell: .\start-all-services.ps1
 
-Write-Host "🚀 Starting CryptoTrading SOA Backend Services..." -ForegroundColor Cyan
+Write-Host "Starting CryptoTrading SOA Backend Services..." -ForegroundColor Cyan
 Write-Host ""
 
 $backendPath = "D:\CryptoTradingSOA\backend"
 
 # Kiểm tra node_modules
 if (-not (Test-Path "$backendPath\node_modules")) {
-    Write-Host "❌ node_modules not found. Installing dependencies..." -ForegroundColor Red
+    Write-Host "node_modules not found. Installing dependencies..." -ForegroundColor Red
     Set-Location $backendPath
     npm install
 }
@@ -23,7 +23,7 @@ $services = @(
     @{Name="Notification Service"; Path="services/notification-service/server.js"; Port=3005}
 )
 
-Write-Host "📋 Services to start:" -ForegroundColor Yellow
+Write-Host "Services to start:" -ForegroundColor Yellow
 foreach ($service in $services) {
     Write-Host "  - $($service.Name) (Port: $($service.Port))" -ForegroundColor Gray
 }
@@ -32,12 +32,12 @@ Write-Host ""
 # Hỏi xác nhận
 $confirm = Read-Host "Do you want to start all services? (Y/N)"
 if ($confirm -ne "Y" -and $confirm -ne "y") {
-    Write-Host "❌ Cancelled" -ForegroundColor Red
+    Write-Host "Cancelled" -ForegroundColor Red
     exit
 }
 
 Write-Host ""
-Write-Host "🔧 Starting services in new windows..." -ForegroundColor Green
+Write-Host "Starting services in new windows..." -ForegroundColor Green
 Write-Host ""
 
 # Start từng service trong window mới
@@ -45,21 +45,18 @@ foreach ($service in $services) {
     $title = $service.Name
     $command = "node $($service.Path)"
     
-    Write-Host "  ✓ Starting: $title" -ForegroundColor Green
+    Write-Host "  - Starting: $title" -ForegroundColor Green
     
     # Mở PowerShell window mới với title
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", `
-        "Set-Location '$backendPath'; `$host.UI.RawUI.WindowTitle='$title'; `
-        Write-Host '🚀 Starting $title on port $($service.Port)...' -ForegroundColor Cyan; `
-        $command"
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$backendPath'; `$host.UI.RawUI.WindowTitle='$title'; Write-Host 'Starting $title on port $($service.Port)...'; $command"
     
     Start-Sleep -Seconds 2
 }
 
 Write-Host ""
-Write-Host "✅ All services started successfully!" -ForegroundColor Green
+Write-Host "All services started successfully!" -ForegroundColor Green
 Write-Host ""
-Write-Host "📌 Next steps:" -ForegroundColor Yellow
+Write-Host "Next steps:" -ForegroundColor Yellow
 Write-Host "  1. Wait for all services to be ready (check each window)"
 Write-Host "  2. Open new terminal and run: cd D:\CryptoTradingSOA\frontend && npm run dev"
 Write-Host "  3. Open browser: http://localhost:5173"
