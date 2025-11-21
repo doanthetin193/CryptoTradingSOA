@@ -95,31 +95,73 @@ exports.addHolding = async (req, res) => {
       });
     }
 
-    const portfolio = await Portfolio.findOrCreateByUserId(userId);
-    
-    // Find existing holding
-    const existingHolding = portfolio.holdings.find(h => h.symbol === symbol.toUpperCase());
+    const upperSymbol = symbol.toUpperCase();
+    const lowerCoinId = coinId.toLowerCase();
 
-    if (existingHolding) {
-      // Update existing holding
+    // First, ensure portfolio exists
+    await Portfolio.findOrCreateByUserId(userId);
+
+    // Check if holding exists
+    let portfolio = await Portfolio.findOne({
+      userId,
+      'holdings.symbol': upperSymbol,
+    });
+
+    if (portfolio) {
+      // ==========================================
+      // ATOMIC UPDATE: Existing holding
+      // ==========================================
+      const existingHolding = portfolio.holdings.find(h => h.symbol === upperSymbol);
       const totalAmount = existingHolding.amount + amount;
       const totalCost = (existingHolding.amount * existingHolding.averageBuyPrice) + (amount * buyPrice);
-      existingHolding.amount = totalAmount;
-      existingHolding.averageBuyPrice = totalCost / totalAmount;
-    } else {
-      // Add new holding
-      portfolio.holdings.push({
-        symbol: symbol.toUpperCase(),
-        coinId: coinId.toLowerCase(),
-        name,
-        amount,
-        averageBuyPrice: buyPrice,
-        currentPrice: buyPrice,
-      });
-    }
+      const newAverageBuyPrice = totalCost / totalAmount;
 
-    await portfolio.save();
-    logger.info(`✅ Added holding: ${amount} ${symbol} for user ${userId}`);
+      portfolio = await Portfolio.findOneAndUpdate(
+        {
+          userId,
+          'holdings.symbol': upperSymbol,
+        },
+        {
+          $set: {
+            'holdings.$.amount': totalAmount,
+            'holdings.$.averageBuyPrice': newAverageBuyPrice,
+            'holdings.$.lastUpdated': new Date(),
+          },
+        },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+
+      logger.info(`✅ Updated holding atomically: ${amount} ${symbol} for user ${userId}`);
+    } else {
+      // ==========================================
+      // ATOMIC ADD: New holding
+      // ==========================================
+      portfolio = await Portfolio.findOneAndUpdate(
+        { userId },
+        {
+          $push: {
+            holdings: {
+              symbol: upperSymbol,
+              coinId: lowerCoinId,
+              name,
+              amount,
+              averageBuyPrice: buyPrice,
+              totalInvested: amount * buyPrice,
+              lastUpdated: new Date(),
+            },
+          },
+        },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+
+      logger.info(`✅ Added new holding atomically: ${amount} ${symbol} for user ${userId}`);
+    }
 
     res.json({
       success: true,
@@ -130,6 +172,7 @@ exports.addHolding = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to add holding',
+      error: error.message,
     });
   }
 };
@@ -151,8 +194,22 @@ exports.reduceHolding = async (req, res) => {
       });
     }
 
-    const portfolio = await Portfolio.findOrCreateByUserId(userId);
-    const holding = portfolio.holdings.find(h => h.symbol === symbol.toUpperCase());
+    const upperSymbol = symbol.toUpperCase();
+
+    // First, check if holding exists and has sufficient amount
+    const portfolio = await Portfolio.findOne({
+      userId,
+      'holdings.symbol': upperSymbol,
+    });
+
+    if (!portfolio) {
+      return res.status(404).json({
+        success: false,
+        message: `Holding ${symbol} not found`,
+      });
+    }
+
+    const holding = portfolio.holdings.find(h => h.symbol === upperSymbol);
 
     if (!holding) {
       return res.status(404).json({
@@ -168,26 +225,64 @@ exports.reduceHolding = async (req, res) => {
       });
     }
 
-    // Reduce amount
-    holding.amount -= amount;
+    const newAmount = holding.amount - amount;
 
-    // Remove if amount is zero
-    if (holding.amount === 0) {
-      portfolio.holdings = portfolio.holdings.filter(h => h.symbol !== symbol.toUpperCase());
+    // ==========================================
+    // ATOMIC OPERATION: Remove or Reduce
+    // ==========================================
+    let updatedPortfolio;
+
+    if (newAmount === 0) {
+      // Remove holding entirely
+      updatedPortfolio = await Portfolio.findOneAndUpdate(
+        {
+          userId,
+          'holdings.symbol': upperSymbol,
+        },
+        {
+          $pull: {
+            holdings: { symbol: upperSymbol },
+          },
+        },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+      logger.info(`✅ Removed holding atomically: ${symbol} for user ${userId}`);
+    } else {
+      // Reduce amount atomically
+      updatedPortfolio = await Portfolio.findOneAndUpdate(
+        {
+          userId,
+          'holdings.symbol': upperSymbol,
+        },
+        {
+          $inc: {
+            'holdings.$.amount': -amount,
+          },
+          $set: {
+            'holdings.$.lastUpdated': new Date(),
+          },
+        },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+      logger.info(`✅ Reduced holding atomically: ${amount} ${symbol} for user ${userId}`);
     }
-
-    await portfolio.save();
-    logger.info(`✅ Reduced holding: ${amount} ${symbol} for user ${userId}`);
 
     res.json({
       success: true,
-      data: portfolio,
+      data: updatedPortfolio,
     });
   } catch (error) {
     logger.error(`❌ Reduce holding error: ${error.message}`);
     res.status(500).json({
       success: false,
       message: 'Failed to reduce holding',
+      error: error.message,
     });
   }
 };
