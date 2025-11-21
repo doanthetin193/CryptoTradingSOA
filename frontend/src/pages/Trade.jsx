@@ -122,20 +122,17 @@ export default function Trade() {
         console.log('✅ Trade success response:', res.data);
         showToast('success', `${tradeType === 'buy' ? 'Mua' : 'Bán'} ${coinAmount.toFixed(8)} ${selectedCoin.symbol} thành công!`);
         
-        // Update balance manually from response
+        // Update balance manually from response - NO API CALLS!
         const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
         const newBalance = res.data.newBalance || res.data.balanceAfter;
         
         if (newBalance !== undefined) {
           const updatedUser = { ...currentUser, balance: newBalance };
           localStorage.setItem('user', JSON.stringify(updatedUser));
-          console.log('💰 Balance updated:', newBalance);
+          console.log('💰 Balance updated to:', newBalance);
           
-          // Trigger re-render by calling refreshUser (it will read from localStorage)
-          // But don't await it - let it run in background
-          refreshUser().catch(err => {
-            console.warn('Background refresh failed (ignored):', err.message);
-          });
+          // Dispatch custom event to update AuthContext
+          window.dispatchEvent(new Event('balanceUpdated'));
         }
         
         setAmount('');
