@@ -14,6 +14,7 @@ const serviceDiscovery = require('../shared/utils/serviceDiscovery');
 
 // Import orchestration
 const tradeOrchestration = require('./orchestration/tradeOrchestration');
+const portfolioOrchestration = require('./orchestration/portfolioOrchestration');
 
 // Initialize Express app
 const app = express();
@@ -164,7 +165,10 @@ app.use('/api/users', userProxy);
 // MARKET SERVICE
 app.use('/api/market', optionalAuth, marketProxy);
 
-// PORTFOLIO SERVICE
+// PORTFOLIO SERVICE - Orchestrated route for enriched data
+app.get('/api/portfolio', authMiddleware, portfolioOrchestration.getEnrichedPortfolio);
+
+// PORTFOLIO SERVICE - Other routes via proxy
 app.use('/api/portfolio', authMiddleware, portfolioProxy);
 
 // TRADE SERVICE - Orchestrated routes (before proxy)

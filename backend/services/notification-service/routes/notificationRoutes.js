@@ -20,6 +20,9 @@ router.get('/health', (req, res) => {
 // Send notification (Internal - called by API Gateway)
 router.post('/send', notificationController.sendNotification);
 
+// Get unread count
+router.get('/unread-count', notificationController.getUnreadCount);
+
 // Get user notifications
 router.get('/', notificationController.getNotifications);
 

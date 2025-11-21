@@ -39,7 +39,7 @@ export default function Navbar() {
     try {
       const res = await notificationAPI.getUnreadCount();
       if (res.success) {
-        setUnreadCount(res.data.count || 0);
+        setUnreadCount(res.data.unreadCount || 0);
       }
     } catch (error) {
       console.error('Failed to fetch unread count:', error);

@@ -26,8 +26,18 @@ api.interceptors.request.use(
 
 // Response interceptor - Xử lý lỗi chung
 let isRedirecting = false;
+let redirectTimer = null;
+
 api.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    // Reset redirect flag on successful response
+    if (isRedirecting) {
+      console.log('✅ Successful response received, canceling redirect');
+      clearTimeout(redirectTimer);
+      isRedirecting = false;
+    }
+    return response.data;
+  },
   (error) => {
     const status = error.response?.status;
     const url = error.config?.url;
@@ -38,19 +48,27 @@ api.interceptors.response.use(
       message: error.response?.data?.message || error.message
     });
     
-    // Token hết hạn hoặc invalid
-    if (status === 401 && !isRedirecting) {
-      // Kiểm tra nếu đang ở trang auth thì không redirect
-      if (!window.location.pathname.includes('/auth')) {
+    // Token hết hạn hoặc invalid - CHỈ redirect khi trade/buy/sell KHÔNG có trong URL
+    if (status === 401) {
+      const isAuthPage = window.location.pathname.includes('/auth');
+      const isTradeRequest = url?.includes('/trade/buy') || url?.includes('/trade/sell');
+      
+      // KHÔNG redirect nếu:
+      // 1. Đang ở trang auth
+      // 2. Request là trade/buy/sell (để trade hoàn thành)
+      if (!isAuthPage && !isTradeRequest && !isRedirecting) {
         isRedirecting = true;
         console.error('❌ 401 Unauthorized - Token invalid or expired');
         console.log('📍 Current token:', localStorage.getItem('token')?.substring(0, 20) + '...');
         
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        
-        // Redirect ngay lập tức
-        window.location.href = '/auth';
+        // Delay 500ms để trade response hoàn thành
+        redirectTimer = setTimeout(() => {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/auth';
+        }, 500);
+      } else if (isTradeRequest) {
+        console.warn('⚠️ 401 on trade request - ignoring redirect to allow trade completion');
       }
     }
     
