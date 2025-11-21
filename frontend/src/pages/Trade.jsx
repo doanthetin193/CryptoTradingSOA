@@ -119,12 +119,17 @@ export default function Trade() {
         : await tradeAPI.sell(data);
 
       if (res.success) {
+        console.log('✅ Trade success response:', res.data);
         showToast('success', `${tradeType === 'buy' ? 'Mua' : 'Bán'} ${coinAmount.toFixed(8)} ${selectedCoin.symbol} thành công!`);
         
-        // Reload immediately to refresh balance and portfolio
+        // Refresh user data immediately
+        await refreshUser();
+        setAmount('');
+        
+        // Reload page to refresh portfolio
         setTimeout(() => {
           window.location.reload();
-        }, 800);
+        }, 500);
       } else {
         showToast('error', res.message || 'Giao dịch thất bại');
       }

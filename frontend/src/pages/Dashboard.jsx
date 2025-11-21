@@ -14,7 +14,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import Toast from '../components/Toast';
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [coins, setCoins] = useState([]);
   const [portfolio, setPortfolio] = useState(null);
@@ -60,14 +60,18 @@ export default function Dashboard() {
     });
 
     onTradeConfirmation((trade) => {
+      console.log('📡 WebSocket trade confirmation:', trade);
       showToast('success', `${trade.type === 'buy' ? 'Mua' : 'Bán'} ${trade.amount} ${trade.symbol} thành công!`);
-      fetchData(); // Refresh data
+      
+      // Refresh immediately when trade happens
+      refreshUser().catch(err => console.error('Refresh after trade failed:', err));
+      fetchData();
     });
 
     onPriceAlert((alert) => {
       showToast('warning', `${alert.symbol} đã ${alert.condition === 'above' ? 'vượt' : 'xuống dưới'} $${alert.targetPrice}`);
     });
-  }, [fetchData]);
+  }, [fetchData, refreshUser]);
 
   const showToast = (type, message) => {
     setToast({ type, message, id: Date.now() });
