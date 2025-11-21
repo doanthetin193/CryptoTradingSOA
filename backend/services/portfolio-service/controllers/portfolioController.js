@@ -115,6 +115,7 @@ exports.addHolding = async (req, res) => {
       const totalAmount = existingHolding.amount + amount;
       const totalCost = (existingHolding.amount * existingHolding.averageBuyPrice) + (amount * buyPrice);
       const newAverageBuyPrice = totalCost / totalAmount;
+      const newTotalInvested = existingHolding.totalInvested + (amount * buyPrice);
 
       portfolio = await Portfolio.findOneAndUpdate(
         {
@@ -125,6 +126,7 @@ exports.addHolding = async (req, res) => {
           $set: {
             'holdings.$.amount': totalAmount,
             'holdings.$.averageBuyPrice': newAverageBuyPrice,
+            'holdings.$.totalInvested': newTotalInvested,
             'holdings.$.lastUpdated': new Date(),
           },
         },
@@ -134,7 +136,7 @@ exports.addHolding = async (req, res) => {
         }
       );
 
-      logger.info(`✅ Updated holding atomically: ${amount} ${symbol} for user ${userId}`);
+      logger.info(`✅ Updated holding atomically: +${amount} ${symbol} (Total: ${totalAmount}, Avg: ${newAverageBuyPrice.toFixed(2)}, Invested: ${newTotalInvested.toFixed(2)}) for user ${userId}`);
     } else {
       // ==========================================
       // ATOMIC ADD: New holding
