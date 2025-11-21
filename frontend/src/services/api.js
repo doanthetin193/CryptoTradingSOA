@@ -25,14 +25,33 @@ api.interceptors.request.use(
 );
 
 // Response interceptor - Xử lý lỗi chung
+let isRedirecting = false;
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    // Token hết hạn
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/auth';
+    const status = error.response?.status;
+    const url = error.config?.url;
+    
+    console.log('🔴 API Error:', {
+      status,
+      url,
+      message: error.response?.data?.message || error.message
+    });
+    
+    // Token hết hạn hoặc invalid
+    if (status === 401 && !isRedirecting) {
+      // Kiểm tra nếu đang ở trang auth thì không redirect
+      if (!window.location.pathname.includes('/auth')) {
+        isRedirecting = true;
+        console.error('❌ 401 Unauthorized - Token invalid or expired');
+        console.log('📍 Current token:', localStorage.getItem('token')?.substring(0, 20) + '...');
+        
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        
+        // Redirect ngay lập tức
+        window.location.href = '/auth';
+      }
     }
     
     const errorMessage = error.response?.data?.message || error.message || 'Something went wrong';
