@@ -1,13 +1,25 @@
 const axios = require('axios');
 const logger = require('./logger');
+const { createCircuitBreaker } = require('./circuitBreaker');
 
 /**
  * HTTP Client để gọi REST API giữa các services
- * Hỗ trợ retry logic và error handling
+ * Hỗ trợ Circuit Breaker, Timeout, và Error Handling
  */
 
 class HttpClient {
-  constructor(baseURL, timeout = 5000) {
+  constructor(baseURL, timeout = 5000, serviceName = 'UnknownService') {
+    this.baseURL = baseURL;
+    this.timeout = timeout;
+    this.serviceName = serviceName;
+    
+    // Create circuit breaker for this service
+    this.circuitBreaker = createCircuitBreaker(serviceName, {
+      timeout: timeout,
+      errorThresholdPercentage: 50,
+      resetTimeout: 30000,
+    });
+
     this.client = axios.create({
       baseURL,
       timeout,
@@ -51,11 +63,15 @@ class HttpClient {
   }
 
   /**
-   * GET request
+   * GET request with circuit breaker
    */
   async get(url, config = {}) {
     try {
-      const response = await this.client.get(url, config);
+      const response = await this.circuitBreaker.fire({
+        method: 'GET',
+        url: `${this.baseURL}${url}`,
+        ...config,
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -63,11 +79,16 @@ class HttpClient {
   }
 
   /**
-   * POST request
+   * POST request with circuit breaker
    */
   async post(url, data = {}, config = {}) {
     try {
-      const response = await this.client.post(url, data, config);
+      const response = await this.circuitBreaker.fire({
+        method: 'POST',
+        url: `${this.baseURL}${url}`,
+        data,
+        ...config,
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -75,11 +96,16 @@ class HttpClient {
   }
 
   /**
-   * PUT request
+   * PUT request with circuit breaker
    */
   async put(url, data = {}, config = {}) {
     try {
-      const response = await this.client.put(url, data, config);
+      const response = await this.circuitBreaker.fire({
+        method: 'PUT',
+        url: `${this.baseURL}${url}`,
+        data,
+        ...config,
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -87,11 +113,15 @@ class HttpClient {
   }
 
   /**
-   * DELETE request
+   * DELETE request with circuit breaker
    */
   async delete(url, config = {}) {
     try {
-      const response = await this.client.delete(url, config);
+      const response = await this.circuitBreaker.fire({
+        method: 'DELETE',
+        url: `${this.baseURL}${url}`,
+        ...config,
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -102,6 +132,27 @@ class HttpClient {
    * Handle errors
    */
   handleError(error) {
+    // Handle circuit breaker specific errors
+    if (error.message && error.message.includes('Breaker is open')) {
+      logger.error(`🔴 [${this.serviceName}] Circuit breaker is OPEN - Service unavailable`);
+      return {
+        status: 503,
+        message: `${this.serviceName} is temporarily unavailable. Please try again later.`,
+        data: null,
+        circuitOpen: true,
+      };
+    }
+
+    if (error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
+      logger.error(`⏱️ [${this.serviceName}] Request timeout`);
+      return {
+        status: 504,
+        message: `${this.serviceName} request timeout`,
+        data: null,
+        timeout: true,
+      };
+    }
+
     if (error.response) {
       return {
         status: error.response.status,
@@ -111,7 +162,7 @@ class HttpClient {
     } else if (error.request) {
       return {
         status: 503,
-        message: 'Service unavailable',
+        message: `${this.serviceName} unavailable`,
         data: null,
       };
     } else {
@@ -121,6 +172,25 @@ class HttpClient {
         data: null,
       };
     }
+  }
+
+  /**
+   * Get circuit breaker status
+   */
+  getCircuitStatus() {
+    return {
+      serviceName: this.serviceName,
+      state: this.circuitBreaker.opened ? 'OPEN' : this.circuitBreaker.halfOpen ? 'HALF-OPEN' : 'CLOSED',
+      isHealthy: !this.circuitBreaker.opened,
+      stats: this.circuitBreaker.stats,
+    };
+  }
+
+  /**
+   * Check if service is healthy
+   */
+  isHealthy() {
+    return !this.circuitBreaker.opened;
   }
 
   /**

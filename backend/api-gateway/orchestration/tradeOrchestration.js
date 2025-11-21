@@ -2,10 +2,12 @@ const axios = require('axios');
 const Joi = require('joi');
 const logger = require('../../shared/utils/logger');
 const websocket = require('../../shared/utils/websocket');
+const { createCircuitBreaker } = require('../../shared/utils/circuitBreaker');
 
 /**
  * Trade Orchestration
  * API Gateway orchestrates calls to multiple services for buy/sell operations
+ * Includes Circuit Breaker pattern for resilience
  */
 
 // Service URLs
@@ -17,6 +19,18 @@ const SERVICES = {
   TRADE: getServiceUrl(3004),
   NOTIFICATION: getServiceUrl(3005),
 };
+
+// Circuit Breakers for each service
+const SERVICE_BREAKERS = {
+  USER: createCircuitBreaker('UserService', { timeout: 5000 }),
+  MARKET: createCircuitBreaker('MarketService', { timeout: 5000 }),
+  PORTFOLIO: createCircuitBreaker('PortfolioService', { timeout: 5000 }),
+  TRADE: createCircuitBreaker('TradeService', { timeout: 5000 }),
+  NOTIFICATION: createCircuitBreaker('NotificationService', { timeout: 3000 }), // Lower timeout for notifications
+};
+
+// Request timeout configuration
+const REQUEST_TIMEOUT = 5000; // 5 seconds
 
 // Validation schemas
 const buySchema = Joi.object({
@@ -33,6 +47,77 @@ const sellSchema = Joi.object({
 // Trading configuration
 const TRADING_FEE_PERCENTAGE = 0.1; // 0.1%
 const MIN_TRADE_AMOUNT_USD = 5; // Minimum $5 USD per trade
+
+/**
+ * Helper: Call service with circuit breaker
+ * @param {string} serviceName - Name of the service
+ * @param {object} config - Axios config
+ * @returns {Promise} Response data
+ */
+async function callServiceWithBreaker(serviceName, config) {
+  const breaker = SERVICE_BREAKERS[serviceName];
+  if (!breaker) {
+    throw new Error(`Circuit breaker not found for service: ${serviceName}`);
+  }
+
+  try {
+    const response = await breaker.fire(config);
+    return response;
+  } catch (error) {
+    // Check if circuit is open
+    if (breaker.opened) {
+      logger.error(`🔴 [${serviceName}] Circuit is OPEN - Service unavailable`);
+      const err = new Error(`${serviceName} is temporarily unavailable`);
+      err.serviceUnavailable = true;
+      err.circuitOpen = true;
+      throw err;
+    }
+
+    // Check if timeout
+    if (error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
+      logger.error(`⏱️ [${serviceName}] Request timeout after ${REQUEST_TIMEOUT}ms`);
+      const err = new Error(`${serviceName} request timeout`);
+      err.timeout = true;
+      throw err;
+    }
+
+    throw error;
+  }
+}
+
+/**
+ * Get circuit breaker health status
+ */
+function getCircuitBreakerStatus() {
+  const status = {};
+  for (const [name, breaker] of Object.entries(SERVICE_BREAKERS)) {
+    status[name] = {
+      state: breaker.opened ? 'OPEN' : breaker.halfOpen ? 'HALF-OPEN' : 'CLOSED',
+      isHealthy: !breaker.opened,
+      stats: {
+        fires: breaker.stats.fires,
+        successes: breaker.stats.successes,
+        failures: breaker.stats.failures,
+        timeouts: breaker.stats.timeouts,
+        rejects: breaker.stats.rejects,
+      },
+    };
+  }
+  return status;
+}
+
+/**
+ * @desc    Get circuit breaker health status
+ * @route   GET /api/trade/health/circuit-breakers
+ * @access  Private
+ */
+exports.getCircuitBreakerStatus = (req, res) => {
+  const status = getCircuitBreakerStatus();
+  res.json({
+    success: true,
+    data: status,
+  });
+};
 
 /**
  * @desc    Buy coin - Orchestrates multiple service calls
@@ -80,7 +165,11 @@ exports.buyCoin = async (req, res) => {
 
     // STEP 1: Get current price from Market Service
     logger.info(`🔄 [BUY] Step 1: Getting price for ${coinId}`);
-    const priceResponse = await axios.get(`${SERVICES.MARKET}/price/${coinId}`);
+    const priceResponse = await callServiceWithBreaker('MARKET', {
+      method: 'GET',
+      url: `${SERVICES.MARKET}/price/${coinId}`,
+      timeout: REQUEST_TIMEOUT,
+    });
     
     if (!priceResponse.data.success) {
       return res.status(503).json({
@@ -107,8 +196,11 @@ exports.buyCoin = async (req, res) => {
 
     // STEP 2: Get user balance from User Service
     logger.info(`🔄 [BUY] Step 2: Checking balance for user ${userId}`);
-    const balanceResponse = await axios.get(`${SERVICES.USER}/balance`, {
+    const balanceResponse = await callServiceWithBreaker('USER', {
+      method: 'GET',
+      url: `${SERVICES.USER}/balance`,
       headers: { 'X-User-Id': userId },
+      timeout: REQUEST_TIMEOUT,
     });
 
     const currentBalance = balanceResponse.data.data.balance;
@@ -123,19 +215,18 @@ exports.buyCoin = async (req, res) => {
     // STEP 3: Update user balance (deduct cost)
     logger.info(`🔄 [BUY] Step 3: Deducting ${finalCost} from balance`);
     try {
-      const updateBalanceResponse = await axios.put(
-        `${SERVICES.USER}/balance`,
-        {
+      const updateBalanceResponse = await callServiceWithBreaker('USER', {
+        method: 'PUT',
+        url: `${SERVICES.USER}/balance`,
+        data: {
           userId,
           amount: -finalCost,
           type: 'trade',
           description: `Buy ${amount} ${symbol} at ${currentPrice} USDT`,
         },
-        {
-          headers: { 'X-User-Id': userId },
-          timeout: 5000,
-        }
-      );
+        headers: { 'X-User-Id': userId },
+        timeout: REQUEST_TIMEOUT,
+      });
 
       const newBalance = updateBalanceResponse.data.data.balance;
       transactionState.balanceDeducted = true;
@@ -145,20 +236,19 @@ exports.buyCoin = async (req, res) => {
       // STEP 4: Update portfolio (add holding)
       logger.info(`🔄 [BUY] Step 4: Adding ${amount} ${symbol} to portfolio`);
       try {
-        await axios.post(
-          `${SERVICES.PORTFOLIO}/holding`,
-          {
+        await callServiceWithBreaker('PORTFOLIO', {
+          method: 'POST',
+          url: `${SERVICES.PORTFOLIO}/holding`,
+          data: {
             symbol: symbol.toUpperCase(),
             coinId: coinId.toLowerCase(),
             name: coinName,
             amount,
             buyPrice: currentPrice,
           },
-          {
-            headers: { 'X-User-Id': userId },
-            timeout: 5000,
-          }
-        );
+          headers: { 'X-User-Id': userId },
+          timeout: REQUEST_TIMEOUT,
+        });
 
         transactionState.holdingAdded = true;
         transactionState.addedHolding = { symbol: symbol.toUpperCase(), amount };
@@ -167,9 +257,10 @@ exports.buyCoin = async (req, res) => {
         // STEP 5: Create trade record
         logger.info(`🔄 [BUY] Step 5: Creating trade record`);
         try {
-          const tradeResponse = await axios.post(
-            `${SERVICES.TRADE}/`,
-            {
+          const tradeResponse = await callServiceWithBreaker('TRADE', {
+            method: 'POST',
+            url: `${SERVICES.TRADE}/`,
+            data: {
               userId,
               type: 'buy',
               symbol: symbol.toUpperCase(),
@@ -183,11 +274,9 @@ exports.buyCoin = async (req, res) => {
               balanceBefore: currentBalance,
               balanceAfter: newBalance,
             },
-            {
-              headers: { 'X-User-Id': userId },
-              timeout: 5000,
-            }
-          );
+            headers: { 'X-User-Id': userId },
+            timeout: REQUEST_TIMEOUT,
+          });
 
           const trade = tradeResponse.data.data;
           transactionState.tradeRecorded = true;
@@ -261,17 +350,16 @@ exports.buyCoin = async (req, res) => {
     if (transactionState.holdingAdded && transactionState.addedHolding) {
       try {
         logger.info(`🔄 [BUY] Rolling back: Removing ${transactionState.addedHolding.amount} ${transactionState.addedHolding.symbol}`);
-        await axios.put(
-          `${SERVICES.PORTFOLIO}/holding`,
-          {
+        await callServiceWithBreaker('PORTFOLIO', {
+          method: 'PUT',
+          url: `${SERVICES.PORTFOLIO}/holding`,
+          data: {
             symbol: transactionState.addedHolding.symbol,
             amount: transactionState.addedHolding.amount,
           },
-          {
-            headers: { 'X-User-Id': userId },
-            timeout: 5000,
-          }
-        );
+          headers: { 'X-User-Id': userId },
+          timeout: REQUEST_TIMEOUT * 2, // Longer timeout for rollback
+        });
         logger.info(`✅ [BUY] Rollback: Holding removed`);
       } catch (rollbackError) {
         const errMsg = `Failed to rollback holding: ${rollbackError.message}`;
@@ -284,19 +372,18 @@ exports.buyCoin = async (req, res) => {
     if (transactionState.balanceDeducted && transactionState.deductedAmount > 0) {
       try {
         logger.info(`🔄 [BUY] Rolling back: Refunding ${transactionState.deductedAmount} USDT`);
-        await axios.put(
-          `${SERVICES.USER}/balance`,
-          {
+        await callServiceWithBreaker('USER', {
+          method: 'PUT',
+          url: `${SERVICES.USER}/balance`,
+          data: {
             userId,
             amount: transactionState.deductedAmount,
             type: 'rollback',
             description: `Rollback failed buy transaction for ${amount} ${symbol}`,
           },
-          {
-            headers: { 'X-User-Id': userId },
-            timeout: 5000,
-          }
-        );
+          headers: { 'X-User-Id': userId },
+          timeout: REQUEST_TIMEOUT * 2, // Longer timeout for rollback
+        });
         logger.info(`✅ [BUY] Rollback: Balance refunded`);
       } catch (rollbackError) {
         const errMsg = `Failed to rollback balance: ${rollbackError.message}`;
