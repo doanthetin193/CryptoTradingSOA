@@ -172,6 +172,9 @@ app.use('/api/portfolio', authMiddleware, portfolioProxy);
 app.post('/api/trade/buy', express.json(), authMiddleware, tradeOrchestration.buyCoin);
 app.post('/api/trade/sell', express.json(), authMiddleware, tradeOrchestration.sellCoin);
 
+// HEALTH CHECK - Circuit Breaker Status
+app.get('/api/health/circuit-breakers', authMiddleware, tradeOrchestration.getCircuitBreakerStatus);
+
 // TRADE SERVICE - Other routes via proxy
 app.use('/api/trade', authMiddleware, tradeProxy);
 
