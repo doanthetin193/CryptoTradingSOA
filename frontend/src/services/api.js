@@ -40,18 +40,23 @@ api.interceptors.response.use(
   },
   (error) => {
     const status = error.response?.status;
-    const url = error.config?.url;
+    const url = error.config?.url || '';
+    const fullUrl = error.config?.baseURL ? error.config.baseURL + url : url;
     
     console.log('🔴 API Error:', {
       status,
       url,
+      fullUrl,
       message: error.response?.data?.message || error.message
     });
     
     // Token hết hạn hoặc invalid - CHỈ redirect khi trade/buy/sell KHÔNG có trong URL
     if (status === 401) {
       const isAuthPage = window.location.pathname.includes('/auth');
-      const isTradeRequest = url?.includes('/trade/buy') || url?.includes('/trade/sell');
+      const isTradeRequest = url.includes('trade/buy') || 
+                            url.includes('trade/sell') || 
+                            fullUrl.includes('trade/buy') || 
+                            fullUrl.includes('trade/sell');
       
       // KHÔNG redirect nếu:
       // 1. Đang ở trang auth
@@ -60,6 +65,7 @@ api.interceptors.response.use(
         isRedirecting = true;
         console.error('❌ 401 Unauthorized - Token invalid or expired');
         console.log('📍 Current token:', localStorage.getItem('token')?.substring(0, 20) + '...');
+        console.log('📍 Will redirect to /auth in 500ms...');
         
         // Delay 500ms để trade response hoàn thành
         redirectTimer = setTimeout(() => {

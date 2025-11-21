@@ -35,6 +35,19 @@ export default function AuthProvider({ children }) {
     };
     
     initAuth();
+
+    // Listen for manual balance updates from Trade page
+    const handleBalanceUpdate = (event) => {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+        console.log('💰 Balance updated from event:', userData.balance);
+      }
+    };
+
+    window.addEventListener('balanceUpdated', handleBalanceUpdate);
+    return () => window.removeEventListener('balanceUpdated', handleBalanceUpdate);
   }, []);
 
   // Login
