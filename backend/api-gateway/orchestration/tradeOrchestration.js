@@ -436,6 +436,8 @@ exports.sellCoin = async (req, res) => {
     holdingReduced: false,
     reducedHolding: null,
     originalHoldingAmount: 0,
+    originalHolding: null,
+    coinName: null,
     tradeRecorded: false,
     tradeId: null,
   };
@@ -470,8 +472,11 @@ exports.sellCoin = async (req, res) => {
 
     // STEP 1: Get portfolio to check holdings
     logger.info(`🔄 [SELL] Step 1: Checking holdings for ${symbol}`);
-    const portfolioResponse = await axios.get(`${SERVICES.PORTFOLIO}/`, {
+    const portfolioResponse = await callServiceWithBreaker('PORTFOLIO', {
+      method: 'GET',
+      url: `${SERVICES.PORTFOLIO}/`,
       headers: { 'X-User-Id': userId },
+      timeout: REQUEST_TIMEOUT,
     });
 
     const portfolio = portfolioResponse.data.data;
@@ -484,12 +489,23 @@ exports.sellCoin = async (req, res) => {
       });
     }
 
+    // Save holding data for potential rollback
+    transactionState.originalHolding = holding;
+    transactionState.originalHoldingAmount = holding.amount;
+
     // STEP 2: Get current price from Market Service
     logger.info(`🔄 [SELL] Step 2: Getting price for ${holding.coinId}`);
-    const priceResponse = await axios.get(`${SERVICES.MARKET}/price/${holding.coinId}`);
+    const priceResponse = await callServiceWithBreaker('MARKET', {
+      method: 'GET',
+      url: `${SERVICES.MARKET}/price/${holding.coinId}`,
+      timeout: REQUEST_TIMEOUT,
+    });
 
     const currentPrice = priceResponse.data.data.price;
     const coinName = priceResponse.data.data.name;
+
+    // Save coinName for potential rollback
+    transactionState.coinName = coinName;
 
     // Calculate proceeds
     const totalProceeds = amount * currentPrice;
@@ -498,30 +514,29 @@ exports.sellCoin = async (req, res) => {
 
     // STEP 3: Get current balance
     logger.info(`🔄 [SELL] Step 3: Getting current balance`);
-    const balanceResponse = await axios.get(`${SERVICES.USER}/balance`, {
+    const balanceResponse = await callServiceWithBreaker('USER', {
+      method: 'GET',
+      url: `${SERVICES.USER}/balance`,
       headers: { 'X-User-Id': userId },
+      timeout: REQUEST_TIMEOUT,
     });
     const currentBalance = balanceResponse.data.data.balance;
-
-    // Save original holding amount for rollback
-    transactionState.originalHoldingAmount = holding.amount;
 
     // STEP 4: Update user balance (add proceeds)
     logger.info(`🔄 [SELL] Step 4: Adding ${finalProceeds} to balance`);
     try {
-      const updateBalanceResponse = await axios.put(
-        `${SERVICES.USER}/balance`,
-        {
+      const updateBalanceResponse = await callServiceWithBreaker('USER', {
+        method: 'PUT',
+        url: `${SERVICES.USER}/balance`,
+        data: {
           userId,
           amount: finalProceeds,
           type: 'trade',
           description: `Sell ${amount} ${symbol} at ${currentPrice} USDT`,
         },
-        {
-          headers: { 'X-User-Id': userId },
-          timeout: 5000,
-        }
-      );
+        headers: { 'X-User-Id': userId },
+        timeout: REQUEST_TIMEOUT,
+      });
 
       const newBalance = updateBalanceResponse.data.data.balance;
       transactionState.balanceAdded = true;
@@ -531,17 +546,16 @@ exports.sellCoin = async (req, res) => {
       // STEP 5: Update portfolio (reduce holding)
       logger.info(`🔄 [SELL] Step 5: Reducing ${amount} ${symbol} from portfolio`);
       try {
-        await axios.put(
-          `${SERVICES.PORTFOLIO}/holding`,
-          {
+        await callServiceWithBreaker('PORTFOLIO', {
+          method: 'PUT',
+          url: `${SERVICES.PORTFOLIO}/holding`,
+          data: {
             symbol: symbol.toUpperCase(),
             amount,
           },
-          {
-            headers: { 'X-User-Id': userId },
-            timeout: 5000,
-          }
-        );
+          headers: { 'X-User-Id': userId },
+          timeout: REQUEST_TIMEOUT,
+        });
 
         transactionState.holdingReduced = true;
         transactionState.reducedHolding = { symbol: symbol.toUpperCase(), amount };
@@ -549,77 +563,85 @@ exports.sellCoin = async (req, res) => {
 
     // STEP 6: Create trade record
     logger.info(`🔄 [SELL] Step 6: Creating trade record`);
-    const profitLoss = (currentPrice - holding.averageBuyPrice) * amount - fee;
-    
-    const tradeResponse = await axios.post(
-      `${SERVICES.TRADE}/`,
-      {
-        userId,
+    try {
+      const profitLoss = (currentPrice - holding.averageBuyPrice) * amount - fee;
+      
+      const tradeResponse = await callServiceWithBreaker('TRADE', {
+        method: 'POST',
+        url: `${SERVICES.TRADE}/`,
+        data: {
+          userId,
+          type: 'sell',
+          symbol: symbol.toUpperCase(),
+          coinId: holding.coinId,
+          coinName,
+          amount,
+          price: currentPrice,
+          totalCost: totalProceeds,
+          fee,
+          feePercentage: TRADING_FEE_PERCENTAGE,
+          balanceBefore: currentBalance,
+          balanceAfter: newBalance,
+        },
+        headers: { 'X-User-Id': userId },
+        timeout: REQUEST_TIMEOUT,
+      });
+
+      const trade = tradeResponse.data.data;
+      transactionState.tradeRecorded = true;
+      transactionState.tradeId = trade._id;
+      logger.info(`✅ [SELL] Step 6 completed: Trade recorded`);
+
+      // STEP 7: Send notification (non-blocking)
+      logger.info(`🔄 [SELL] Step 7: Sending notification`);
+      axios.post(
+        `${SERVICES.NOTIFICATION}/send`,
+        {
+          userId,
+          type: 'trade',
+          title: 'Sell Order Completed',
+          message: `Successfully sold ${amount} ${symbol} at ${currentPrice} USDT. P/L: ${profitLoss.toFixed(2)} USDT`,
+          data: { 
+            tradeId: trade._id, 
+            type: 'sell', 
+            symbol, 
+            amount,
+            profitLoss: profitLoss.toFixed(2),
+          },
+        },
+        {
+          headers: { 'X-User-Id': userId },
+        }
+      ).catch(err => logger.warn(`Failed to send notification: ${err.message}`));
+
+      // STEP 8: Send real-time WebSocket notification
+      logger.info(`🔄 [SELL] Step 8: Sending WebSocket notification`);
+      websocket.sendTradeConfirmation(userId, {
         type: 'sell',
-        symbol: symbol.toUpperCase(),
-        coinId: holding.coinId,
-        coinName,
+        symbol,
         amount,
         price: currentPrice,
-        totalCost: totalProceeds,
-        fee,
-        feePercentage: TRADING_FEE_PERCENTAGE,
-        balanceBefore: currentBalance,
-        balanceAfter: newBalance,
-      },
-      {
-        headers: { 'X-User-Id': userId },
-      }
-    );
-
-    const trade = tradeResponse.data.data;
-
-    // STEP 7: Send notification (non-blocking)
-    logger.info(`🔄 [SELL] Step 7: Sending notification`);
-    axios.post(
-      `${SERVICES.NOTIFICATION}/send`,
-      {
-        userId,
-        type: 'trade',
-        title: 'Sell Order Completed',
-        message: `Successfully sold ${amount} ${symbol} at ${currentPrice} USDT. P/L: ${profitLoss.toFixed(2)} USDT`,
-        data: { 
-          tradeId: trade._id, 
-          type: 'sell', 
-          symbol, 
-          amount,
-          profitLoss: profitLoss.toFixed(2),
-        },
-      },
-      {
-        headers: { 'X-User-Id': userId },
-      }
-    ).catch(err => logger.warn(`Failed to send notification: ${err.message}`));
-
-    // STEP 8: Send real-time WebSocket notification
-    logger.info(`🔄 [SELL] Step 8: Sending WebSocket notification`);
-    websocket.sendTradeConfirmation(userId, {
-      type: 'sell',
-      symbol,
-      amount,
-      price: currentPrice,
-      totalProceeds: finalProceeds,
-      profitLoss,
-      newBalance,
-      timestamp: new Date(),
-    });
-
-    logger.info(`✅ [SELL] Completed: ${amount} ${symbol} for user ${userId}`);
-
-    res.status(200).json({
-      success: true,
-      message: 'Sell order completed successfully',
-      data: {
-        trade,
-        newBalance,
+        totalProceeds: finalProceeds,
         profitLoss,
-      },
-    });
+        newBalance,
+        timestamp: new Date(),
+      });
+
+      logger.info(`✅ [SELL] Completed: ${amount} ${symbol} for user ${userId}`);
+
+      res.status(200).json({
+        success: true,
+        message: 'Sell order completed successfully',
+        data: {
+          trade,
+          newBalance,
+          profitLoss,
+        },
+      });
+    } catch (tradeError) {
+      logger.error(`❌ [SELL] Step 6 failed: ${tradeError.message}`);
+      throw tradeError;
+    }
       } catch (portfolioError) {
         logger.error(`❌ [SELL] Step 5 failed: ${portfolioError.message}`);
         throw portfolioError;
@@ -639,23 +661,22 @@ exports.sellCoin = async (req, res) => {
     const rollbackErrors = [];
 
     // Rollback Step 5: Restore holding if reduced
-    if (transactionState.holdingReduced && transactionState.reducedHolding) {
+    if (transactionState.holdingReduced && transactionState.reducedHolding && transactionState.originalHolding) {
       try {
         logger.info(`🔄 [SELL] Rolling back: Restoring ${transactionState.reducedHolding.amount} ${transactionState.reducedHolding.symbol}`);
-        await axios.post(
-          `${SERVICES.PORTFOLIO}/holding`,
-          {
+        await callServiceWithBreaker('PORTFOLIO', {
+          method: 'POST',
+          url: `${SERVICES.PORTFOLIO}/holding`,
+          data: {
             symbol: transactionState.reducedHolding.symbol,
-            coinId: coinId.toLowerCase(),
-            name: coinName,
+            coinId: transactionState.originalHolding.coinId.toLowerCase(),
+            name: transactionState.coinName,
             amount: transactionState.reducedHolding.amount,
-            buyPrice: holding.averageBuyPrice,
+            buyPrice: transactionState.originalHolding.averageBuyPrice,
           },
-          {
-            headers: { 'X-User-Id': userId },
-            timeout: 5000,
-          }
-        );
+          headers: { 'X-User-Id': userId },
+          timeout: REQUEST_TIMEOUT * 2,
+        });
         logger.info(`✅ [SELL] Rollback: Holding restored`);
       } catch (rollbackError) {
         const errMsg = `Failed to rollback holding: ${rollbackError.message}`;
@@ -668,19 +689,18 @@ exports.sellCoin = async (req, res) => {
     if (transactionState.balanceAdded && transactionState.addedAmount > 0) {
       try {
         logger.info(`🔄 [SELL] Rolling back: Deducting ${transactionState.addedAmount} USDT`);
-        await axios.put(
-          `${SERVICES.USER}/balance`,
-          {
+        await callServiceWithBreaker('USER', {
+          method: 'PUT',
+          url: `${SERVICES.USER}/balance`,
+          data: {
             userId,
             amount: -transactionState.addedAmount,
             type: 'rollback',
             description: `Rollback failed sell transaction for ${amount} ${symbol}`,
           },
-          {
-            headers: { 'X-User-Id': userId },
-            timeout: 5000,
-          }
-        );
+          headers: { 'X-User-Id': userId },
+          timeout: REQUEST_TIMEOUT * 2,
+        });
         logger.info(`✅ [SELL] Rollback: Balance deducted`);
       } catch (rollbackError) {
         const errMsg = `Failed to rollback balance: ${rollbackError.message}`;
