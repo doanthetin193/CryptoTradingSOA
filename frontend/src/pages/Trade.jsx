@@ -106,11 +106,17 @@ export default function Trade() {
 
     setTrading(true);
     try {
-      const data = {
-        symbol: selectedCoin.symbol,
-        coinId: selectedCoin.coinId,
-        amount: coinAmount,
-      };
+      // Prepare data based on trade type
+      const data = tradeType === 'buy' 
+        ? {
+            symbol: selectedCoin.symbol,
+            coinId: selectedCoin.coinId,  // coinId only needed for buy
+            amount: coinAmount,
+          }
+        : {
+            symbol: selectedCoin.symbol,  // sell only needs symbol and amount
+            amount: coinAmount,
+          };
 
       console.log('Trade request:', data);
 

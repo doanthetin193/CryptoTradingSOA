@@ -253,7 +253,10 @@ exports.reduceHolding = async (req, res) => {
       );
       logger.info(`✅ Removed holding atomically: ${symbol} for user ${userId}`);
     } else {
-      // Reduce amount atomically
+      // Reduce amount and totalInvested proportionally
+      const reducedInvested = (amount / holding.amount) * holding.totalInvested;
+      const newTotalInvested = holding.totalInvested - reducedInvested;
+
       updatedPortfolio = await Portfolio.findOneAndUpdate(
         {
           userId,
@@ -264,6 +267,7 @@ exports.reduceHolding = async (req, res) => {
             'holdings.$.amount': -amount,
           },
           $set: {
+            'holdings.$.totalInvested': newTotalInvested,
             'holdings.$.lastUpdated': new Date(),
           },
         },
@@ -272,7 +276,7 @@ exports.reduceHolding = async (req, res) => {
           runValidators: true,
         }
       );
-      logger.info(`✅ Reduced holding atomically: ${amount} ${symbol} for user ${userId}`);
+      logger.info(`✅ Reduced holding atomically: -${amount} ${symbol} (Remaining: ${newAmount}, Invested: ${newTotalInvested.toFixed(2)}) for user ${userId}`);
     }
 
     res.json({
