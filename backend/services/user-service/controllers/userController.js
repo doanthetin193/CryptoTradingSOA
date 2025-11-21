@@ -277,33 +277,70 @@ exports.updateBalance = async (req, res) => {
       });
     }
 
-    const user = await User.findById(userId);
-    if (!user) {
+    if (!isFinite(amount) || isNaN(amount)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid amount',
+      });
+    }
+
+    // First, check current balance if deducting (amount < 0)
+    if (amount < 0) {
+      const user = await User.findById(userId).select('balance');
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found',
+        });
+      }
+
+      if (user.balance + amount < 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Insufficient balance',
+          currentBalance: user.balance,
+          requested: Math.abs(amount),
+        });
+      }
+    }
+
+    // ==========================================
+    // ATOMIC OPERATION: Update balance and history
+    // ==========================================
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        $inc: { balance: amount },
+        $push: {
+          balanceHistory: {
+            amount,
+            type: type || 'trade',
+            description: description || 'Balance update',
+            timestamp: new Date(),
+          },
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!updatedUser) {
       return res.status(404).json({
         success: false,
         message: 'User not found',
       });
     }
 
-    // Check if balance would go negative
-    if (user.balance + amount < 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Insufficient balance',
-      });
-    }
-
-    // Update balance
-    await user.updateBalance(amount, type || 'trade', description || 'Balance update');
-
-    logger.info(`💰 Balance updated for user ${userId}: ${amount > 0 ? '+' : ''}${amount} USDT`);
+    logger.info(`💰 Balance updated atomically for user ${userId}: ${amount > 0 ? '+' : ''}${amount} USDT`);
 
     res.json({
       success: true,
       message: 'Balance updated successfully',
       data: {
-        userId: user._id,
-        balance: user.balance,
+        userId: updatedUser._id,
+        balance: updatedUser.balance,
         change: amount,
       },
     });
