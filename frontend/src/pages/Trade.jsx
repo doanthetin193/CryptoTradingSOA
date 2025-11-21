@@ -5,7 +5,7 @@ import { Search, TrendingUp, TrendingDown, Loader } from 'lucide-react';
 import Toast from '../components/Toast';
 
 export default function Trade() {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, login } = useAuth();
   const [tradeType, setTradeType] = useState('buy');
   const [inputType, setInputType] = useState('amount'); // 'amount' or 'total'
   const [coins, setCoins] = useState([]);
@@ -122,14 +122,23 @@ export default function Trade() {
         console.log('✅ Trade success response:', res.data);
         showToast('success', `${tradeType === 'buy' ? 'Mua' : 'Bán'} ${coinAmount.toFixed(8)} ${selectedCoin.symbol} thành công!`);
         
-        // Refresh user data immediately
-        await refreshUser();
-        setAmount('');
+        // Update balance manually from response
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const newBalance = res.data.newBalance || res.data.balanceAfter;
         
-        // Reload page to refresh portfolio
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
+        if (newBalance !== undefined) {
+          const updatedUser = { ...currentUser, balance: newBalance };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          console.log('💰 Balance updated:', newBalance);
+          
+          // Trigger re-render by calling refreshUser (it will read from localStorage)
+          // But don't await it - let it run in background
+          refreshUser().catch(err => {
+            console.warn('Background refresh failed (ignored):', err.message);
+          });
+        }
+        
+        setAmount('');
       } else {
         showToast('error', res.message || 'Giao dịch thất bại');
       }

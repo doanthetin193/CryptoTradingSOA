@@ -51,6 +51,38 @@ exports.sendNotification = async (req, res) => {
 };
 
 /**
+ * @desc    Get unread count
+ * @route   GET /unread-count
+ * @access  Private
+ */
+exports.getUnreadCount = async (req, res) => {
+  try {
+    const userId = req.headers['x-user-id'];
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User ID not found',
+      });
+    }
+
+    const unreadCount = await Notification.countDocuments({ userId, status: 'unread' });
+
+    res.json({
+      success: true,
+      data: {
+        unreadCount,
+      },
+    });
+  } catch (error) {
+    logger.error(`❌ Get unread count error: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get unread count',
+    });
+  }
+};
+
+/**
  * @desc    Get user notifications
  * @route   GET /
  * @access  Private
