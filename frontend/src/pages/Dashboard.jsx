@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { marketAPI, portfolioAPI } from '../services/api';
 import { onPriceUpdate, onTradeConfirmation, onPriceAlert } from '../services/websocket';
@@ -8,13 +9,15 @@ import {
   TrendingDown, 
   Briefcase,
   DollarSign,
-  RefreshCw 
+  RefreshCw,
+  ExternalLink
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Toast from '../components/Toast';
 
 export default function Dashboard() {
   const { user, refreshUser } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [coins, setCoins] = useState([]);
   const [portfolio, setPortfolio] = useState(null);
@@ -199,14 +202,21 @@ export default function Dashboard() {
             </thead>
             <tbody>
               {coins.map((coin) => (
-                <tr key={coin.symbol} className="border-b border-gray-100 hover:bg-gray-50">
+                <tr 
+                  key={coin.symbol} 
+                  className="border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition"
+                  onClick={() => navigate(`/coin/${coin.coinId}`)}
+                >
                   <td className="py-4 px-4">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-600">
                         {coin.symbol.substring(0, 1)}
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-900">{coin.symbol}</p>
+                        <div className="flex items-center space-x-2">
+                          <p className="font-semibold text-gray-900">{coin.symbol}</p>
+                          <ExternalLink className="w-3 h-3 text-gray-400" />
+                        </div>
                         <p className="text-xs text-gray-500">{coin.name}</p>
                       </div>
                     </div>

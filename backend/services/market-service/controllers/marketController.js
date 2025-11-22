@@ -144,6 +144,7 @@ exports.getCoinPrice = async (req, res) => {
         vs_currencies: 'usd',
         include_24hr_change: true,
         include_24hr_vol: true,
+        include_market_cap: true,
       },
     });
 
@@ -162,6 +163,7 @@ exports.getCoinPrice = async (req, res) => {
       price: coinData.usd,
       change24h: coinData.usd_24h_change || 0,
       volume24h: coinData.usd_24h_vol || 0,
+      marketCap: coinData.usd_market_cap || 0,
       lastUpdated: new Date().toISOString(),
     };
 

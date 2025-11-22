@@ -9,6 +9,7 @@ import Portfolio from './pages/Portfolio';
 import History from './pages/History';
 import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
+import CoinDetail from './pages/CoinDetail';
 
 // Protected Route Component
 function ProtectedRoute({ children }) {
@@ -62,6 +63,7 @@ function AppRoutes() {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="trade" element={<Trade />} />
+        <Route path="coin/:coinId" element={<CoinDetail />} />
         <Route path="portfolio" element={<Portfolio />} />
         <Route path="history" element={<History />} />
         <Route path="notifications" element={<Notifications />} />
