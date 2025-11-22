@@ -9,7 +9,7 @@ const logger = require('../../../shared/utils/logger');
 
 // Cache configuration
 const cache = new NodeCache({
-  stdTTL: parseInt(process.env.CACHE_TTL_PRICES) || 30,
+  stdTTL: parseInt(process.env.CACHE_TTL_PRICES) || 120, // 2 phút
   checkperiod: 120,
 });
 
