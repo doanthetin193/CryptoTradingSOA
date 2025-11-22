@@ -1,11 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
-import { marketAPI, tradeAPI } from '../services/api';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { Search, TrendingUp, TrendingDown, Loader } from 'lucide-react';
+import { marketAPI, tradeAPI } from '../services/api';
+import { Search, TrendingUp, TrendingDown, Loader, ExternalLink } from 'lucide-react';
 import Toast from '../components/Toast';
 
 export default function Trade() {
-  const { user, refreshUser, login } = useAuth();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const coinIdFromUrl = searchParams.get('coin');
+  
   const [tradeType, setTradeType] = useState('buy');
   const [inputType, setInputType] = useState('amount'); // 'amount' or 'total'
   const [coins, setCoins] = useState([]);
@@ -21,7 +26,16 @@ export default function Trade() {
       const res = await marketAPI.getPrices();
       if (res.success) {
         setCoins(res.data);
-        if (res.data.length > 0 && !selectedCoin) {
+        
+        // Auto-select coin from URL param or first coin
+        if (coinIdFromUrl) {
+          const coinFromUrl = res.data.find(c => c.coinId === coinIdFromUrl);
+          if (coinFromUrl) {
+            setSelectedCoin(coinFromUrl);
+          } else if (res.data.length > 0) {
+            setSelectedCoin(res.data[0]);
+          }
+        } else if (res.data.length > 0 && !selectedCoin) {
           setSelectedCoin(res.data[0]);
         }
       }
@@ -30,7 +44,7 @@ export default function Trade() {
     } finally {
       setLoading(false);
     }
-  }, [selectedCoin]);
+  }, [coinIdFromUrl, selectedCoin]);
 
   useEffect(() => {
     fetchData();
@@ -189,31 +203,40 @@ export default function Trade() {
 
           <div className="space-y-2">
             {filteredCoins.map((coin) => (
-              <button
-                key={coin.symbol}
-                onClick={() => setSelectedCoin(coin)}
-                className={`w-full flex items-center justify-between p-4 rounded-lg border-2 transition ${
-                  selectedCoin?.symbol === coin.symbol
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-600">
-                    {coin.symbol.substring(0, 2)}
+              <div key={coin.symbol} className="relative group">
+                <button
+                  onClick={() => setSelectedCoin(coin)}
+                  className={`w-full flex items-center justify-between p-4 rounded-lg border-2 transition ${
+                    selectedCoin?.symbol === coin.symbol
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-600">
+                      {coin.symbol.substring(0, 2)}
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold">{coin.symbol}</p>
+                      <p className="text-sm text-gray-500">{coin.name}</p>
+                    </div>
                   </div>
-                  <div className="text-left">
-                    <p className="font-semibold">{coin.symbol}</p>
-                    <p className="text-sm text-gray-500">{coin.name}</p>
+                  <div className="text-right">
+                    <p className="font-semibold">${coin.price.toLocaleString()}</p>
+                    <p className={`text-sm ${coin.change24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {coin.change24h >= 0 ? '+' : ''}{coin.change24h.toFixed(2)}%
+                    </p>
                   </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold">${coin.price.toLocaleString()}</p>
-                  <p className={`text-sm ${coin.change24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {coin.change24h >= 0 ? '+' : ''}{coin.change24h.toFixed(2)}%
-                  </p>
-                </div>
-              </button>
+                </button>
+                {/* Chart icon overlay */}
+                <button
+                  onClick={() => navigate(`/coin/${coin.coinId}`)}
+                  className="absolute top-2 right-2 p-2 bg-white rounded-lg shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-50"
+                  title="Xem biểu đồ"
+                >
+                  <ExternalLink className="w-4 h-4 text-blue-600" />
+                </button>
+              </div>
             ))}
           </div>
         </div>
@@ -251,7 +274,16 @@ export default function Trade() {
               {/* Selected Coin Info */}
               <div className="bg-gray-50 p-4 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-2xl font-bold">{selectedCoin.symbol}</span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-2xl font-bold">{selectedCoin.symbol}</span>
+                    <button
+                      onClick={() => navigate(`/coin/${selectedCoin.coinId}`)}
+                      className="text-blue-600 hover:text-blue-700"
+                      title="Xem biểu đồ"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </button>
+                  </div>
                   <div className={`flex items-center ${selectedCoin.change24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {selectedCoin.change24h >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                     <span className="ml-1">{selectedCoin.change24h.toFixed(2)}%</span>
