@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { adminAPI } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
 import { Users, DollarSign, UserCheck, UserX, Trash2, Plus, Minus, Search, RefreshCw } from 'lucide-react';
 
 export default function Admin() {
+  const { user: currentUser, refreshUser } = useAuth();
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -90,6 +92,11 @@ export default function Admin() {
         setBalanceDescription('');
         setSelectedUser(null);
         fetchData();
+        
+        // Refresh current user balance nếu admin tự update chính mình
+        if (currentUser && selectedUser._id === currentUser.id) {
+          await refreshUser();
+        }
       }
     } catch (error) {
       showToast('error', error.message || 'Failed to update balance');
