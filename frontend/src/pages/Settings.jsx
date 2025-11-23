@@ -19,9 +19,22 @@ export default function Settings() {
   const [alerts, setAlerts] = useState([]);
   const [newAlert, setNewAlert] = useState({
     symbol: 'BTC',
+    coinId: 'bitcoin',
     condition: 'above',
     targetPrice: '',
   });
+
+  // Symbol to CoinId mapping
+  const symbolToCoinId = {
+    'BTC': 'bitcoin',
+    'ETH': 'ethereum',
+    'BNB': 'binancecoin',
+    'ADA': 'cardano',
+    'DOGE': 'dogecoin',
+    'XRP': 'ripple',
+    'DOT': 'polkadot',
+    'SOL': 'solana',
+  };
 
   useEffect(() => {
     fetchAlerts();
@@ -42,7 +55,8 @@ export default function Settings() {
     e.preventDefault();
     try {
       setLoading(true);
-      const res = await userAPI.updateProfile(profile);
+      // Only send fullName, email cannot be changed
+      const res = await userAPI.updateProfile({ fullName: profile.fullName });
       if (res.success) {
         showToast('success', 'Cập nhật thông tin thành công!');
         await refreshUser();
@@ -59,15 +73,21 @@ export default function Settings() {
   const createAlert = async (e) => {
     e.preventDefault();
     try {
-      const res = await notificationAPI.createPriceAlert(newAlert);
+      const payload = {
+        ...newAlert,
+        coinId: symbolToCoinId[newAlert.symbol] || newAlert.symbol.toLowerCase(),
+      };
+      
+      const res = await notificationAPI.createPriceAlert(payload);
       if (res.success) {
         showToast('success', 'Tạo cảnh báo giá thành công!');
         setAlerts([...alerts, res.data]);
-        setNewAlert({ symbol: 'BTC', condition: 'above', targetPrice: '' });
+        setNewAlert({ symbol: 'BTC', coinId: 'bitcoin', condition: 'above', targetPrice: '' });
       } else {
         showToast('error', res.message || 'Tạo cảnh báo thất bại');
       }
     } catch (error) {
+      console.error('Alert creation error:', error);
       showToast('error', error.message);
     }
   };
@@ -161,7 +181,14 @@ export default function Settings() {
               </label>
               <select
                 value={newAlert.symbol}
-                onChange={(e) => setNewAlert({ ...newAlert, symbol: e.target.value })}
+                onChange={(e) => {
+                  const symbol = e.target.value;
+                  setNewAlert({ 
+                    ...newAlert, 
+                    symbol,
+                    coinId: symbolToCoinId[symbol] || symbol.toLowerCase()
+                  });
+                }}
                 className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
                 {coins.map(coin => (

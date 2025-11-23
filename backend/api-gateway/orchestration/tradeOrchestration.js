@@ -3,6 +3,7 @@ const Joi = require('joi');
 const logger = require('../../shared/utils/logger');
 const websocket = require('../../shared/utils/websocket');
 const { createCircuitBreaker } = require('../../shared/utils/circuitBreaker');
+const serviceDiscovery = require('../../shared/utils/serviceDiscovery');
 
 /**
  * Trade Orchestration
@@ -10,14 +11,9 @@ const { createCircuitBreaker } = require('../../shared/utils/circuitBreaker');
  * Includes Circuit Breaker pattern for resilience
  */
 
-// Service URLs
-const getServiceUrl = (port) => `http://localhost:${port}`;
-const SERVICES = {
-  USER: getServiceUrl(3001),
-  MARKET: getServiceUrl(3002),
-  PORTFOLIO: getServiceUrl(3003),
-  TRADE: getServiceUrl(3004),
-  NOTIFICATION: getServiceUrl(3005),
+// Service URLs - Dynamic discovery via Consul
+const getServiceUrl = async (serviceName) => {
+  return await serviceDiscovery.getServiceUrl(serviceName);
 };
 
 // Circuit Breakers for each service
@@ -26,7 +22,16 @@ const SERVICE_BREAKERS = {
   MARKET: createCircuitBreaker('MarketService', { timeout: 5000 }),
   PORTFOLIO: createCircuitBreaker('PortfolioService', { timeout: 5000 }),
   TRADE: createCircuitBreaker('TradeService', { timeout: 5000 }),
-  NOTIFICATION: createCircuitBreaker('NotificationService', { timeout: 3000 }), // Lower timeout for notifications
+  NOTIFICATION: createCircuitBreaker('NotificationService', { timeout: 5000 }),
+};
+
+// Service name mappings for Consul
+const SERVICE_NAMES = {
+  USER: 'user-service',
+  MARKET: 'market-service',
+  PORTFOLIO: 'portfolio-service',
+  TRADE: 'trade-service',
+  NOTIFICATION: 'notification-service',
 };
 
 // Request timeout configuration
@@ -50,18 +55,26 @@ const MIN_TRADE_AMOUNT_USD = 5; // Minimum $5 USD per trade
 
 /**
  * Helper: Call service with circuit breaker
- * @param {string} serviceName - Name of the service
- * @param {object} config - Axios config
+ * @param {string} serviceName - Name of the service (USER, MARKET, etc.)
+ * @param {string} endpoint - API endpoint path (e.g., '/balance', '/price/bitcoin')
+ * @param {object} config - Axios config (method, headers, data, timeout)
  * @returns {Promise} Response data
  */
-async function callServiceWithBreaker(serviceName, config) {
+async function callServiceWithBreaker(serviceName, endpoint, config = {}) {
   const breaker = SERVICE_BREAKERS[serviceName];
   if (!breaker) {
     throw new Error(`Circuit breaker not found for service: ${serviceName}`);
   }
 
   try {
-    const response = await breaker.fire(config);
+    // Get dynamic service URL from Consul
+    const serviceUrl = await getServiceUrl(SERVICE_NAMES[serviceName]);
+    const fullConfig = {
+      ...config,
+      url: `${serviceUrl}${endpoint}`,
+    };
+    
+    const response = await breaker.fire(fullConfig);
     return response;
   } catch (error) {
     // Check if circuit is open
@@ -165,9 +178,8 @@ exports.buyCoin = async (req, res) => {
 
     // STEP 1: Get current price from Market Service
     logger.info(`🔄 [BUY] Step 1: Getting price for ${coinId}`);
-    const priceResponse = await callServiceWithBreaker('MARKET', {
+    const priceResponse = await callServiceWithBreaker('MARKET', `/price/${coinId}`, {
       method: 'GET',
-      url: `${SERVICES.MARKET}/price/${coinId}`,
       timeout: REQUEST_TIMEOUT,
     });
     
@@ -196,9 +208,8 @@ exports.buyCoin = async (req, res) => {
 
     // STEP 2: Get user balance from User Service
     logger.info(`🔄 [BUY] Step 2: Checking balance for user ${userId}`);
-    const balanceResponse = await callServiceWithBreaker('USER', {
+    const balanceResponse = await callServiceWithBreaker('USER', '/balance', {
       method: 'GET',
-      url: `${SERVICES.USER}/balance`,
       headers: { 'X-User-Id': userId },
       timeout: REQUEST_TIMEOUT,
     });
@@ -215,9 +226,8 @@ exports.buyCoin = async (req, res) => {
     // STEP 3: Update user balance (deduct cost)
     logger.info(`🔄 [BUY] Step 3: Deducting ${finalCost} from balance`);
     try {
-      const updateBalanceResponse = await callServiceWithBreaker('USER', {
+      const updateBalanceResponse = await callServiceWithBreaker('USER', '/balance', {
         method: 'PUT',
-        url: `${SERVICES.USER}/balance`,
         data: {
           userId,
           amount: -finalCost,
@@ -236,9 +246,8 @@ exports.buyCoin = async (req, res) => {
       // STEP 4: Update portfolio (add holding)
       logger.info(`🔄 [BUY] Step 4: Adding ${amount} ${symbol} to portfolio`);
       try {
-        await callServiceWithBreaker('PORTFOLIO', {
+        await callServiceWithBreaker('PORTFOLIO', '/holding', {
           method: 'POST',
-          url: `${SERVICES.PORTFOLIO}/holding`,
           data: {
             symbol: symbol.toUpperCase(),
             coinId: coinId.toLowerCase(),
@@ -257,9 +266,8 @@ exports.buyCoin = async (req, res) => {
         // STEP 5: Create trade record
         logger.info(`🔄 [BUY] Step 5: Creating trade record`);
         try {
-          const tradeResponse = await callServiceWithBreaker('TRADE', {
+          const tradeResponse = await callServiceWithBreaker('TRADE', '/', {
             method: 'POST',
-            url: `${SERVICES.TRADE}/`,
             data: {
               userId,
               type: 'buy',
@@ -285,19 +293,21 @@ exports.buyCoin = async (req, res) => {
 
     // STEP 6: Send notification (non-blocking)
     logger.info(`🔄 [BUY] Step 6: Sending notification`);
-    axios.post(
-      `${SERVICES.NOTIFICATION}/send`,
-      {
-        userId,
-        type: 'trade',
-        title: 'Buy Order Completed',
-        message: `Successfully bought ${amount} ${symbol} at ${currentPrice} USDT`,
-        data: { tradeId: trade._id, type: 'buy', symbol, amount },
-      },
-      {
-        headers: { 'X-User-Id': userId },
-      }
-    ).catch(err => logger.warn(`Failed to send notification: ${err.message}`));
+    getServiceUrl('notification-service').then(notificationUrl => {
+      axios.post(
+        `${notificationUrl}/send`,
+        {
+          userId,
+          type: 'trade',
+          title: 'Buy Order Completed',
+          message: `Successfully bought ${amount} ${symbol} at ${currentPrice} USDT`,
+          data: { tradeId: trade._id, type: 'buy', symbol, amount },
+        },
+        {
+          headers: { 'X-User-Id': userId },
+        }
+      ).catch(err => logger.warn(`Failed to send notification: ${err.message}`));
+    }).catch(err => logger.warn(`Failed to get notification service URL: ${err.message}`));
 
     // STEP 7: Send real-time WebSocket notification
     logger.info(`🔄 [BUY] Step 7: Sending WebSocket notification`);
@@ -350,9 +360,8 @@ exports.buyCoin = async (req, res) => {
     if (transactionState.holdingAdded && transactionState.addedHolding) {
       try {
         logger.info(`🔄 [BUY] Rolling back: Removing ${transactionState.addedHolding.amount} ${transactionState.addedHolding.symbol}`);
-        await callServiceWithBreaker('PORTFOLIO', {
+        await callServiceWithBreaker('PORTFOLIO', '/holding', {
           method: 'PUT',
-          url: `${SERVICES.PORTFOLIO}/holding`,
           data: {
             symbol: transactionState.addedHolding.symbol,
             amount: transactionState.addedHolding.amount,
@@ -372,9 +381,8 @@ exports.buyCoin = async (req, res) => {
     if (transactionState.balanceDeducted && transactionState.deductedAmount > 0) {
       try {
         logger.info(`🔄 [BUY] Rolling back: Refunding ${transactionState.deductedAmount} USDT`);
-        await callServiceWithBreaker('USER', {
+        await callServiceWithBreaker('USER', '/balance', {
           method: 'PUT',
-          url: `${SERVICES.USER}/balance`,
           data: {
             userId,
             amount: transactionState.deductedAmount,
@@ -472,9 +480,8 @@ exports.sellCoin = async (req, res) => {
 
     // STEP 1: Get portfolio to check holdings
     logger.info(`🔄 [SELL] Step 1: Checking holdings for ${symbol}`);
-    const portfolioResponse = await callServiceWithBreaker('PORTFOLIO', {
+    const portfolioResponse = await callServiceWithBreaker('PORTFOLIO', '/', {
       method: 'GET',
-      url: `${SERVICES.PORTFOLIO}/`,
       headers: { 'X-User-Id': userId },
       timeout: REQUEST_TIMEOUT,
     });
@@ -495,9 +502,8 @@ exports.sellCoin = async (req, res) => {
 
     // STEP 2: Get current price from Market Service
     logger.info(`🔄 [SELL] Step 2: Getting price for ${holding.coinId}`);
-    const priceResponse = await callServiceWithBreaker('MARKET', {
+    const priceResponse = await callServiceWithBreaker('MARKET', `/price/${holding.coinId}`, {
       method: 'GET',
-      url: `${SERVICES.MARKET}/price/${holding.coinId}`,
       timeout: REQUEST_TIMEOUT,
     });
 
@@ -514,9 +520,8 @@ exports.sellCoin = async (req, res) => {
 
     // STEP 3: Get current balance
     logger.info(`🔄 [SELL] Step 3: Getting current balance`);
-    const balanceResponse = await callServiceWithBreaker('USER', {
+    const balanceResponse = await callServiceWithBreaker('USER', '/balance', {
       method: 'GET',
-      url: `${SERVICES.USER}/balance`,
       headers: { 'X-User-Id': userId },
       timeout: REQUEST_TIMEOUT,
     });
@@ -525,9 +530,8 @@ exports.sellCoin = async (req, res) => {
     // STEP 4: Update user balance (add proceeds)
     logger.info(`🔄 [SELL] Step 4: Adding ${finalProceeds} to balance`);
     try {
-      const updateBalanceResponse = await callServiceWithBreaker('USER', {
+      const updateBalanceResponse = await callServiceWithBreaker('USER', '/balance', {
         method: 'PUT',
-        url: `${SERVICES.USER}/balance`,
         data: {
           userId,
           amount: finalProceeds,
@@ -546,9 +550,8 @@ exports.sellCoin = async (req, res) => {
       // STEP 5: Update portfolio (reduce holding)
       logger.info(`🔄 [SELL] Step 5: Reducing ${amount} ${symbol} from portfolio`);
       try {
-        await callServiceWithBreaker('PORTFOLIO', {
+        await callServiceWithBreaker('PORTFOLIO', '/holding', {
           method: 'PUT',
-          url: `${SERVICES.PORTFOLIO}/holding`,
           data: {
             symbol: symbol.toUpperCase(),
             amount,
@@ -566,9 +569,8 @@ exports.sellCoin = async (req, res) => {
     try {
       const profitLoss = (currentPrice - holding.averageBuyPrice) * amount - fee;
       
-      const tradeResponse = await callServiceWithBreaker('TRADE', {
+      const tradeResponse = await callServiceWithBreaker('TRADE', '/', {
         method: 'POST',
-        url: `${SERVICES.TRADE}/`,
         data: {
           userId,
           type: 'sell',
@@ -594,25 +596,27 @@ exports.sellCoin = async (req, res) => {
 
       // STEP 7: Send notification (non-blocking)
       logger.info(`🔄 [SELL] Step 7: Sending notification`);
-      axios.post(
-        `${SERVICES.NOTIFICATION}/send`,
-        {
-          userId,
-          type: 'trade',
-          title: 'Sell Order Completed',
-          message: `Successfully sold ${amount} ${symbol} at ${currentPrice} USDT. P/L: ${profitLoss.toFixed(2)} USDT`,
-          data: { 
-            tradeId: trade._id, 
-            type: 'sell', 
-            symbol, 
-            amount,
-            profitLoss: profitLoss.toFixed(2),
+      getServiceUrl('notification-service').then(notificationUrl => {
+        axios.post(
+          `${notificationUrl}/send`,
+          {
+            userId,
+            type: 'trade',
+            title: 'Sell Order Completed',
+            message: `Successfully sold ${amount} ${symbol} at ${currentPrice} USDT. P/L: ${profitLoss.toFixed(2)} USDT`,
+            data: { 
+              tradeId: trade._id, 
+              type: 'sell', 
+              symbol, 
+              amount,
+              profitLoss: profitLoss.toFixed(2),
+            },
           },
-        },
-        {
-          headers: { 'X-User-Id': userId },
-        }
-      ).catch(err => logger.warn(`Failed to send notification: ${err.message}`));
+          {
+            headers: { 'X-User-Id': userId },
+          }
+        ).catch(err => logger.warn(`Failed to send notification: ${err.message}`));
+      }).catch(err => logger.warn(`Failed to get notification service URL: ${err.message}`));
 
       // STEP 8: Send real-time WebSocket notification
       logger.info(`🔄 [SELL] Step 8: Sending WebSocket notification`);
@@ -664,9 +668,8 @@ exports.sellCoin = async (req, res) => {
     if (transactionState.holdingReduced && transactionState.reducedHolding && transactionState.originalHolding) {
       try {
         logger.info(`🔄 [SELL] Rolling back: Restoring ${transactionState.reducedHolding.amount} ${transactionState.reducedHolding.symbol}`);
-        await callServiceWithBreaker('PORTFOLIO', {
+        await callServiceWithBreaker('PORTFOLIO', '/holding', {
           method: 'POST',
-          url: `${SERVICES.PORTFOLIO}/holding`,
           data: {
             symbol: transactionState.reducedHolding.symbol,
             coinId: transactionState.originalHolding.coinId.toLowerCase(),
@@ -689,9 +692,8 @@ exports.sellCoin = async (req, res) => {
     if (transactionState.balanceAdded && transactionState.addedAmount > 0) {
       try {
         logger.info(`🔄 [SELL] Rolling back: Deducting ${transactionState.addedAmount} USDT`);
-        await callServiceWithBreaker('USER', {
+        await callServiceWithBreaker('USER', '/balance', {
           method: 'PUT',
-          url: `${SERVICES.USER}/balance`,
           data: {
             userId,
             amount: -transactionState.addedAmount,
