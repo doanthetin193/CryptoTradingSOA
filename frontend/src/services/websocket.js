@@ -20,11 +20,11 @@ export const initializeSocket = (token) => {
   });
 
   socket.on('connect', () => {
-    console.log('✅ WebSocket connected');
+    // Connected successfully
   });
 
   socket.on('disconnect', () => {
-    console.log('🔌 WebSocket disconnected');
+    // Disconnected
   });
 
   socket.on('connect_error', (error) => {

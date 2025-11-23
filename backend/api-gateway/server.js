@@ -9,7 +9,7 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 // Import shared utilities and middleware
 const logger = require('../shared/utils/logger');
 const { errorHandler, notFoundHandler } = require('../shared/middleware/errorHandler');
-const { authMiddleware, optionalAuth } = require('../shared/middleware/auth');
+const { authMiddleware, optionalAuth, adminMiddleware } = require('../shared/middleware/auth');
 const serviceDiscovery = require('../shared/utils/serviceDiscovery');
 
 // Import orchestration
@@ -42,10 +42,14 @@ app.use(morgan('combined', {
   },
 }));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 60000, // 1 minute
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
+// ===========================
+// Rate Limiting Configuration
+// ===========================
+
+// Global rate limit: 1000 requests / 15 minutes for all APIs
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000,
   message: {
     success: false,
     message: 'Too many requests from this IP, please try again later.',
@@ -53,7 +57,34 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use('/api', limiter);
+
+// Login rate limit: 5 attempts / 15 minutes
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5,
+  message: {
+    success: false,
+    message: 'Too many login attempts. Please try again after 15 minutes.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // Only count failed attempts
+});
+
+// Register rate limit: 3 attempts / 60 minutes
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 60 minutes
+  max: 3,
+  message: {
+    success: false,
+    message: 'Too many registration attempts. Please try again after 1 hour.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply global rate limit to all API routes
+app.use('/api', globalLimiter);
 
 // ===========================
 // Proxy Configuration
@@ -159,8 +190,13 @@ app.get('/', (req, res) => {
 // API Routes - Service Proxies
 // ===========================
 
-// USER SERVICE - Single route pattern
-app.use('/api/users', userProxy);
+// USER SERVICE - Apply specific rate limiters for login/register
+app.post('/api/users/login', loginLimiter, userProxy);
+app.post('/api/users/register', registerLimiter, userProxy);
+app.use('/api/users', userProxy); // Other user routes
+
+// ADMIN ROUTES - Apply auth + admin middleware
+app.use('/api/users/admin', authMiddleware, adminMiddleware, userProxy);
 
 // MARKET SERVICE
 app.use('/api/market', optionalAuth, marketProxy);

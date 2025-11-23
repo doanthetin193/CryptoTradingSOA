@@ -391,3 +391,257 @@ exports.getUserInfo = async (req, res) => {
     });
   }
 };
+
+// ===========================
+// ADMIN FUNCTIONS
+// ===========================
+
+/**
+ * @desc    Get all users (Admin only)
+ * @route   GET /admin/users
+ * @access  Admin
+ */
+exports.getAllUsers = async (req, res) => {
+  try {
+    const { page = 1, limit = 20, search = '' } = req.query;
+    const skip = (page - 1) * limit;
+
+    // Build search query
+    const searchQuery = search
+      ? {
+          $or: [
+            { email: { $regex: search, $options: 'i' } },
+            { fullName: { $regex: search, $options: 'i' } },
+          ],
+        }
+      : {};
+
+    const users = await User.find(searchQuery)
+      .select('-password')
+      .limit(parseInt(limit))
+      .skip(skip)
+      .sort({ createdAt: -1 });
+
+    const total = await User.countDocuments(searchQuery);
+
+    logger.info(`✅ Admin fetched ${users.length} users`);
+
+    res.json({
+      success: true,
+      data: {
+        users,
+        pagination: {
+          total,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          pages: Math.ceil(total / limit),
+        },
+      },
+    });
+  } catch (error) {
+    logger.error(`❌ Get all users error: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching users',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Get system statistics (Admin only)
+ * @route   GET /admin/stats
+ * @access  Admin
+ */
+exports.getSystemStats = async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const activeUsers = await User.countDocuments({ isActive: true });
+    const inactiveUsers = await User.countDocuments({ isActive: false });
+
+    // Calculate total balance
+    const balanceAgg = await User.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalBalance: { $sum: '$balance' },
+          avgBalance: { $avg: '$balance' },
+        },
+      },
+    ]);
+
+    const balanceStats = balanceAgg[0] || { totalBalance: 0, avgBalance: 0 };
+
+    // Get recent users
+    const recentUsers = await User.find()
+      .select('-password')
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    logger.info('✅ Admin fetched system stats');
+
+    res.json({
+      success: true,
+      data: {
+        totalUsers,
+        activeUsers,
+        inactiveUsers,
+        totalBalance: balanceStats.totalBalance,
+        avgBalance: balanceStats.avgBalance,
+        recentUsers,
+      },
+    });
+  } catch (error) {
+    logger.error(`❌ Get system stats error: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching system statistics',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Toggle user status (Block/Unblock)
+ * @route   PUT /admin/users/:userId/toggle
+ * @access  Admin
+ */
+exports.toggleUserStatus = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Toggle status
+    user.isActive = !user.isActive;
+    await user.save();
+
+    logger.info(`✅ Admin toggled user status: ${user.email} -> ${user.isActive ? 'Active' : 'Blocked'}`);
+
+    res.json({
+      success: true,
+      message: `User ${user.isActive ? 'activated' : 'deactivated'} successfully`,
+      data: {
+        user: {
+          id: user._id,
+          email: user.email,
+          fullName: user.fullName,
+          isActive: user.isActive,
+        },
+      },
+    });
+  } catch (error) {
+    logger.error(`❌ Toggle user status error: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: 'Error toggling user status',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Update user balance (Admin only)
+ * @route   PUT /admin/users/:userId/balance
+ * @access  Admin
+ */
+exports.adminUpdateBalance = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { amount, description } = req.body;
+
+    // Validate input
+    if (amount === undefined || amount === null) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount is required',
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Update balance
+    await user.updateBalance(
+      parseFloat(amount),
+      'admin',
+      description || `Admin adjustment by ${req.adminUser?.email || 'admin'}`
+    );
+
+    logger.info(`✅ Admin updated balance for ${user.email}: ${amount > 0 ? '+' : ''}${amount}`);
+
+    res.json({
+      success: true,
+      message: 'Balance updated successfully',
+      data: {
+        user: {
+          id: user._id,
+          email: user.email,
+          newBalance: user.balance,
+        },
+      },
+    });
+  } catch (error) {
+    logger.error(`❌ Admin update balance error: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating balance',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Delete user (Admin only)
+ * @route   DELETE /admin/users/:userId
+ * @access  Admin
+ */
+exports.deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Prevent deleting admin users
+    if (user.role === 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Cannot delete admin users',
+      });
+    }
+
+    await User.findByIdAndDelete(userId);
+
+    logger.info(`✅ Admin deleted user: ${user.email}`);
+
+    res.json({
+      success: true,
+      message: 'User deleted successfully',
+    });
+  } catch (error) {
+    logger.error(`❌ Delete user error: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting user',
+      error: error.message,
+    });
+  }
+};
+

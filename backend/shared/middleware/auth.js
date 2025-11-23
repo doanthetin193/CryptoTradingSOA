@@ -75,7 +75,52 @@ const optionalAuth = (req, res, next) => {
   }
 };
 
+/**
+ * Admin Middleware - Kiểm tra user có role admin không
+ * Phải dùng sau authMiddleware
+ */
+const adminMiddleware = async (req, res, next) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required.',
+      });
+    }
+
+    // Get user from database to check role
+    const User = require('../../../backend/services/user-service/models/User');
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found.',
+      });
+    }
+
+    if (user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Admin access required. You do not have permission.',
+      });
+    }
+
+    // Add user to request
+    req.adminUser = user;
+    logger.debug(`✅ Admin verified: ${user.email}`);
+    next();
+  } catch (error) {
+    logger.error(`❌ Admin middleware error: ${error.message}`);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error during admin verification.',
+    });
+  }
+};
+
 module.exports = {
   authMiddleware,
   optionalAuth,
+  adminMiddleware,
 };
