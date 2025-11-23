@@ -10,6 +10,7 @@ import History from './pages/History';
 import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
 import CoinDetail from './pages/CoinDetail';
+import Admin from './pages/Admin';
 
 // Protected Route Component
 function ProtectedRoute({ children }) {
@@ -68,6 +69,7 @@ function AppRoutes() {
         <Route path="history" element={<History />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="admin" element={<Admin />} />
       </Route>
 
       {/* Catch all */}

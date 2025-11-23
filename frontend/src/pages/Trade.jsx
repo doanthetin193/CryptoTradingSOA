@@ -129,17 +129,14 @@ export default function Trade() {
           }
         : {
             symbol: selectedCoin.symbol,  // sell only needs symbol and amount
-            amount: coinAmount,
-          };
+          amount: coinAmount,
+        };
 
-      console.log('Trade request:', data);
-
-      const res = tradeType === 'buy' 
+      const res = tradeType === 'buy'
         ? await tradeAPI.buy(data)
         : await tradeAPI.sell(data);
 
       if (res.success) {
-        console.log('✅ Trade success response:', res.data);
         showToast('success', `${tradeType === 'buy' ? 'Mua' : 'Bán'} ${coinAmount.toFixed(8)} ${selectedCoin.symbol} thành công!`);
         
         // Update balance manually from response - NO API CALLS!
@@ -149,7 +146,6 @@ export default function Trade() {
         if (newBalance !== undefined) {
           const updatedUser = { ...currentUser, balance: newBalance };
           localStorage.setItem('user', JSON.stringify(updatedUser));
-          console.log('💰 Balance updated to:', newBalance);
           
           // Dispatch custom event to update AuthContext
           window.dispatchEvent(new Event('balanceUpdated'));

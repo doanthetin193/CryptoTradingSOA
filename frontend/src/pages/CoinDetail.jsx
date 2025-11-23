@@ -11,8 +11,6 @@ import {
   BarChart3
 } from 'lucide-react';
 import { 
-  LineChart, 
-  Line, 
   XAxis, 
   YAxis, 
   CartesianGrid, 
@@ -39,28 +37,20 @@ export default function CoinDetail() {
     try {
       setLoading(true);
       
-      console.log('Fetching data for coinId:', coinId);
-      
       // Fetch coin price
       const priceRes = await marketAPI.getCoinPrice(coinId);
-      console.log('Price API response:', priceRes);
       
       if (priceRes.success) {
-        console.log('Coin data:', priceRes.data);
         setCoin(priceRes.data);
       } else {
-        console.error('Price API failed:', priceRes.message);
         showToast('error', 'Không thể tải giá coin: ' + (priceRes.message || 'Unknown error'));
       }
 
       // Fetch chart data
       const chartRes = await marketAPI.getChartData(coinId, timeframe);
-      console.log('Chart API response:', chartRes);
       
       if (chartRes.success && chartRes.data) {
-        // Check data structure
         const prices = chartRes.data.prices || [];
-        console.log('Prices array length:', prices.length);
         
         if (prices.length > 0) {
           // Backend returns array of objects: [{timestamp, date, price}]
@@ -69,18 +59,15 @@ export default function CoinDetail() {
             date: new Date(item.timestamp).toLocaleDateString('vi-VN', { 
               month: 'short', 
               day: 'numeric',
-              hour: timeframe === 1 ? '2-digit' : undefined,
-            }),
+            hour: timeframe === 1 ? '2-digit' : undefined,
+          }),
             price: parseFloat(item.price.toFixed(2)),
           }));
-          console.log('Transformed data:', transformedData.slice(0, 3)); // Log first 3 items
           setChartData(transformedData);
         } else {
-          console.warn('No price data in chart response');
           setChartData([]);
         }
       } else {
-        console.error('Chart API failed:', chartRes.message);
         setChartData([]);
       }
     } catch (error) {

@@ -30,6 +30,12 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Full name is required'],
       trim: true,
     },
+    // Role - Admin or User
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user',
+    },
     // Ví ảo USDT
     balance: {
       type: Number,

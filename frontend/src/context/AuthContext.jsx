@@ -23,9 +23,6 @@ export default function AuthProvider({ children }) {
           setToken(storedToken);
           setUser(userData);
           initializeSocket(storedToken);
-          
-          console.log('✅ Auth initialized from localStorage, balance:', userData.balance);
-          console.log('📍 Token preview:', storedToken.substring(0, 20) + '...');
         } catch (error) {
           console.error('Failed to parse stored user data:', error);
           localStorage.clear();
@@ -42,7 +39,6 @@ export default function AuthProvider({ children }) {
       if (storedUser) {
         const userData = JSON.parse(storedUser);
         setUser(userData);
-        console.log('💰 Balance updated from event:', userData.balance);
       }
     };
 
@@ -115,7 +111,6 @@ export default function AuthProvider({ children }) {
   const refreshUser = async () => {
     // Nếu không có token, không cần refresh
     if (!token) {
-      console.warn('⚠️ No token available, skipping refresh');
       return null;
     }
     
@@ -129,7 +124,6 @@ export default function AuthProvider({ children }) {
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
         
-        console.log('✅ Balance refreshed:', updatedUser.balance);
         return updatedUser;
       }
     } catch (error) {
@@ -137,7 +131,6 @@ export default function AuthProvider({ children }) {
       
       // Nếu lỗi 401, user sẽ bị logout bởi interceptor
       if (error.message.includes('401') || error.message.includes('Unauthorized')) {
-        console.warn('⚠️ Token invalid, will be redirected to login');
         return null;
       }
       
@@ -154,7 +147,6 @@ export default function AuthProvider({ children }) {
           setUser(updatedUser);
           localStorage.setItem('user', JSON.stringify(updatedUser));
           
-          console.log('✅ Balance refreshed (fallback):', updatedUser.balance);
           return updatedUser;
         }
       } catch (err) {

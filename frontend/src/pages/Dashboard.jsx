@@ -63,11 +63,10 @@ export default function Dashboard() {
     });
 
     onTradeConfirmation((trade) => {
-      console.log('📡 WebSocket trade confirmation:', trade);
       showToast('success', `${trade.type === 'buy' ? 'Mua' : 'Bán'} ${trade.amount} ${trade.symbol} thành công!`);
       
       // Refresh immediately when trade happens
-      refreshUser().catch(err => console.error('Refresh after trade failed:', err));
+      refreshUser();
       fetchData();
     });
 

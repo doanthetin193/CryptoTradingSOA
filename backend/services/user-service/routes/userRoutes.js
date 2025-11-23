@@ -19,6 +19,13 @@ router.get('/balance', userController.getBalance);
 router.put('/balance', userController.updateBalance);
 router.get('/info/:userId', userController.getUserInfo);
 
+// Admin routes (API Gateway will apply adminMiddleware)
+router.get('/admin/users', userController.getAllUsers);
+router.get('/admin/stats', userController.getSystemStats);
+router.put('/admin/users/:userId/toggle', userController.toggleUserStatus);
+router.put('/admin/users/:userId/balance', userController.adminUpdateBalance);
+router.delete('/admin/users/:userId', userController.deleteUser);
+
 // Health check
 router.get('/health', (req, res) => {
   res.json({

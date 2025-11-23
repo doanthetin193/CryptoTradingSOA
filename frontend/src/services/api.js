@@ -32,7 +32,6 @@ api.interceptors.response.use(
   (response) => {
     // Reset redirect flag on successful response
     if (isRedirecting) {
-      console.log('✅ Successful response received, canceling redirect');
       clearTimeout(redirectTimer);
       isRedirecting = false;
     }
@@ -43,7 +42,7 @@ api.interceptors.response.use(
     const url = error.config?.url || '';
     const fullUrl = error.config?.baseURL ? error.config.baseURL + url : url;
     
-    console.log('🔴 API Error:', {
+    console.error('🔴 API Error:', {
       status,
       url,
       fullUrl,
@@ -64,8 +63,6 @@ api.interceptors.response.use(
       if (!isAuthPage && !isTradeRequest && !isRedirecting) {
         isRedirecting = true;
         console.error('❌ 401 Unauthorized - Token invalid or expired');
-        console.log('📍 Current token:', localStorage.getItem('token')?.substring(0, 20) + '...');
-        console.log('📍 Will redirect to /auth in 500ms...');
         
         // Delay 500ms để trade response hoàn thành
         redirectTimer = setTimeout(() => {
@@ -73,8 +70,6 @@ api.interceptors.response.use(
           localStorage.removeItem('user');
           window.location.href = '/auth';
         }, 500);
-      } else if (isTradeRequest) {
-        console.warn('⚠️ 401 on trade request - ignoring redirect to allow trade completion');
       }
     }
     
@@ -145,6 +140,19 @@ export const notificationAPI = {
   createPriceAlert: (data) => api.post('/notifications/alert', data),
   getPriceAlerts: () => api.get('/notifications/alerts'),
   deletePriceAlert: (id) => api.delete(`/notifications/alert/${id}`),
+};
+
+// ===========================
+// ADMIN APIs
+// ===========================
+export const adminAPI = {
+  // User management
+  getAllUsers: (params) => api.get('/users/admin/users', { params }),
+  getSystemStats: () => api.get('/users/admin/stats'),
+  toggleUserStatus: (userId) => api.put(`/users/admin/users/${userId}/toggle`),
+  updateUserBalance: (userId, amount, description) => 
+    api.put(`/users/admin/users/${userId}/balance`, { amount, description }),
+  deleteUser: (userId) => api.delete(`/users/admin/users/${userId}`),
 };
 
 export default api;
