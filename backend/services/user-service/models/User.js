@@ -53,7 +53,7 @@ const userSchema = new mongoose.Schema(
         amount: Number,
         type: {
           type: String,
-          enum: ['deposit', 'withdraw', 'trade', 'initial'],
+          enum: ['deposit', 'withdraw', 'trade', 'initial', 'admin'],
         },
         description: String,
         timestamp: {
