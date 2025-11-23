@@ -1,16 +1,16 @@
 const axios = require('axios');
 const logger = require('../../shared/utils/logger');
 const { createCircuitBreaker } = require('../../shared/utils/circuitBreaker');
+const serviceDiscovery = require('../../shared/utils/serviceDiscovery');
 
 /**
  * Portfolio Orchestration
  * Lấy portfolio data và enrich với current prices từ Market Service
  */
 
-// Service URLs
-const SERVICES = {
-  MARKET: 'http://localhost:3002',
-  PORTFOLIO: 'http://localhost:3003',
+// Service URLs - Dynamic discovery via Consul
+const getServiceUrl = async (serviceName) => {
+  return await serviceDiscovery.getServiceUrl(serviceName);
 };
 
 // Circuit Breakers
@@ -19,13 +19,26 @@ const BREAKERS = {
   PORTFOLIO: createCircuitBreaker('PortfolioService', { timeout: 5000 }),
 };
 
+// Service name mappings for Consul
+const SERVICE_NAMES = {
+  MARKET: 'market-service',
+  PORTFOLIO: 'portfolio-service',
+};
+
 /**
  * Helper: Call service with circuit breaker
  */
-async function callService(serviceName, config) {
+async function callService(serviceName, endpoint, config = {}) {
   const breaker = BREAKERS[serviceName];
   try {
-    return await breaker.fire(config);
+    // Get dynamic service URL from Consul
+    const serviceUrl = await getServiceUrl(SERVICE_NAMES[serviceName]);
+    const fullConfig = {
+      ...config,
+      url: `${serviceUrl}${endpoint}`,
+    };
+    
+    return await breaker.fire(fullConfig);
   } catch (error) {
     if (breaker.opened) {
       logger.error(`🔴 [${serviceName}] Circuit is OPEN`);
@@ -48,9 +61,8 @@ exports.getEnrichedPortfolio = async (req, res) => {
 
     // STEP 1: Get portfolio from Portfolio Service
     logger.info(`📊 [Portfolio] Getting portfolio for user ${userId}`);
-    const portfolioResponse = await callService('PORTFOLIO', {
+    const portfolioResponse = await callService('PORTFOLIO', '/', {
       method: 'GET',
-      url: `${SERVICES.PORTFOLIO}/`,
       headers: { 'X-User-Id': userId },
       timeout: 5000,
     });
@@ -76,9 +88,8 @@ exports.getEnrichedPortfolio = async (req, res) => {
     
     const pricePromises = portfolio.holdings.map(async (holding) => {
       try {
-        const priceResponse = await callService('MARKET', {
+        const priceResponse = await callService('MARKET', `/price/${holding.coinId}`, {
           method: 'GET',
-          url: `${SERVICES.MARKET}/price/${holding.coinId}`,
           timeout: 5000,
         });
         return {

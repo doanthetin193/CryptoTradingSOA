@@ -7,11 +7,9 @@ const axios = require('axios');
 const logger = require('../../../shared/utils/logger');
 const websocket = require('../../../shared/utils/websocket');
 const emailService = require('../../../shared/utils/emailService');
+const serviceDiscovery = require('../../../shared/utils/serviceDiscovery');
 const PriceAlert = require('../models/PriceAlert');
 const Notification = require('../models/Notification');
-
-const MARKET_SERVICE_URL = `http://localhost:${process.env.MARKET_SERVICE_PORT || 3002}`;
-const USER_SERVICE_URL = `http://localhost:${process.env.USER_SERVICE_PORT || 3001}`;
 
 /**
  * Check all active price alerts
@@ -27,8 +25,11 @@ const checkPriceAlerts = async () => {
 
     logger.info(`🔍 Checking ${alerts.length} price alerts...`);
 
+    // Get Market Service URL dynamically
+    const marketServiceUrl = await serviceDiscovery.getServiceUrl('market-service');
+
     // Get current prices from Market Service
-    const pricesResponse = await axios.get(`${MARKET_SERVICE_URL}/prices`);
+    const pricesResponse = await axios.get(`${marketServiceUrl}/prices`);
     if (!pricesResponse.data.success) {
       logger.error('Failed to get prices from Market Service');
       return;
@@ -95,7 +96,8 @@ const checkPriceAlerts = async () => {
         // Send email notification if enabled
         if (process.env.ENABLE_EMAIL_NOTIFICATIONS === 'true') {
           try {
-            const userResponse = await axios.get(`${USER_SERVICE_URL}/profile`, {
+            const userServiceUrl = await serviceDiscovery.getServiceUrl('user-service');
+            const userResponse = await axios.get(`${userServiceUrl}/profile`, {
               headers: { 'X-User-Id': alert.userId },
             });
             

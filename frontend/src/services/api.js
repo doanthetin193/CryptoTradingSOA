@@ -93,6 +93,7 @@ export const authAPI = {
 export const userAPI = {
   getBalance: () => api.get('/users/balance'),
   getBalanceHistory: () => api.get('/users/balance/history'),
+  updateProfile: (data) => api.put('/users/profile', data),
 };
 
 // ===========================

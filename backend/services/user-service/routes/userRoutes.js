@@ -13,6 +13,7 @@ router.post('/login', userController.login);
 
 // Protected routes (require authentication from API Gateway)
 router.get('/profile', userController.getProfile);
+router.put('/profile', userController.updateProfile);
 router.get('/balance', userController.getBalance);
 
 // Internal service routes (for inter-service communication)

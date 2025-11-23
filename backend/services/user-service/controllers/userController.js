@@ -22,6 +22,10 @@ const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
+const updateProfileSchema = Joi.object({
+  fullName: Joi.string().min(2).required(),
+});
+
 // ===========================
 // Generate JWT Token
 // ===========================
@@ -218,6 +222,70 @@ exports.getProfile = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching profile',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Update user profile
+ * @route   PUT /profile
+ * @access  Private
+ */
+exports.updateProfile = async (req, res) => {
+  try {
+    const userId = req.headers['x-user-id'];
+    
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User ID not found in request',
+      });
+    }
+
+    // Validate input
+    const { error, value } = updateProfileSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details[0].message,
+      });
+    }
+
+    const { fullName } = value;
+
+    // Find and update user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    user.fullName = fullName;
+    await user.save();
+
+    logger.info(`✅ Profile updated for user: ${user.email}`);
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: {
+        user: {
+          id: user._id,
+          email: user.email,
+          fullName: user.fullName,
+          balance: user.balance,
+          role: user.role,
+        },
+      },
+    });
+  } catch (error) {
+    logger.error(`❌ Update profile error: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating profile',
       error: error.message,
     });
   }

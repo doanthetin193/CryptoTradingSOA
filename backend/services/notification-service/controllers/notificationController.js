@@ -241,22 +241,25 @@ exports.deleteNotification = async (req, res) => {
 exports.createPriceAlert = async (req, res) => {
   try {
     const userId = req.headers['x-user-id'];
-    const { symbol, targetPrice, condition } = req.body;
+    const { symbol, coinId, targetPrice, condition } = req.body;
 
-    if (!userId || !symbol || !targetPrice || !condition) {
+    if (!userId || !symbol || !coinId || !targetPrice || !condition) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields',
+        message: 'Missing required fields (symbol, coinId, targetPrice, condition)',
       });
     }
 
     const alert = await PriceAlert.create({
       userId,
       symbol: symbol.toUpperCase(),
+      coinId: coinId.toLowerCase(),
       targetPrice,
       condition,
       status: 'active',
     });
+
+    logger.info(`✅ Price alert created: ${symbol} ${condition} $${targetPrice} for user ${userId}`);
 
     res.status(201).json({
       success: true,

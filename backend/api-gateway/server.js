@@ -91,25 +91,26 @@ app.use('/api', globalLimiter);
 // ===========================
 
 /**
- * Get service port by name
+ * Get service URL dynamically from Consul
  */
-function getServicePort(serviceName) {
-  const ports = {
-    'user-service': 3001,
-    'market-service': 3002,
-    'portfolio-service': 3003,
-    'trade-service': 3004,
-    'notification-service': 3005,
-  };
-  return ports[serviceName] || 3000;
+async function getServiceTarget(serviceName) {
+  try {
+    return await serviceDiscovery.getServiceUrl(serviceName);
+  } catch (error) {
+    logger.error(`Failed to discover ${serviceName}: ${error.message}`);
+    throw error;
+  }
 }
 
 /**
- * Create static proxy for each service
+ * Create dynamic proxy with router for service discovery
  */
 const createServiceProxy = (serviceName, apiPrefix) => {
   return createProxyMiddleware({
-    target: `http://localhost:${getServicePort(serviceName)}`,
+    target: 'http://localhost:3000',
+    router: async (req) => {
+      return await getServiceTarget(serviceName);
+    },
     changeOrigin: true,
     pathRewrite: (path, req) => {
       // Remove /api/{prefix} from path
@@ -193,10 +194,12 @@ app.get('/', (req, res) => {
 // USER SERVICE - Apply specific rate limiters for login/register
 app.post('/api/users/login', loginLimiter, userProxy);
 app.post('/api/users/register', registerLimiter, userProxy);
-app.use('/api/users', userProxy); // Other user routes
 
 // ADMIN ROUTES - Apply auth + admin middleware
 app.use('/api/users/admin', authMiddleware, adminMiddleware, userProxy);
+
+// USER SERVICE - Protected routes (profile, balance, etc.)
+app.use('/api/users', authMiddleware, userProxy);
 
 // MARKET SERVICE
 app.use('/api/market', optionalAuth, marketProxy);
