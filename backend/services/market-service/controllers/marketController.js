@@ -1,10 +1,11 @@
 const axios = require('axios');
 const NodeCache = require('node-cache');
 const logger = require('../../../shared/utils/logger');
+const coinPaprikaProvider = require('../providers/coinPaprikaProvider');
 
 /**
  * Market Controller
- * Tích hợp CoinGecko API để lấy giá coin real-time
+ * Multi-provider: CoinGecko (primary) + CoinPaprika (fallback)
  */
 
 // Cache configuration
@@ -111,6 +112,7 @@ exports.getPrices = async (req, res) => {
  * @desc    Get price for a specific coin
  * @route   GET /price/:coinId
  * @access  Public
+ * @note    Reuses data from /prices cache to avoid rate limits
  */
 exports.getCoinPrice = async (req, res) => {
   try {
@@ -125,9 +127,22 @@ exports.getCoinPrice = async (req, res) => {
       });
     }
 
+    // OPTIMIZATION: First check if data exists in /prices cache
+    const allPricesCache = cache.get('current_prices');
+    if (allPricesCache) {
+      const coinFromCache = allPricesCache.find(c => c.coinId === coinId.toLowerCase());
+      if (coinFromCache) {
+        logger.debug(`📦 Returning ${coinId} from /prices cache`);
+        return res.json({
+          success: true,
+          cached: true,
+          data: coinFromCache,
+        });
+      }
+    }
+
+    // Check individual coin cache
     const cacheKey = `price_${coinId}`;
-    
-    // Check cache
     const cachedData = cache.get(cacheKey);
     if (cachedData) {
       return res.json({
@@ -137,7 +152,7 @@ exports.getCoinPrice = async (req, res) => {
       });
     }
 
-    // Fetch from CoinGecko
+    // Only fetch from API if not in any cache
     const response = await axios.get(`${COINGECKO_API}/simple/price`, {
       params: {
         ids: coinId.toLowerCase(),
@@ -170,6 +185,8 @@ exports.getCoinPrice = async (req, res) => {
     // Cache the result
     cache.set(cacheKey, priceData);
 
+    logger.info(`✅ Fetched price for ${coinId} from CoinGecko`);
+
     res.json({
       success: true,
       cached: false,
@@ -177,6 +194,36 @@ exports.getCoinPrice = async (req, res) => {
     });
   } catch (error) {
     logger.error(`❌ Get coin price error: ${error.message}`);
+    
+    // Fallback 1: Check /prices cache again
+    const allPricesCache = cache.get('current_prices');
+    if (allPricesCache) {
+      const coinFromCache = allPricesCache.find(c => c.coinId === req.params.coinId.toLowerCase());
+      if (coinFromCache) {
+        logger.warn('⚠️  API failed, returning from /prices cache');
+        return res.json({
+          success: true,
+          cached: true,
+          warning: 'Using cached data due to API error',
+          data: coinFromCache,
+        });
+      }
+    }
+    
+    // Fallback 2: Try individual coin cache
+    const cacheKey = `price_${req.params.coinId}`;
+    const cachedData = cache.get(cacheKey);
+    
+    if (cachedData) {
+      logger.warn('⚠️  API failed, returning cached price data');
+      return res.json({
+        success: true,
+        cached: true,
+        warning: 'Using cached data due to API rate limit',
+        data: cachedData,
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Error fetching coin price',
@@ -215,31 +262,60 @@ exports.getChartData = async (req, res) => {
       });
     }
 
-    // Fetch from CoinGecko
-    const response = await axios.get(`${COINGECKO_API}/coins/${coinId.toLowerCase()}/market_chart`, {
-      params: {
-        vs_currency: 'usd',
-        days: days,
-        interval: days <= 1 ? 'hourly' : 'daily',
-      },
-    });
+    let chartData;
 
-    // Transform data
-    const chartData = {
-      symbol: COIN_MAP[coinId.toLowerCase()] || coinId.toUpperCase(),
-      coinId: coinId.toLowerCase(),
-      days: parseInt(days),
-      prices: response.data.prices.map(([timestamp, price]) => ({
-        timestamp,
-        date: new Date(timestamp).toISOString(),
-        price: price,
-      })),
-    };
+    try {
+      // Try CoinGecko first
+      const response = await axios.get(`${COINGECKO_API}/coins/${coinId.toLowerCase()}/market_chart`, {
+        params: {
+          vs_currency: 'usd',
+          days: days,
+          interval: days <= 1 ? 'hourly' : 'daily',
+        },
+        timeout: 8000,
+      });
+
+      // Transform data
+      chartData = {
+        symbol: COIN_MAP[coinId.toLowerCase()] || coinId.toUpperCase(),
+        coinId: coinId.toLowerCase(),
+        days: parseInt(days),
+        provider: 'CoinGecko',
+        prices: response.data.prices.map(([timestamp, price]) => ({
+          timestamp,
+          date: new Date(timestamp).toISOString(),
+          price: price,
+        })),
+      };
+    } catch (geckoError) {
+      // Fallback to CoinPaprika if CoinGecko fails
+      logger.warn(`⚠️  CoinGecko failed (${geckoError.message}), trying CoinPaprika...`);
+      
+      try {
+        const paprikaData = await coinPaprikaProvider.getChartData(coinId.toLowerCase(), parseInt(days));
+        
+        chartData = {
+          coinId: coinId.toLowerCase(),
+          days: parseInt(days),
+          provider: 'CoinPaprika',
+          prices: paprikaData.prices.map(([timestamp, price]) => ({
+            timestamp,
+            date: new Date(timestamp).toISOString(),
+            price: price,
+          })),
+        };
+        
+        logger.info(`✅ Fetched chart data from CoinPaprika fallback`);
+      } catch (paprikaError) {
+        logger.error(`❌ Both providers failed: ${paprikaError.message}`);
+        throw geckoError; // Throw original error for cache fallback
+      }
+    }
 
     // Cache with longer TTL for chart data
-    cache.set(cacheKey, chartData, parseInt(process.env.CACHE_TTL_CHART) || 300);
+    cache.set(cacheKey, chartData, parseInt(process.env.CACHE_TTL_CHART) || 3600);
 
-    logger.info(`✅ Fetched chart data for ${coinId} (${days} days)`);
+    logger.info(`✅ Fetched chart data for ${coinId} (${days} days) from ${chartData.provider}`);
 
     res.json({
       success: true,
@@ -248,10 +324,25 @@ exports.getChartData = async (req, res) => {
     });
   } catch (error) {
     logger.error(`❌ Get chart data error: ${error.message}`);
+    
+    // Try to return cached data even if expired
+    const cacheKey = `chart_${req.params.coinId}_${req.query.days || 7}`;
+    const cachedData = cache.get(cacheKey);
+    
+    if (cachedData) {
+      logger.warn('⚠️  API failed, returning cached chart data');
+      return res.json({
+        success: true,
+        cached: true,
+        warning: 'Using cached data due to API rate limit',
+        data: cachedData,
+      });
+    }
+    
     res.status(500).json({
       success: false,
-      message: 'Error fetching chart data',
-      error: error.message,
+      message: 'Error fetching chart data. Please try again later.',
+      error: error.response?.status === 429 ? 'Rate limit exceeded' : error.message,
     });
   }
 };
