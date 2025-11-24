@@ -78,6 +78,7 @@ const optionalAuth = (req, res, next) => {
 /**
  * Admin Middleware - Kiểm tra user có role admin không
  * Phải dùng sau authMiddleware
+ * Forward to User Service để verify role (không query DB trực tiếp)
  */
 const adminMiddleware = async (req, res, next) => {
   try {
@@ -88,28 +89,49 @@ const adminMiddleware = async (req, res, next) => {
       });
     }
 
-    // Get user from database to check role
-    const User = require('../../../backend/services/user-service/models/User');
-    const user = await User.findById(req.userId);
+    // Forward to User Service to verify admin role
+    try {
+      const serviceDiscovery = require('../utils/serviceDiscovery');
+      const axios = require('axios');
+      
+      const userServiceUrl = await serviceDiscovery.getServiceUrl('user-service');
+      
+      const response = await axios.get(`${userServiceUrl}/profile`, {
+        headers: {
+          'x-user-id': req.userId
+        },
+        timeout: 5000
+      });
+      
+      if (!response.data.success) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found.',
+        });
+      }
+      
+      // User data is nested in data.user (not data.data)
+      const user = response.data.data?.user || response.data.data;
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          message: 'Admin access required. You do not have permission.',
+        });
+      }
 
-    if (!user) {
-      return res.status(404).json({
+      // Add user to request
+      req.adminUser = user;
+      logger.debug(`✅ Admin verified: ${user.email}`);
+      next();
+      
+    } catch (serviceError) {
+      logger.error(`❌ Failed to verify admin via User Service: ${serviceError.message}`);
+      return res.status(500).json({
         success: false,
-        message: 'User not found.',
+        message: 'Failed to verify admin permissions.',
       });
     }
-
-    if (user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Admin access required. You do not have permission.',
-      });
-    }
-
-    // Add user to request
-    req.adminUser = user;
-    logger.debug(`✅ Admin verified: ${user.email}`);
-    next();
   } catch (error) {
     logger.error(`❌ Admin middleware error: ${error.message}`);
     return res.status(500).json({
