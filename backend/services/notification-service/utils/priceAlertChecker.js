@@ -25,13 +25,11 @@ const checkPriceAlerts = async () => {
 
     logger.info(`🔍 Checking ${alerts.length} price alerts...`);
 
-    // Get Market Service URL dynamically
-    const marketServiceUrl = await serviceDiscovery.getServiceUrl('market-service');
-
-    // Get current prices from Market Service
-    const pricesResponse = await axios.get(`${marketServiceUrl}/prices`);
+    // Get current prices via API Gateway (SOA compliance)
+    const apiGatewayUrl = process.env.API_GATEWAY_URL || 'http://localhost:3000';
+    const pricesResponse = await axios.get(`${apiGatewayUrl}/api/market/prices`);
     if (!pricesResponse.data.success) {
-      logger.error('Failed to get prices from Market Service');
+      logger.error('Failed to get prices from API Gateway');
       return;
     }
 
@@ -96,8 +94,8 @@ const checkPriceAlerts = async () => {
         // Send email notification if enabled
         if (process.env.ENABLE_EMAIL_NOTIFICATIONS === 'true') {
           try {
-            const userServiceUrl = await serviceDiscovery.getServiceUrl('user-service');
-            const userResponse = await axios.get(`${userServiceUrl}/profile`, {
+            const apiGatewayUrl = process.env.API_GATEWAY_URL || 'http://localhost:3000';
+            const userResponse = await axios.get(`${apiGatewayUrl}/api/users/profile`, {
               headers: { 'X-User-Id': alert.userId },
             });
             
