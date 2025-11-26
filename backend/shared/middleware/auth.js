@@ -89,7 +89,7 @@ const adminMiddleware = async (req, res, next) => {
       });
     }
 
-    // Forward to User Service to verify admin role
+    // Query User Service directly (this middleware runs in API Gateway)
     try {
       const serviceDiscovery = require('../utils/serviceDiscovery');
       const axios = require('axios');
