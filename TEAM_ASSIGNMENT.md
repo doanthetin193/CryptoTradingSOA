@@ -322,7 +322,7 @@ const token = jwt.sign(
 | 18 | `db.js` | `shared/config/db.js` | MongoDB connection |
 | 19 | `services.js` | `shared/config/services.js` | Service configs |
 | 20 | `websocket.js` | `shared/utils/websocket.js` | Socket.IO |
-| 21 | `httpClient.js` | `shared/utils/httpClient.js` | Axios wrapper |
+
 
 #### Notification Cron (1 file)
 | # | File | Đường dẫn | Mô tả |
@@ -363,7 +363,7 @@ shared/
     ├── serviceDiscovery.js      ⭐⭐⭐
     ├── circuitBreaker.js        ⭐⭐⭐
     ├── websocket.js             ⭐⭐
-    └── httpClient.js            ⭐
+
 
 services/notification-service/utils/
 └── priceAlertChecker.js         ⭐⭐
