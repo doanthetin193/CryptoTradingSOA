@@ -256,7 +256,7 @@ exports.createPriceAlert = async (req, res) => {
       coinId: coinId.toLowerCase(),
       targetPrice,
       condition,
-      status: 'active',
+      // isActive: true by default
     });
 
     logger.info(`✅ Price alert created: ${symbol} ${condition} $${targetPrice} for user ${userId}`);
@@ -289,9 +289,9 @@ exports.getPriceAlerts = async (req, res) => {
       });
     }
 
-    const { status } = req.query;
+    const { isActive } = req.query;
     const filter = { userId };
-    if (status) filter.status = status;
+    if (isActive !== undefined) filter.isActive = isActive === 'true';
 
     const alerts = await PriceAlert.find(filter).sort({ createdAt: -1 });
 
