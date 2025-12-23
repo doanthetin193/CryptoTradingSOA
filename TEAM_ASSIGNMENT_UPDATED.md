@@ -71,44 +71,22 @@ backend/services/trade-service/
 - Output: Trade record đã lưu
 - **LƯU Ý:** Endpoint này CHỈ lưu record, KHÔNG thực hiện trade logic
 
-**b) GET /** - Get user's trades
+**b) GET /history** - Get user's trade history
 
 - Input: userId từ header `X-User-Id`
 - Query params:
   - `page` (default: 1)
-  - `limit` (default: 10)
+  - `limit` (default: 20)
   - `type` (optional: 'buy' hoặc 'sell')
+  - `symbol` (optional: filter by coin)
 - Output: Paginated trade list
-- Sort: Mới nhất trên đầu (createdAt: -1)
-
-**c) GET /stats** - Trade statistics
-
-- Input: userId từ header
-- Output:
-  ```javascript
-  {
-    totalTrades: Number,
-    totalBuy: Number,
-    totalSell: Number,
-    totalVolume: Number,
-    avgTradeSize: Number
-  }
-  ```
-- Dùng MongoDB aggregation
-
-**d) GET /:id** - Get single trade
-
-- Input: tradeId
-- Output: Trade object
-- Validate: userId phải match
+- Sort: Mới nhất trên đầu (executedAt: -1)
 
 #### 3. Routes (routes/tradeRoutes.js)
 
 ```javascript
 POST    /              // createTrade
-GET     /              // getUserTrades
-GET     /stats         // getTradeStats
-GET     /:id           // getTradeById
+GET     /history       // getTradeHistory
 ```
 
 #### 4. Server Setup (server.js)
@@ -122,12 +100,10 @@ GET     /:id           // getTradeById
 
 - [ ] Trade model với đầy đủ fields
 - [ ] POST / - Create trade (test với Postman)
-- [ ] GET / - List trades với pagination
-- [ ] GET /stats - Aggregation statistics
-- [ ] GET /:id - Single trade với validation
+- [ ] GET /history - List trades với pagination
 - [ ] Register service với Consul
 - [ ] Error handling middleware
-- [ ] Test tất cả endpoints (ít nhất 10 test cases)
+- [ ] Test tất cả endpoints
 - [ ] Code có comments rõ ràng
 - [ ] Viết README.md cho Trade Service
 - [ ] Create Pull Request để review

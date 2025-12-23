@@ -55,7 +55,7 @@ exports.updatePortfolioValue = async (req, res) => {
     }
 
     const portfolio = await Portfolio.findOrCreateByUserId(userId);
-    
+
     // Update value with provided prices
     const pricesMap = {};
     prices.forEach(coin => {
@@ -289,46 +289,6 @@ exports.reduceHolding = async (req, res) => {
       success: false,
       message: 'Failed to reduce holding',
       error: error.message,
-    });
-  }
-};
-
-/**
- * @desc    Get holding by symbol
- * @route   GET /holding/:symbol
- * @access  Private
- */
-exports.getHolding = async (req, res) => {
-  try {
-    const userId = req.headers['x-user-id'];
-    const { symbol } = req.params;
-
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: 'User ID not found',
-      });
-    }
-
-    const portfolio = await Portfolio.findOrCreateByUserId(userId);
-    const holding = portfolio.holdings.find(h => h.symbol === symbol.toUpperCase());
-
-    if (!holding) {
-      return res.status(404).json({
-        success: false,
-        message: `Holding ${symbol} not found`,
-      });
-    }
-
-    res.json({
-      success: true,
-      data: holding,
-    });
-  } catch (error) {
-    logger.error(`❌ Get holding error: ${error.message}`);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to get holding',
     });
   }
 };
