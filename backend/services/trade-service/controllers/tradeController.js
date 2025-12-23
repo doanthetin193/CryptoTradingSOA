@@ -76,7 +76,7 @@ exports.getTradeHistory = async (req, res) => {
     }
 
     const { page = 1, limit = 20, type, symbol } = req.query;
-    
+
     const filter = { userId };
     if (type) filter.type = type;
     if (symbol) filter.symbol = symbol.toUpperCase();
@@ -106,92 +106,6 @@ exports.getTradeHistory = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to get trade history',
-    });
-  }
-};
-
-/**
- * @desc    Get trade by ID
- * @route   GET /:id
- * @access  Private
- */
-exports.getTradeById = async (req, res) => {
-  try {
-    const userId = req.headers['x-user-id'];
-    const { id } = req.params;
-
-    const trade = await Trade.findOne({ _id: id, userId });
-    if (!trade) {
-      return res.status(404).json({
-        success: false,
-        message: 'Trade not found',
-      });
-    }
-
-    res.json({
-      success: true,
-      data: trade,
-    });
-  } catch (error) {
-    logger.error(`❌ Get trade error: ${error.message}`);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to get trade',
-    });
-  }
-};
-
-/**
- * @desc    Get trade statistics
- * @route   GET /stats
- * @access  Private
- */
-exports.getTradeStats = async (req, res) => {
-  try {
-    const userId = req.headers['x-user-id'];
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: 'User ID not found',
-      });
-    }
-
-    const totalTrades = await Trade.countDocuments({ userId });
-    const buyTrades = await Trade.countDocuments({ userId, type: 'buy' });
-    const sellTrades = await Trade.countDocuments({ userId, type: 'sell' });
-
-    const trades = await Trade.find({ userId });
-    
-    let totalBuyValue = 0;
-    let totalSellValue = 0;
-    let totalFees = 0;
-
-    trades.forEach(trade => {
-      if (trade.type === 'buy') {
-        totalBuyValue += trade.totalCost;
-      } else {
-        totalSellValue += trade.totalCost;
-      }
-      totalFees += trade.fee;
-    });
-
-    res.json({
-      success: true,
-      data: {
-        totalTrades,
-        buyTrades,
-        sellTrades,
-        totalBuyValue,
-        totalSellValue,
-        totalFees,
-        netValue: totalSellValue - totalBuyValue,
-      },
-    });
-  } catch (error) {
-    logger.error(`❌ Get trade stats error: ${error.message}`);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to get trade statistics',
     });
   }
 };

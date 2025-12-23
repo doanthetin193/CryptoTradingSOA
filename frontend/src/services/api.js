@@ -41,29 +41,29 @@ api.interceptors.response.use(
     const status = error.response?.status;
     const url = error.config?.url || '';
     const fullUrl = error.config?.baseURL ? error.config.baseURL + url : url;
-    
+
     console.error('🔴 API Error:', {
       status,
       url,
       fullUrl,
       message: error.response?.data?.message || error.message
     });
-    
+
     // Token hết hạn hoặc invalid - CHỈ redirect khi trade/buy/sell KHÔNG có trong URL
     if (status === 401) {
       const isAuthPage = window.location.pathname.includes('/auth');
-      const isTradeRequest = url.includes('trade/buy') || 
-                            url.includes('trade/sell') || 
-                            fullUrl.includes('trade/buy') || 
-                            fullUrl.includes('trade/sell');
-      
+      const isTradeRequest = url.includes('trade/buy') ||
+        url.includes('trade/sell') ||
+        fullUrl.includes('trade/buy') ||
+        fullUrl.includes('trade/sell');
+
       // KHÔNG redirect nếu:
       // 1. Đang ở trang auth
       // 2. Request là trade/buy/sell (để trade hoàn thành)
       if (!isAuthPage && !isTradeRequest && !isRedirecting) {
         isRedirecting = true;
         console.error('❌ 401 Unauthorized - Token invalid or expired');
-        
+
         // Delay 500ms để trade response hoàn thành
         redirectTimer = setTimeout(() => {
           localStorage.removeItem('token');
@@ -72,7 +72,7 @@ api.interceptors.response.use(
         }, 500);
       }
     }
-    
+
     const errorMessage = error.response?.data?.message || error.message || 'Something went wrong';
     return Promise.reject(new Error(errorMessage));
   }
@@ -112,8 +112,6 @@ export const marketAPI = {
 // ===========================
 export const portfolioAPI = {
   getPortfolio: () => api.get('/portfolio'),
-  getHolding: (symbol) => api.get(`/portfolio/holding/${symbol}`),
-  getPerformance: () => api.get('/portfolio/performance'),
 };
 
 // ===========================
@@ -123,8 +121,6 @@ export const tradeAPI = {
   buy: (data) => api.post('/trade/buy', data),
   sell: (data) => api.post('/trade/sell', data),
   getHistory: (params) => api.get('/trade/history', { params }),
-  getTradeById: (id) => api.get(`/trade/${id}`),
-  getStats: () => api.get('/trade/stats'),
 };
 
 // ===========================
@@ -136,7 +132,7 @@ export const notificationAPI = {
   markAllAsRead: () => api.put('/notifications/read-all'),
   deleteNotification: (id) => api.delete(`/notifications/${id}`),
   getUnreadCount: () => api.get('/notifications/unread-count'),
-  
+
   // Price alerts
   createPriceAlert: (data) => api.post('/notifications/alert', data),
   getPriceAlerts: () => api.get('/notifications/alerts'),
@@ -151,7 +147,7 @@ export const adminAPI = {
   getAllUsers: (params) => api.get('/users/admin/users', { params }),
   getSystemStats: () => api.get('/users/admin/stats'),
   toggleUserStatus: (userId) => api.put(`/users/admin/users/${userId}/toggle`),
-  updateUserBalance: (userId, amount, description) => 
+  updateUserBalance: (userId, amount, description) =>
     api.put(`/users/admin/users/${userId}/balance`, { amount, description }),
   deleteUser: (userId) => api.delete(`/users/admin/users/${userId}`),
 };

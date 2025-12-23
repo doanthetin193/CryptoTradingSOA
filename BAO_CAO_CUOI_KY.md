@@ -991,8 +991,6 @@ CREATE TABLE price_alerts (
 | Method | Endpoint             | Description          | Auth | Query Params              |
 | ------ | -------------------- | -------------------- | ---- | ------------------------- |
 | GET    | `/api/trade/history` | Lịch sử giao dịch    | Yes  | page, limit, type, symbol |
-| GET    | `/api/trade/stats`   | Thống kê giao dịch   | Yes  | -                         |
-| GET    | `/api/trade/:id`     | Chi tiết 1 giao dịch | Yes  | -                         |
 
 ##### Portfolio (Orchestrated)
 

@@ -358,14 +358,12 @@ npm run dev
 | POST | `/api/trade/buy` | Mua coin | ✅ |
 | POST | `/api/trade/sell` | Bán coin | ✅ |
 | GET | `/api/trade/history` | Lịch sử giao dịch | ✅ |
-| GET | `/api/trade/stats` | Thống kê giao dịch | ✅ |
 
 ### Portfolio
 
 | Method | Endpoint | Mô tả | Auth |
 |--------|----------|-------|------|
 | GET | `/api/portfolio` | Lấy danh mục | ✅ |
-| GET | `/api/portfolio/performance` | Lấy hiệu suất | ✅ |
 
 ### Notification
 

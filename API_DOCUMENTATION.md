@@ -558,33 +558,6 @@ Lấy lịch sử giao dịch.
 
 ---
 
-### GET `/api/trade/stats`
-
-Lấy thống kê giao dịch.
-
-**Auth Required:** ✅
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "totalTrades": 15,
-    "buyTrades": 10,
-    "sellTrades": 5,
-    "totalBuyValue": 2500,
-    "totalSellValue": 1200,
-    "totalFees": 3.70,
-    "netValue": -1300,
-    "mostTradedCoin": "BTC",
-    "firstTradeDate": "2024-01-02T10:30:00.000Z",
-    "lastTradeDate": "2024-01-10T16:45:00.000Z"
-  }
-}
-```
-
----
-
 ## 📊 Portfolio APIs
 
 ### GET `/api/portfolio`
@@ -631,39 +604,6 @@ Lấy danh mục đầu tư.
       "totalValue": 2176,
       "totalProfit": 101,
       "profitPercentage": 4.87
-    }
-  }
-}
-```
-
----
-
-### GET `/api/portfolio/performance`
-
-Lấy hiệu suất danh mục.
-
-**Auth Required:** ✅
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "totalInvested": 2075,
-    "currentValue": 2176,
-    "profit": 101,
-    "profitPercentage": 4.87,
-    "allocation": [
-      { "symbol": "BTC", "percentage": 3.49 },
-      { "symbol": "ETH", "percentage": 96.51 }
-    ],
-    "bestPerformer": {
-      "symbol": "ETH",
-      "profitPercentage": 5.0
-    },
-    "worstPerformer": {
-      "symbol": "BTC",
-      "profitPercentage": 1.33
     }
   }
 }

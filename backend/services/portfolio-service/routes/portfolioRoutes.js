@@ -23,9 +23,6 @@ router.get('/', portfolioController.getPortfolio);
 // Update portfolio value (Internal - called by API Gateway)
 router.put('/value', portfolioController.updatePortfolioValue);
 
-// Get specific holding
-router.get('/holding/:symbol', portfolioController.getHolding);
-
 // Add holding (Internal - called by API Gateway)
 router.post('/holding', portfolioController.addHolding);
 

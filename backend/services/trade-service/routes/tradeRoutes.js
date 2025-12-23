@@ -24,10 +24,4 @@ router.post('/', tradeController.createTrade);
 // Get trade history
 router.get('/history', tradeController.getTradeHistory);
 
-// Get trade statistics
-router.get('/stats', tradeController.getTradeStats);
-
-// Get specific trade
-router.get('/:id', tradeController.getTradeById);
-
 module.exports = router;
