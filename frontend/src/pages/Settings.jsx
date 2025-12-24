@@ -1,21 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { userAPI, notificationAPI } from '../services/api';
-import { User, Mail, Bell, Plus, Trash2, Save } from 'lucide-react';
+import { User, Mail, Bell, Plus, Trash2, Save, Settings as SettingsIcon, TrendingUp, TrendingDown } from 'lucide-react';
 import Toast from '../components/Toast';
 
 export default function Settings() {
   const { user, refreshUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
-  
-  // Profile settings
+
   const [profile, setProfile] = useState({
     fullName: user?.fullName || '',
     email: user?.email || '',
   });
 
-  // Price alerts
   const [alerts, setAlerts] = useState([]);
   const [newAlert, setNewAlert] = useState({
     symbol: 'BTC',
@@ -24,7 +22,6 @@ export default function Settings() {
     targetPrice: '',
   });
 
-  // Symbol to CoinId mapping
   const symbolToCoinId = {
     'BTC': 'bitcoin',
     'ETH': 'ethereum',
@@ -55,7 +52,6 @@ export default function Settings() {
     e.preventDefault();
     try {
       setLoading(true);
-      // Only send fullName, email cannot be changed
       const res = await userAPI.updateProfile({ fullName: profile.fullName });
       if (res.success) {
         showToast('success', 'Cập nhật thông tin thành công!');
@@ -77,7 +73,7 @@ export default function Settings() {
         ...newAlert,
         coinId: symbolToCoinId[newAlert.symbol] || newAlert.symbol.toLowerCase(),
       };
-      
+
       const res = await notificationAPI.createPriceAlert(payload);
       if (res.success) {
         showToast('success', 'Tạo cảnh báo giá thành công!');
@@ -109,110 +105,139 @@ export default function Settings() {
     setTimeout(() => setToast(null), 5000);
   };
 
-  const coins = ['BTC', 'ETH', 'BNB', 'ADA', 'SOL', 'DOT', 'MATIC', 'AVAX'];
+  const coins = ['BTC', 'ETH', 'BNB', 'ADA', 'SOL', 'DOT', 'XRP', 'DOGE'];
 
   return (
-    <div className="p-6 max-w-4xl">
-      {toast && <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />}
+    <div className="space-y-6 max-w-4xl">
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-20 right-6 z-50 min-w-[300px]">
+          <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
+        </div>
+      )}
 
-      <h1 className="text-2xl font-bold mb-6">Cài đặt</h1>
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="w-12 h-12 rounded-xl bg-gradient-crypto flex items-center justify-center">
+          <SettingsIcon className="w-6 h-6 text-black" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold text-crypto-primary">Cài đặt</h1>
+          <p className="text-crypto-muted">Quản lý tài khoản và cảnh báo giá</p>
+        </div>
+      </div>
 
       {/* Profile Section */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <div className="flex items-center gap-2 mb-4">
-          <User className="w-5 h-5 text-blue-600" />
-          <h2 className="text-xl font-semibold">Thông tin cá nhân</h2>
+      <div className="crypto-card">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-[rgba(139,92,246,0.1)] flex items-center justify-center">
+            <User className="w-5 h-5 text-[#8b5cf6]" />
+          </div>
+          <h2 className="text-xl font-bold text-crypto-primary">Thông tin cá nhân</h2>
         </div>
 
         <form onSubmit={updateProfile} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-crypto-secondary mb-2">
               Họ tên
             </label>
             <input
               type="text"
               value={profile.fullName}
               onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="crypto-input"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-crypto-secondary mb-2">
               Email
             </label>
-            <div className="flex items-center gap-2">
-              <Mail className="w-5 h-5 text-gray-400" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-crypto-hover flex items-center justify-center flex-shrink-0">
+                <Mail className="w-5 h-5 text-crypto-muted" />
+              </div>
               <input
                 type="email"
                 value={profile.email}
-                className="flex-1 px-4 py-2 border rounded-lg bg-gray-50"
+                className="crypto-input bg-crypto-hover cursor-not-allowed"
                 disabled
               />
             </div>
-            <p className="text-sm text-gray-500 mt-1">Email không thể thay đổi</p>
+            <p className="text-xs text-crypto-muted mt-2">Email không thể thay đổi</p>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="crypto-btn crypto-btn-primary disabled:opacity-50"
           >
-            <Save className="w-4 h-4" />
-            {loading ? 'Đang lưu...' : 'Lưu thay đổi'}
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                <span>Lưu thay đổi</span>
+              </>
+            )}
           </button>
         </form>
       </div>
 
       {/* Price Alerts Section */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Bell className="w-5 h-5 text-blue-600" />
-          <h2 className="text-xl font-semibold">Cảnh báo giá</h2>
+      <div className="crypto-card">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-[rgba(0,212,170,0.1)] flex items-center justify-center">
+            <Bell className="w-5 h-5 text-crypto-accent" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-crypto-primary">Cảnh báo giá</h2>
+            <p className="text-sm text-crypto-muted">Nhận thông báo khi giá đạt mục tiêu</p>
+          </div>
         </div>
 
         {/* Create Alert Form */}
-        <form onSubmit={createAlert} className="mb-6 p-4 bg-gray-50 rounded-lg">
-          <div className="grid grid-cols-3 gap-4 mb-4">
+        <form onSubmit={createAlert} className="mb-6 p-4 bg-crypto-secondary rounded-xl border border-crypto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-crypto-secondary mb-2">
                 Coin
               </label>
               <select
                 value={newAlert.symbol}
                 onChange={(e) => {
                   const symbol = e.target.value;
-                  setNewAlert({ 
-                    ...newAlert, 
+                  setNewAlert({
+                    ...newAlert,
                     symbol,
                     coinId: symbolToCoinId[symbol] || symbol.toLowerCase()
                   });
                 }}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="crypto-input"
               >
                 {coins.map(coin => (
-                  <option key={coin} value={coin}>{coin}</option>
+                  <option key={coin} value={coin} className="bg-crypto-card text-crypto-primary">{coin}</option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-crypto-secondary mb-2">
                 Điều kiện
               </label>
               <select
                 value={newAlert.condition}
                 onChange={(e) => setNewAlert({ ...newAlert, condition: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="crypto-input"
               >
-                <option value="above">Vượt quá</option>
-                <option value="below">Xuống dưới</option>
+                <option value="above" className="bg-crypto-card text-crypto-primary">📈 Vượt quá</option>
+                <option value="below" className="bg-crypto-card text-crypto-primary">📉 Xuống dưới</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-crypto-secondary mb-2">
                 Giá mục tiêu ($)
               </label>
               <input
@@ -220,7 +245,7 @@ export default function Settings() {
                 step="0.01"
                 value={newAlert.targetPrice}
                 onChange={(e) => setNewAlert({ ...newAlert, targetPrice: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="crypto-input"
                 placeholder="0.00"
                 required
               />
@@ -229,42 +254,64 @@ export default function Settings() {
 
           <button
             type="submit"
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="crypto-btn crypto-btn-primary"
           >
             <Plus className="w-4 h-4" />
-            Tạo cảnh báo
+            <span>Tạo cảnh báo</span>
           </button>
         </form>
 
         {/* Alerts List */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           {alerts.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">Chưa có cảnh báo nào</p>
+            <div className="text-center py-12">
+              <Bell className="w-16 h-16 text-crypto-muted opacity-30 mx-auto mb-4" />
+              <p className="text-crypto-muted">Chưa có cảnh báo nào</p>
+              <p className="text-sm text-crypto-muted mt-1">Tạo cảnh báo để theo dõi giá</p>
+            </div>
           ) : (
             alerts.map((alert) => (
               <div
                 key={alert._id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                className={`flex items-center justify-between p-4 rounded-xl border transition ${alert.triggered
+                    ? 'bg-[rgba(16,185,129,0.1)] border-[var(--success)]'
+                    : 'bg-crypto-secondary border-crypto hover:border-[var(--border-hover)]'
+                  }`}
               >
                 <div className="flex items-center gap-4">
-                  <span className="font-semibold text-lg">{alert.symbol}</span>
-                  <span className="text-gray-600">
-                    {alert.condition === 'above' ? 'Vượt quá' : 'Xuống dưới'}
-                  </span>
-                  <span className="font-semibold text-blue-600">
-                    ${alert.targetPrice.toLocaleString()}
-                  </span>
-                  {alert.triggered && (
-                    <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                      Đã kích hoạt
-                    </span>
-                  )}
+                  <div className={`coin-icon text-white ${alert.condition === 'above'
+                      ? 'bg-gradient-to-br from-green-400 to-emerald-500'
+                      : 'bg-gradient-to-br from-red-400 to-rose-500'
+                    }`}>
+                    {alert.symbol?.substring(0, 2)}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-crypto-primary text-lg">{alert.symbol}</span>
+                      {alert.triggered && (
+                        <span className="crypto-badge crypto-badge-success">
+                          ✓ Đã kích hoạt
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-crypto-secondary">
+                      {alert.condition === 'above' ? (
+                        <TrendingUp className="w-4 h-4 text-[var(--success)]" />
+                      ) : (
+                        <TrendingDown className="w-4 h-4 text-[var(--error)]" />
+                      )}
+                      <span>{alert.condition === 'above' ? 'Vượt quá' : 'Xuống dưới'}</span>
+                      <span className="font-bold text-crypto-accent">
+                        ${alert.targetPrice?.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
                 </div>
                 <button
                   onClick={() => deleteAlert(alert._id)}
-                  className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
+                  className="p-2 text-[var(--error)] hover:bg-[rgba(239,68,68,0.1)] rounded-lg transition"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-5 h-5" />
                 </button>
               </div>
             ))

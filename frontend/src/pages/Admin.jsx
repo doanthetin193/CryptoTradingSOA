@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { adminAPI } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
-import { Users, DollarSign, UserCheck, UserX, Trash2, Plus, Minus, Search, RefreshCw } from 'lucide-react';
+import { Users, DollarSign, UserCheck, UserX, Trash2, Search, RefreshCw, Shield, X } from 'lucide-react';
+import Toast from '../components/Toast';
 
 export default function Admin() {
   const { user: currentUser, refreshUser } = useAuth();
@@ -15,6 +16,7 @@ export default function Admin() {
   const [balanceAmount, setBalanceAmount] = useState('');
   const [balanceDescription, setBalanceDescription] = useState('');
   const [showBalanceModal, setShowBalanceModal] = useState(false);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -45,7 +47,7 @@ export default function Admin() {
   };
 
   const handleToggleStatus = async (userId) => {
-    if (!confirm('Are you sure you want to toggle this user status?')) return;
+    if (!confirm('Bạn có chắc muốn thay đổi trạng thái người dùng này?')) return;
 
     try {
       const res = await adminAPI.toggleUserStatus(userId);
@@ -59,12 +61,12 @@ export default function Admin() {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!confirm('Are you sure you want to DELETE this user? This action cannot be undone!')) return;
+    if (!confirm('Bạn có chắc muốn XÓA người dùng này? Hành động không thể hoàn tác!')) return;
 
     try {
       const res = await adminAPI.deleteUser(userId);
       if (res.success) {
-        showToast('success', 'User deleted successfully');
+        showToast('success', 'Xóa người dùng thành công');
         fetchData();
       }
     } catch (error) {
@@ -74,7 +76,7 @@ export default function Admin() {
 
   const handleUpdateBalance = async () => {
     if (!balanceAmount || isNaN(balanceAmount)) {
-      showToast('error', 'Please enter a valid amount');
+      showToast('error', 'Vui lòng nhập số tiền hợp lệ');
       return;
     }
 
@@ -86,14 +88,13 @@ export default function Admin() {
       );
 
       if (res.success) {
-        showToast('success', 'Balance updated successfully');
+        showToast('success', 'Cập nhật số dư thành công');
         setShowBalanceModal(false);
         setBalanceAmount('');
         setBalanceDescription('');
         setSelectedUser(null);
         fetchData();
-        
-        // Refresh current user balance nếu admin tự update chính mình
+
         if (currentUser && selectedUser._id === currentUser.id) {
           await refreshUser();
         }
@@ -109,15 +110,18 @@ export default function Admin() {
   };
 
   const showToast = (type, message) => {
-    alert(`[${type.toUpperCase()}] ${message}`);
+    setToast({ type, message, id: Date.now() });
   };
 
   if (loading && !stats) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <RefreshCw className="w-8 h-8 animate-spin mx-auto text-blue-600" />
-          <p className="mt-4 text-gray-600">Loading admin panel...</p>
+          <div className="w-16 h-16 mx-auto mb-4 relative">
+            <div className="absolute inset-0 rounded-full border-4 border-[var(--border)]"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[var(--accent-primary)] animate-spin"></div>
+          </div>
+          <p className="text-crypto-secondary">Đang tải Admin Panel...</p>
         </div>
       </div>
     );
@@ -125,15 +129,30 @@ export default function Admin() {
 
   return (
     <div className="space-y-6">
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-20 right-6 z-50 min-w-[300px]">
+          <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
+        </div>
+      )}
+
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+            <Shield className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-crypto-primary">Admin Panel</h1>
+            <p className="text-crypto-muted">Quản lý người dùng và hệ thống</p>
+          </div>
+        </div>
         <button
           onClick={fetchData}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="crypto-btn crypto-btn-secondary"
         >
           <RefreshCw className="w-4 h-4" />
-          Refresh
+          <span>Refresh</span>
         </button>
       </div>
 
@@ -141,28 +160,28 @@ export default function Admin() {
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <StatCard
-            icon={<Users className="w-8 h-8 text-blue-600" />}
-            title="Total Users"
+            icon={<Users className="w-6 h-6" />}
+            title="Tổng Users"
             value={stats.totalUsers}
             color="blue"
           />
           <StatCard
-            icon={<UserCheck className="w-8 h-8 text-green-600" />}
-            title="Active Users"
+            icon={<UserCheck className="w-6 h-6" />}
+            title="Users Active"
             value={stats.activeUsers}
             color="green"
           />
           <StatCard
-            icon={<UserX className="w-8 h-8 text-red-600" />}
-            title="Inactive Users"
+            icon={<UserX className="w-6 h-6" />}
+            title="Users Blocked"
             value={stats.inactiveUsers}
             color="red"
           />
           <StatCard
-            icon={<DollarSign className="w-8 h-8 text-yellow-600" />}
-            title="Total Balance"
+            icon={<DollarSign className="w-6 h-6" />}
+            title="Tổng Balance"
             value={`$${stats.totalBalance?.toLocaleString() || 0}`}
-            color="yellow"
+            color="accent"
           />
         </div>
       )}
@@ -170,115 +189,103 @@ export default function Admin() {
       {/* Search */}
       <div className="flex items-center gap-4">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-crypto-muted w-5 h-5" />
           <input
             type="text"
-            placeholder="Search by email or name..."
+            placeholder="Tìm theo email hoặc tên..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="crypto-input pl-12"
           />
         </div>
       </div>
 
       {/* Users Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="crypto-card !p-0 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
+          <table className="crypto-table">
+            <thead>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Balance
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+                <th>User</th>
+                <th>Email</th>
+                <th className="text-right">Balance</th>
+                <th>Status</th>
+                <th>Role</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                    No users found
+                  <td colSpan="6" className="text-center py-12">
+                    <Users className="w-12 h-12 text-crypto-muted opacity-30 mx-auto mb-2" />
+                    <p className="text-crypto-muted">Không tìm thấy user</p>
                   </td>
                 </tr>
               ) : (
                 users.map((user) => (
-                  <tr key={user._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900">{user.fullName}</div>
+                  <tr key={user._id} className="hover:bg-crypto-hover transition">
+                    <td>
+                      <div className="flex items-center gap-3">
+                        <div className={`coin-icon text-white text-sm ${user.role === 'admin'
+                            ? 'bg-gradient-to-br from-purple-500 to-pink-500'
+                            : 'bg-gradient-to-br from-blue-500 to-cyan-500'
+                          }`}>
+                          {user.fullName?.substring(0, 1) || 'U'}
+                        </div>
+                        <span className="font-medium text-crypto-primary">{user.fullName}</span>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.email}
+                    <td className="text-crypto-secondary">{user.email}</td>
+                    <td className="text-right font-bold text-crypto-accent">
+                      ${user.balance?.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                      ${user.balance.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          user.isActive
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {user.isActive ? 'Active' : 'Blocked'}
+                    <td>
+                      <span className={`crypto-badge ${user.isActive ? 'crypto-badge-success' : 'crypto-badge-error'
+                        }`}>
+                        {user.isActive ? '✓ Active' : '✕ Blocked'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          user.role === 'admin'
-                            ? 'bg-purple-100 text-purple-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {user.role}
+                    <td>
+                      <span className={`crypto-badge ${user.role === 'admin'
+                          ? 'bg-[rgba(139,92,246,0.1)] text-[#8b5cf6]'
+                          : 'bg-crypto-hover text-crypto-secondary'
+                        }`}>
+                        {user.role === 'admin' ? '👑 Admin' : 'User'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      <button
-                        onClick={() => handleToggleStatus(user._id)}
-                        className={`${
-                          user.isActive
-                            ? 'text-red-600 hover:text-red-900'
-                            : 'text-green-600 hover:text-green-900'
-                        }`}
-                        title={user.isActive ? 'Block User' : 'Unblock User'}
-                      >
-                        {user.isActive ? <UserX className="w-5 h-5" /> : <UserCheck className="w-5 h-5" />}
-                      </button>
-                      <button
-                        onClick={() => openBalanceModal(user)}
-                        className="text-blue-600 hover:text-blue-900"
-                        title="Update Balance"
-                      >
-                        <DollarSign className="w-5 h-5" />
-                      </button>
-                      {user.role !== 'admin' && (
+                    <td>
+                      <div className="flex items-center justify-end gap-1">
                         <button
-                          onClick={() => handleDeleteUser(user._id)}
-                          className="text-red-600 hover:text-red-900"
-                          title="Delete User"
+                          onClick={() => handleToggleStatus(user._id)}
+                          className={`p-2 rounded-lg transition ${user.isActive
+                              ? 'text-[var(--error)] hover:bg-[rgba(239,68,68,0.1)]'
+                              : 'text-[var(--success)] hover:bg-[rgba(16,185,129,0.1)]'
+                            }`}
+                          title={user.isActive ? 'Block User' : 'Unblock User'}
                         >
-                          <Trash2 className="w-5 h-5" />
+                          {user.isActive ? <UserX className="w-5 h-5" /> : <UserCheck className="w-5 h-5" />}
                         </button>
-                      )}
+                        <button
+                          onClick={() => openBalanceModal(user)}
+                          className="p-2 text-crypto-accent hover:bg-[rgba(0,212,170,0.1)] rounded-lg transition"
+                          title="Update Balance"
+                        >
+                          <DollarSign className="w-5 h-5" />
+                        </button>
+                        {user.role !== 'admin' && (
+                          <button
+                            onClick={() => handleDeleteUser(user._id)}
+                            className="p-2 text-[var(--error)] hover:bg-[rgba(239,68,68,0.1)] rounded-lg transition"
+                            title="Delete User"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -289,50 +296,23 @@ export default function Admin() {
 
         {/* Pagination */}
         {pagination && pagination.pages > 1 && (
-          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-            <div className="flex-1 flex justify-between sm:hidden">
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Previous
-              </button>
-              <button
-                onClick={() => setCurrentPage((p) => Math.min(pagination.pages, p + 1))}
-                disabled={currentPage === pagination.pages}
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-gray-700">
-                  Showing <span className="font-medium">{(currentPage - 1) * 10 + 1}</span> to{' '}
-                  <span className="font-medium">
-                    {Math.min(currentPage * 10, pagination.total)}
-                  </span>{' '}
-                  of <span className="font-medium">{pagination.total}</span> results
-                </p>
-              </div>
-              <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                  {Array.from({ length: pagination.pages }, (_, i) => i + 1).map((page) => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                        page === currentPage
-                          ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                </nav>
-              </div>
+          <div className="p-4 border-t border-crypto flex items-center justify-between">
+            <p className="text-sm text-crypto-muted">
+              Hiển thị {(currentPage - 1) * 10 + 1} - {Math.min(currentPage * 10, pagination.total)} / {pagination.total} users
+            </p>
+            <div className="flex gap-1">
+              {Array.from({ length: Math.min(pagination.pages, 5) }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-10 h-10 rounded-lg font-medium transition ${page === currentPage
+                      ? 'bg-gradient-crypto text-black'
+                      : 'bg-crypto-hover text-crypto-secondary hover:text-crypto-primary'
+                    }`}
+                >
+                  {page}
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -340,48 +320,64 @@ export default function Admin() {
 
       {/* Balance Update Modal */}
       {showBalanceModal && selectedUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Update Balance</h2>
-            <p className="text-gray-600 mb-4">
-              User: <span className="font-semibold">{selectedUser.fullName}</span>
-              <br />
-              Current Balance: <span className="font-semibold">${selectedUser.balance}</span>
-            </p>
+        <div className="crypto-modal-overlay">
+          <div className="crypto-modal">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-crypto-primary">Cập nhật số dư</h2>
+              <button
+                onClick={() => {
+                  setShowBalanceModal(false);
+                  setBalanceAmount('');
+                  setBalanceDescription('');
+                  setSelectedUser(null);
+                }}
+                className="p-2 hover:bg-crypto-hover rounded-lg transition"
+              >
+                <X className="w-5 h-5 text-crypto-muted" />
+              </button>
+            </div>
+
+            <div className="mb-6 p-4 bg-crypto-secondary rounded-xl border border-crypto">
+              <p className="text-crypto-muted text-sm">User</p>
+              <p className="font-bold text-crypto-primary">{selectedUser.fullName}</p>
+              <p className="text-crypto-muted text-sm mt-2">Số dư hiện tại</p>
+              <p className="font-bold text-crypto-accent text-xl">${selectedUser.balance?.toLocaleString()}</p>
+            </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Amount (use + or -)
+                <label className="block text-sm font-medium text-crypto-secondary mb-2">
+                  Số tiền (+ hoặc -)
                 </label>
                 <input
                   type="number"
                   value={balanceAmount}
                   onChange={(e) => setBalanceAmount(e.target.value)}
-                  placeholder="e.g., +500 or -200"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="vd: +500 hoặc -200"
+                  className="crypto-input"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description (optional)
+                <label className="block text-sm font-medium text-crypto-secondary mb-2">
+                  Lý do (tùy chọn)
                 </label>
                 <input
                   type="text"
                   value={balanceDescription}
                   onChange={(e) => setBalanceDescription(e.target.value)}
-                  placeholder="Reason for adjustment"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Lý do điều chỉnh"
+                  className="crypto-input"
                 />
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-3 pt-2">
                 <button
                   onClick={handleUpdateBalance}
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                  className="crypto-btn crypto-btn-primary flex-1"
                 >
-                  Update Balance
+                  <DollarSign className="w-4 h-4" />
+                  <span>Cập nhật</span>
                 </button>
                 <button
                   onClick={() => {
@@ -390,9 +386,9 @@ export default function Admin() {
                     setBalanceDescription('');
                     setSelectedUser(null);
                   }}
-                  className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400"
+                  className="crypto-btn crypto-btn-secondary flex-1"
                 >
-                  Cancel
+                  Hủy
                 </button>
               </div>
             </div>
@@ -406,20 +402,22 @@ export default function Admin() {
 // Stat Card Component
 function StatCard({ icon, title, value, color }) {
   const colorClasses = {
-    blue: 'bg-blue-50 border-blue-200',
-    green: 'bg-green-50 border-green-200',
-    red: 'bg-red-50 border-red-200',
-    yellow: 'bg-yellow-50 border-yellow-200',
+    blue: 'bg-[rgba(59,130,246,0.1)] text-blue-500',
+    green: 'bg-[rgba(16,185,129,0.1)] text-[var(--success)]',
+    red: 'bg-[rgba(239,68,68,0.1)] text-[var(--error)]',
+    accent: 'bg-[rgba(0,212,170,0.1)] text-crypto-accent',
   };
 
   return (
-    <div className={`${colorClasses[color]} border rounded-lg p-6`}>
+    <div className="stat-card">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-gray-600 mb-1">{title}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
+          <p className="text-sm text-crypto-muted mb-1">{title}</p>
+          <p className="text-2xl font-bold text-crypto-primary">{value}</p>
         </div>
-        <div>{icon}</div>
+        <div className={`w-12 h-12 rounded-xl ${colorClasses[color]} flex items-center justify-center`}>
+          {icon}
+        </div>
       </div>
     </div>
   );

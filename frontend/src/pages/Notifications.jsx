@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { notificationAPI } from '../services/api';
-import { Bell, Check, Trash2, RefreshCw } from 'lucide-react';
+import { Bell, Check, Trash2, RefreshCw, CheckCheck, Filter } from 'lucide-react';
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
@@ -10,14 +10,12 @@ export default function Notifications() {
   const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
-      // Backend uses 'status' param: 'read' or 'unread'
       const params = {};
       if (filter === 'read') params.status = 'read';
       if (filter === 'unread') params.status = 'unread';
-      
+
       const res = await notificationAPI.getNotifications(params);
       if (res.success) {
-        // Backend returns data.notifications, not data directly
         setNotifications(res.data?.notifications || res.data || []);
       } else {
         setNotifications([]);
@@ -38,7 +36,7 @@ export default function Notifications() {
     try {
       const res = await notificationAPI.markAsRead(id);
       if (res.success) {
-        setNotifications(notifications.map(n => 
+        setNotifications(notifications.map(n =>
           n._id === id ? { ...n, status: 'read' } : n
         ));
       }
@@ -75,83 +73,122 @@ export default function Notifications() {
   };
 
   if (loading) {
-    return <div className="flex justify-center py-20"><RefreshCw className="w-8 h-8 animate-spin text-blue-600" /></div>;
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 relative">
+            <div className="absolute inset-0 rounded-full border-4 border-[var(--border)]"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[var(--accent-primary)] animate-spin"></div>
+          </div>
+          <p className="text-crypto-secondary">Đang tải thông báo...</p>
+        </div>
+      </div>
+    );
   }
 
+  const unreadCount = notifications.filter(n => n.status === 'unread').length;
+
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Thông báo</h1>
-          <p className="text-gray-600 mt-1">
-            {notifications.filter(n => n.status === 'unread').length} thông báo chưa đọc
-          </p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-gradient-crypto flex items-center justify-center relative">
+            <Bell className="w-6 h-6 text-black" />
+            {unreadCount > 0 && (
+              <span className="notification-badge !top-0 !right-0">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-crypto-primary">Thông báo</h1>
+            <p className="text-crypto-muted">
+              {unreadCount > 0 ? `${unreadCount} thông báo chưa đọc` : 'Tất cả đã đọc'}
+            </p>
+          </div>
         </div>
         <div className="flex gap-3">
-          <button
-            onClick={markAllAsRead}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            <Check className="w-4 h-4" />
-            Đánh dấu tất cả đã đọc
-          </button>
+          {unreadCount > 0 && (
+            <button
+              onClick={markAllAsRead}
+              className="crypto-btn crypto-btn-primary"
+            >
+              <CheckCheck className="w-4 h-4" />
+              <span>Đánh dấu tất cả</span>
+            </button>
+          )}
           <button
             onClick={fetchNotifications}
-            className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50"
+            className="crypto-btn crypto-btn-secondary"
           >
             <RefreshCw className="w-4 h-4" />
-            Làm mới
+            <span>Làm mới</span>
           </button>
         </div>
       </div>
 
       {/* Filter */}
-      <div className="flex gap-2 mb-6">
-        {['all', 'unread', 'read'].map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-4 py-2 rounded-lg ${
-              filter === f
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            {f === 'all' ? 'Tất cả' : f === 'unread' ? 'Chưa đọc' : 'Đã đọc'}
-          </button>
-        ))}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 p-1 bg-crypto-card border border-crypto rounded-xl">
+          {['all', 'unread', 'read'].map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-4 py-2 rounded-lg font-medium transition ${filter === f
+                  ? 'bg-gradient-crypto text-black'
+                  : 'text-crypto-muted hover:text-crypto-primary hover:bg-crypto-hover'
+                }`}
+            >
+              {f === 'all' ? 'Tất cả' : f === 'unread' ? '🔵 Chưa đọc' : '✅ Đã đọc'}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2 text-sm text-crypto-muted">
+          <Filter className="w-4 h-4" />
+          Tổng: <span className="font-semibold text-crypto-primary">{notifications.length}</span> thông báo
+        </div>
       </div>
 
       {/* Notifications List */}
       <div className="space-y-3">
         {notifications.length === 0 ? (
-          <div className="text-center py-20">
-            <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">Không có thông báo</p>
+          <div className="crypto-card text-center py-20">
+            <Bell className="w-16 h-16 text-crypto-muted opacity-30 mx-auto mb-4" />
+            <p className="text-crypto-muted">Không có thông báo</p>
+            <p className="text-sm text-crypto-muted mt-1">Các hoạt động sẽ hiển thị ở đây</p>
           </div>
         ) : (
           notifications.map((notification) => (
             <div
               key={notification._id}
-              className={`p-4 rounded-lg border flex items-start gap-4 ${
-                notification.status === 'read' ? 'bg-white' : 'bg-blue-50 border-blue-200'
-              }`}
+              className={`crypto-card !p-4 flex items-start gap-4 transition ${notification.status === 'unread'
+                  ? 'border-l-4 border-l-[var(--accent-primary)] bg-[rgba(0,212,170,0.05)]'
+                  : ''
+                }`}
             >
-              <div className="text-3xl">{getNotificationIcon(notification.type)}</div>
-              <div className="flex-1">
+              <div className="w-12 h-12 rounded-xl bg-crypto-hover flex items-center justify-center text-2xl flex-shrink-0">
+                {getNotificationIcon(notification.type)}
+              </div>
+              <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start mb-1">
-                  <h3 className="font-semibold">{notification.title}</h3>
-                  <span className="text-sm text-gray-500">
-                    {new Date(notification.sentAt || notification.createdAt).toLocaleString('vi-VN')}
+                  <h3 className="font-semibold text-crypto-primary">{notification.title}</h3>
+                  <span className="text-xs text-crypto-muted ml-2 flex-shrink-0">
+                    {new Date(notification.sentAt || notification.createdAt).toLocaleString('vi-VN', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
                   </span>
                 </div>
-                <p className="text-gray-600">{notification.message}</p>
+                <p className="text-crypto-secondary text-sm">{notification.message}</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-1 flex-shrink-0">
                 {notification.status === 'unread' && (
                   <button
                     onClick={() => markAsRead(notification._id)}
-                    className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg"
+                    className="p-2 text-crypto-accent hover:bg-[rgba(0,212,170,0.1)] rounded-lg transition"
                     title="Đánh dấu đã đọc"
                   >
                     <Check className="w-5 h-5" />
@@ -159,7 +196,7 @@ export default function Notifications() {
                 )}
                 <button
                   onClick={() => deleteNotification(notification._id)}
-                  className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
+                  className="p-2 text-[var(--error)] hover:bg-[rgba(239,68,68,0.1)] rounded-lg transition"
                   title="Xóa"
                 >
                   <Trash2 className="w-5 h-5" />
