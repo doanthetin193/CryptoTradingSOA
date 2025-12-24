@@ -560,7 +560,6 @@ Lưu trữ các cảnh báo giá do người dùng tạo. Cron job kiểm tra m�
     default: false
   },
   triggeredAt: Date,
-  triggeredPrice: Number,           // Giá tại thời điểm trigger
   lastChecked: Date,
   createdAt: Date,
   updatedAt: Date
@@ -591,7 +590,6 @@ Lưu trữ các cảnh báo giá do người dùng tạo. Cron job kiểm tra m�
   "isActive": false,
   "triggered": true,
   "triggeredAt": "2024-01-05T08:00:00.000Z",
-  "triggeredPrice": 80500,
   "lastChecked": "2024-01-05T08:00:00.000Z",
   "createdAt": "2024-01-03T12:00:00.000Z",
   "updatedAt": "2024-01-05T08:00:00.000Z"

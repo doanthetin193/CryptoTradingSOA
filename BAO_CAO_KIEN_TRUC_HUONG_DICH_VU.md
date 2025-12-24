@@ -43,7 +43,7 @@ Trong bối cảnh thị trường tiền điện tử (cryptocurrency) ngày c�
 
 Xây dựng một hệ thống giao dịch tiền điện tử mô phỏng (paper trading) theo **kiến trúc hướng dịch vụ (SOA - Service-Oriented Architecture)**, trong đó:
 
-- Hệ thống được chia thành các dịch vụ độc lập (microservices), mỗi dịch vụ đảm nhiệm một chức năng nghiệp vụ cụ thể.
+- Hệ thống được chia thành các dịch vụ độc lập (services), mỗi dịch vụ đảm nhiệm một chức năng nghiệp vụ cụ thể.
 - Các dịch vụ giao tiếp với nhau thông qua API Gateway.
 - Hệ thống có khả năng mở rộng linh hoạt, dễ bảo trì và có tính sẵn sàng cao.
 
@@ -152,9 +152,42 @@ Xây dựng một nền tảng giao dịch tiền điện tử mô phỏng theo 
 
 ## 2.3. Biểu đồ chức năng
 
-**[CHỪA TRỐNG - Vẽ biểu đồ Use Case tổng quan hệ thống]**
+**Biểu đồ Use Case tổng quan hệ thống:**
 
-*Hướng dẫn vẽ: Biểu đồ Use Case với 2 actors (User, Admin) và các use cases được nhóm theo từng dịch vụ*
+```mermaid
+flowchart LR
+    User((👤 User))
+    Admin((👑 Admin))
+
+    User --> A[Xác thực<br/>Đăng ký/Đăng nhập]
+    User --> B[Thị trường<br/>Giá coin, Biểu đồ]
+    User --> C[Giao dịch<br/>Mua/Bán coin]
+    User --> D[Portfolio<br/>Danh mục đầu tư]
+    User --> E[Thông báo<br/>Cảnh báo giá]
+
+    Admin -.->|extends| User
+    Admin --> F[Quản trị Users<br/>Xem, Khóa, Xóa]
+    Admin --> G[Quản trị Balance<br/>Điều chỉnh số dư]
+    Admin --> H[Thống kê<br/>Xem stats hệ thống]
+```
+
+**Chú thích:**
+- **User**: Người dùng thông thường
+- **Admin**: Kế thừa tất cả quyền của User (mũi tên đứt `extends`) + có thêm các chức năng quản trị
+- Admin có thể: trade, xem portfolio, thông báo... như User + quản lý users, điều chỉnh balance
+
+**Chi tiết các nhóm Use Case:**
+
+| Nhóm | Use Cases | Service | Actor |
+|------|-----------|---------|-------|
+| **Xác thực** | Đăng ký, Đăng nhập, Profile, Số dư | User Service | User, Admin |
+| **Thị trường** | Giá coins, Chi tiết coin, Biểu đồ | Market Service | User, Admin |
+| **Giao dịch** | Mua coin, Bán coin, Lịch sử | Trade Orchestration | User, Admin |
+| **Portfolio** | Xem holdings, Tính P&L | Portfolio Service | User, Admin |
+| **Thông báo** | Xem/Xóa thông báo, Cảnh báo giá | Notification Service | User, Admin |
+| **Quản trị Users** | Xem danh sách, Khóa/Mở khóa, Xóa | User Service | **Admin only** |
+| **Quản trị Balance** | Điều chỉnh số dư user | User Service | **Admin only** |
+| **Thống kê** | Xem thống kê hệ thống | User Service | **Admin only** |
 
 ---
 
@@ -175,9 +208,69 @@ Hệ thống được phân rã theo nguyên tắc **Single Responsibility Princ
 | 4 | **Trade Service** | 3004 | Ghi nhận lịch sử giao dịch |
 | 5 | **Notification Service** | 3005 | Thông báo và cảnh báo giá |
 
-**[CHỪA TRỐNG - Vẽ sơ đồ kiến trúc microservices]**
+**Sơ đồ kiến trúc hệ thống SOA:**
 
-*Hướng dẫn vẽ: Sơ đồ khối thể hiện Frontend → API Gateway → 5 Services → MongoDB*
+```mermaid
+flowchart TB
+    subgraph Client["🖥️ Client Layer"]
+        FE[React Frontend<br/>Port 5173]
+    end
+
+    subgraph Gateway["🚪 API Gateway Layer"]
+        GW[API Gateway<br/>Port 3000<br/>Routing, Auth, Rate Limiting]
+    end
+
+    subgraph Services["⚙️ Service Layer"]
+        US[User Service<br/>Port 3001]
+        MS[Market Service<br/>Port 3002]
+        PS[Portfolio Service<br/>Port 3003]
+        TS[Trade Service<br/>Port 3004]
+        NS[Notification Service<br/>Port 3005]
+    end
+
+    subgraph External["🌐 External"]
+        CG[CoinGecko API]
+    end
+
+    subgraph Data["💾 Shared Database"]
+        DB[(MongoDB<br/>Shared Database)]
+    end
+
+    subgraph Discovery["🔍 Service Discovery"]
+        CS[Consul]
+    end
+
+    FE <-->|HTTP/WebSocket| GW
+    GW <--> US
+    GW <--> MS
+    GW <--> PS
+    GW <--> TS
+    GW <--> NS
+    
+    MS <-->|API Call| CG
+    
+    US --> DB
+    PS --> DB
+    TS --> DB
+    NS --> DB
+
+    US -.->|Register| CS
+    MS -.->|Register| CS
+    PS -.->|Register| CS
+    TS -.->|Register| CS
+    NS -.->|Register| CS
+    GW -.->|Discover| CS
+```
+
+**Đặc điểm kiến trúc SOA:**
+
+| Đặc điểm | Mô tả |
+|----------|-------|
+| **Shared Database** | Tất cả services kết nối cùng một MongoDB instance |
+| **Service Discovery** | Consul quản lý đăng ký và khám phá services |
+| **API Gateway** | Single entry point, xử lý routing và authentication |
+| **Loose Coupling** | Services giao tiếp qua HTTP REST APIs |
+| **Orchestration** | API Gateway điều phối giao dịch Buy/Sell |
 
 ## 3.2. Mô tả chi tiết từng dịch vụ
 
@@ -359,7 +452,45 @@ NẾU LỖI: ROLLBACK
         → Nếu balanceDeducted: Hoàn tiền
 ```
 
-**[CHỪA TRỐNG - Vẽ Sequence Diagram cho Buy Flow]**
+**Sequence Diagram - Buy Flow:**
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant GW as API Gateway
+    participant MS as Market Service
+    participant US as User Service
+    participant PS as Portfolio Service
+    participant TS as Trade Service
+    participant NS as Notification Service
+
+    C->>GW: POST /trade/buy {symbol, amount}
+    GW->>MS: GET /price/:coinId
+    MS-->>GW: {price, name}
+    
+    Note over GW: Tính: totalCost = amount × price<br/>fee = 0.1%, finalCost = totalCost + fee
+
+    GW->>US: GET /balance
+    US-->>GW: {balance}
+    
+    alt balance < finalCost
+        GW-->>C: ❌ Không đủ số dư
+    else balance >= finalCost
+        GW->>US: PUT /balance (trừ tiền)
+        US-->>GW: ✓ Balance updated
+        
+        GW->>PS: POST /holding (thêm coin)
+        PS-->>GW: ✓ Holding added
+        
+        GW->>TS: POST / (ghi lịch sử)
+        TS-->>GW: ✓ Trade recorded
+        
+        GW->>NS: POST /send (thông báo)
+        NS-->>GW: ✓ Notification sent
+        
+        GW-->>C: ✅ Mua thành công
+    end
+```
 
 ### 3.3.2. Luồng bán coin (Sell Flow)
 
@@ -392,7 +523,45 @@ NẾU LỖI: ROLLBACK
         → Nếu balanceAdded: Trừ số dư
 ```
 
-**[CHỪA TRỐNG - Vẽ Sequence Diagram cho Sell Flow]**
+**Sequence Diagram - Sell Flow:**
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant GW as API Gateway
+    participant PS as Portfolio Service
+    participant MS as Market Service
+    participant US as User Service
+    participant TS as Trade Service
+    participant NS as Notification Service
+
+    C->>GW: POST /trade/sell {symbol, amount}
+    GW->>PS: GET / (kiểm tra holdings)
+    PS-->>GW: {holdings}
+    
+    alt Không đủ coin
+        GW-->>C: ❌ Không đủ coin để bán
+    else Đủ coin
+        GW->>MS: GET /price/:coinId
+        MS-->>GW: {price}
+        
+        Note over GW: Tính: totalValue = amount × price<br/>fee = 0.1%, finalProceeds = totalValue - fee
+
+        GW->>US: PUT /balance (cộng tiền)
+        US-->>GW: ✓ Balance updated
+        
+        GW->>PS: PUT /holding (giảm coin)
+        PS-->>GW: ✓ Holding reduced
+        
+        GW->>TS: POST / (ghi lịch sử)
+        TS-->>GW: ✓ Trade recorded
+        
+        GW->>NS: POST /send (thông báo)
+        NS-->>GW: ✓ Notification sent
+        
+        GW-->>C: ✅ Bán thành công
+    end
+```
 
 ---
 
@@ -413,7 +582,15 @@ NẾU LỖI: ROLLBACK
 4. Return {token, user}
 ```
 
-**[CHỪA TRỐNG - Vẽ DFD Level 0 cho Authentication]**
+**DFD Level 0 - Authentication:**
+
+```mermaid
+flowchart LR
+    U((User)) -->|email, password| P1[1.0<br/>Xác thực]
+    P1 -->|query| D1[(users)]
+    D1 -->|user data| P1
+    P1 -->|JWT token + user info| U
+```
 
 ### 3.4.2. Luồng xem portfolio (Portfolio Flow)
 
@@ -439,11 +616,42 @@ NẾU LỖI: ROLLBACK
 6. Return enriched portfolio with P&L
 ```
 
-**[CHỪA TRỐNG - Vẽ DFD Level 0 cho Portfolio]**
+**DFD Level 0 - Portfolio:**
+
+```mermaid
+flowchart LR
+    U((User)) -->|request| P1[1.0<br/>Lấy Portfolio]
+    P1 -->|query holdings| D1[(portfolios)]
+    D1 -->|holdings| P1
+    P1 -->|get prices| P2[2.0<br/>Lấy giá]
+    P2 -->|API call| E1[CoinGecko]
+    E1 -->|prices| P2
+    P2 -->|prices| P1
+    P1 -->|portfolio + P&L| U
+```
 
 ### 3.4.3. Luồng giao dịch (Trade Flow)
 
-**[CHỪA TRỐNG - Vẽ DFD Level 1 cho Trade Flow với 7 bước]**
+**DFD Level 1 - Trade Flow (Buy):**
+
+```mermaid
+flowchart TB
+    U((User)) -->|symbol, amount| P1[1.0 Lấy giá]
+    P1 -->|coinId| E1[CoinGecko]
+    E1 -->|price| P1
+    P1 -->|price| P2[2.0 Kiểm tra số dư]
+    P2 -->|userId| D1[(users)]
+    D1 -->|balance| P2
+    P2 -->|OK| P3[3.0 Trừ số dư]
+    P3 -->|update| D1
+    P3 -->|done| P4[4.0 Thêm holding]
+    P4 -->|insert/update| D2[(portfolios)]
+    P4 -->|done| P5[5.0 Ghi lịch sử]
+    P5 -->|insert| D3[(trades)]
+    P5 -->|done| P6[6.0 Gửi thông báo]
+    P6 -->|insert| D4[(notifications)]
+    P6 -->|result| U
+```
 
 ---
 
@@ -453,7 +661,21 @@ NẾU LỖI: ROLLBACK
 
 ### 4.1.1. User Service - Entity: User
 
-**[CHỪA TRỐNG - Vẽ ERD cho User Entity]**
+```mermaid
+erDiagram
+    USER {
+        ObjectId _id PK
+        String email UK
+        String password
+        String fullName
+        Enum role
+        Number balance
+        Boolean isActive
+        Array balanceHistory
+        Date createdAt
+        Date updatedAt
+    }
+```
 
 **Thuộc tính:**
 
@@ -474,7 +696,27 @@ NẾU LỖI: ROLLBACK
 
 ### 4.1.2. Portfolio Service - Entity: Portfolio
 
-**[CHỪA TRỐNG - Vẽ ERD cho Portfolio Entity]**
+```mermaid
+erDiagram
+    PORTFOLIO {
+        ObjectId _id PK
+        ObjectId userId FK
+        Array holdings
+        Number totalValue
+        Number totalInvested
+        Number totalProfit
+        Number profitPercentage
+    }
+    HOLDING {
+        String symbol
+        String coinId
+        String name
+        Number amount
+        Number averageBuyPrice
+        Number totalInvested
+    }
+    PORTFOLIO ||--o{ HOLDING : contains
+```
 
 **Thuộc tính:**
 
@@ -503,7 +745,25 @@ NẾU LỖI: ROLLBACK
 
 ### 4.1.3. Trade Service - Entity: Trade
 
-**[CHỪA TRỐNG - Vẽ ERD cho Trade Entity]**
+```mermaid
+erDiagram
+    TRADE {
+        ObjectId _id PK
+        ObjectId userId FK
+        Enum type
+        String symbol
+        String coinId
+        String coinName
+        Number amount
+        Number price
+        Number totalCost
+        Number fee
+        Enum status
+        Number balanceBefore
+        Number balanceAfter
+        Date executedAt
+    }
+```
 
 **Thuộc tính:**
 
@@ -529,17 +789,43 @@ NẾU LỖI: ROLLBACK
 
 ### 4.1.4. Notification Service - Entities
 
+```mermaid
+erDiagram
+    NOTIFICATION {
+        ObjectId _id PK
+        ObjectId userId FK
+        Enum type
+        String title
+        String message
+        Enum status
+        Enum priority
+        Object data
+        Date sentAt
+    }
+    PRICEALERT {
+        ObjectId _id PK
+        ObjectId userId FK
+        String symbol
+        String coinId
+        Number targetPrice
+        Enum condition
+        Boolean isActive
+        Boolean triggered
+        Date triggeredAt
+    }
+```
+
 **Entity 1: Notification**
 
 | Thuộc tính | Kiểu | Mô tả |
 |------------|------|-------|
 | _id | ObjectId | Khóa chính |
 | userId | ObjectId | Liên kết đến User |
-| type | Enum | trade/price_alert/system |
+| type | Enum | trade/price_alert/system/warning |
 | title | String | Tiêu đề thông báo |
 | message | String | Nội dung |
-| status | Enum | read/unread |
-| priority | Enum | low/medium/high |
+| status | Enum | unread/read/archived |
+| priority | Enum | low/medium/high/urgent |
 | data | Object | Dữ liệu bổ sung |
 | sentAt | Date | Thời điểm gửi |
 
@@ -561,7 +847,37 @@ NẾU LỖI: ROLLBACK
 
 ## 4.2. Mô hình quan hệ
 
-**[CHỪA TRỐNG - Vẽ sơ đồ quan hệ giữa các collections]**
+**Sơ đồ quan hệ giữa các collections:**
+
+```mermaid
+erDiagram
+    USER ||--|| PORTFOLIO : has
+    USER ||--o{ TRADE : makes
+    USER ||--o{ NOTIFICATION : receives
+    USER ||--o{ PRICEALERT : creates
+    
+    USER {
+        ObjectId _id PK
+        String email
+        Number balance
+    }
+    PORTFOLIO {
+        ObjectId _id PK
+        ObjectId userId FK
+    }
+    TRADE {
+        ObjectId _id PK
+        ObjectId userId FK
+    }
+    NOTIFICATION {
+        ObjectId _id PK
+        ObjectId userId FK
+    }
+    PRICEALERT {
+        ObjectId _id PK
+        ObjectId userId FK
+    }
+```
 
 **Mô tả quan hệ:**
 
@@ -796,7 +1112,7 @@ Response (200):
 
 ### Về mặt kiến trúc:
 
-1. **Áp dụng thành công kiến trúc SOA:** Hệ thống được chia thành 5 microservices độc lập, mỗi service có trách nhiệm rõ ràng và có thể phát triển, triển khai riêng biệt.
+1. **Áp dụng thành công kiến trúc SOA:** Hệ thống được chia thành 5 services độc lập sử dụng chung database, mỗi service có trách nhiệm rõ ràng và có thể phát triển, triển khai riêng biệt.
 
 2. **API Gateway Pattern:** Triển khai một điểm vào duy nhất giúp đơn giản hóa việc giao tiếp giữa client và các services, đồng thời tập trung xử lý cross-cutting concerns (authentication, rate limiting).
 
@@ -808,7 +1124,7 @@ Response (200):
 
 ### Về mặt chức năng:
 
-1. **Hoàn thành 23 REST API endpoints** phục vụ đầy đủ các chức năng nghiệp vụ.
+1. **Hoàn thành 30 REST API endpoints** phục vụ đầy đủ các chức năng nghiệp vụ.
 
 2. **Real-time communication** với 4 WebSocket events cho giao dịch và thông báo.
 
@@ -831,11 +1147,11 @@ Response (200):
 
 ### Hạn chế:
 
-1. **Complexity:** Kiến trúc microservices phức tạp hơn monolithic, đòi hỏi kiến thức về distributed systems.
+1. **Complexity:** Kiến trúc SOA phức tạp hơn monolithic, đòi hỏi kiến thức về distributed systems.
 
 2. **Network Latency:** Giao tiếp giữa các services qua HTTP có độ trễ cao hơn in-process calls.
 
-3. **Data Consistency:** Với mỗi service có database riêng, việc đảm bảo consistency là thách thức.
+3. **Data Consistency:** Với các services sử dụng chung database, cần đảm bảo tính nhất quán dữ liệu khi có nhiều transactions.
 
 4. **Monitoring:** Cần công cụ logging và monitoring tập trung để theo dõi hệ thống.
 
@@ -859,7 +1175,7 @@ Response (200):
 
 2. **Circuit Breaker là bắt buộc:** Trong distributed system, phải có cơ chế xử lý khi service downstream fail.
 
-3. **Logging là quan trọng:** Không có logs tập trung, debug microservices rất khó khăn.
+3. **Logging là quan trọng:** Không có logs tập trung, debug các services rất khó khăn.
 
 4. **Rollback mechanism:** Với các transaction liên quan nhiều services, cần có chiến lược rollback rõ ràng.
 
