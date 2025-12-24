@@ -13,7 +13,7 @@ import {
   ExternalLink,
   Activity
 } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import Toast from '../components/Toast';
 
 export default function Dashboard() {
@@ -152,8 +152,8 @@ export default function Dashboard() {
         <div className="stat-card group">
           <div className="flex items-center justify-between mb-4">
             <div className={`stat-card-icon group-hover:scale-110 transition-transform ${portfolio?.totalProfit >= 0
-                ? 'bg-[rgba(16,185,129,0.1)] text-[var(--success)]'
-                : 'bg-[rgba(239,68,68,0.1)] text-[var(--error)]'
+              ? 'bg-[rgba(16,185,129,0.1)] text-[var(--success)]'
+              : 'bg-[rgba(239,68,68,0.1)] text-[var(--error)]'
               }`}>
               {portfolio?.totalProfit >= 0 ? (
                 <TrendingUp className="w-6 h-6" />
@@ -223,9 +223,9 @@ export default function Dashboard() {
                     <div className="flex items-center gap-3">
                       <div className="relative">
                         <div className={`coin-icon ${index === 0 ? 'bg-gradient-to-br from-amber-400 to-orange-500' :
-                            index === 1 ? 'bg-gradient-to-br from-blue-400 to-indigo-500' :
-                              index === 2 ? 'bg-gradient-to-br from-yellow-400 to-amber-500' :
-                                'bg-gradient-to-br from-gray-400 to-gray-600'
+                          index === 1 ? 'bg-gradient-to-br from-blue-400 to-indigo-500' :
+                            index === 2 ? 'bg-gradient-to-br from-yellow-400 to-amber-500' :
+                              'bg-gradient-to-br from-gray-400 to-gray-600'
                           } text-white`}>
                           {coin.symbol.substring(0, 1)}
                         </div>
@@ -283,13 +283,7 @@ export default function Dashboard() {
           </div>
         </div>
         <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={chartData}>
-            <defs>
-              <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#00d4aa" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#00d4aa" stopOpacity={0} />
-              </linearGradient>
-            </defs>
+          <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             <XAxis
               dataKey="name"
@@ -312,15 +306,18 @@ export default function Dashboard() {
               }}
               formatter={(value) => [`$${value.toLocaleString()}`, 'Giá']}
             />
-            <Area
-              type="monotone"
+            <Bar
               dataKey="price"
-              stroke="#00d4aa"
-              strokeWidth={2}
-              fillOpacity={1}
-              fill="url(#colorPrice)"
-            />
-          </AreaChart>
+              radius={[8, 8, 0, 0]}
+            >
+              {chartData.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={['#00d4aa', '#8b5cf6', '#f59e0b', '#ef4444', '#3b82f6'][index % 5]}
+                />
+              ))}
+            </Bar>
+          </BarChart>
         </ResponsiveContainer>
       </div>
     </div>
