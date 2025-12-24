@@ -3,16 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { marketAPI, portfolioAPI } from '../services/api';
 import { onPriceUpdate, onTradeConfirmation, onPriceAlert } from '../services/websocket';
-import { 
-  Wallet, 
-  TrendingUp, 
-  TrendingDown, 
+import {
+  Wallet,
+  TrendingUp,
+  TrendingDown,
   Briefcase,
   DollarSign,
   RefreshCw,
-  ExternalLink
+  ExternalLink,
+  Activity
 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Toast from '../components/Toast';
 
 export default function Dashboard() {
@@ -27,13 +28,11 @@ export default function Dashboard() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      
-      // Lấy prices
+
       const pricesRes = await marketAPI.getPrices();
       if (pricesRes.success) {
         setCoins(pricesRes.data);
-        
-        // Tạo chart data từ top 5 coins
+
         const top5 = pricesRes.data.slice(0, 5);
         setChartData(top5.map(coin => ({
           name: coin.symbol,
@@ -42,7 +41,6 @@ export default function Dashboard() {
         })));
       }
 
-      // Lấy portfolio
       const portfolioRes = await portfolioAPI.getPortfolio();
       if (portfolioRes.success) {
         setPortfolio(portfolioRes.data);
@@ -56,16 +54,13 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchData();
-    
-    // WebSocket listeners
+
     onPriceUpdate((prices) => {
       setCoins(prices);
     });
 
     onTradeConfirmation((trade) => {
       showToast('success', `${trade.type === 'buy' ? 'Mua' : 'Bán'} ${trade.amount} ${trade.symbol} thành công!`);
-      
-      // Refresh immediately when trade happens
       refreshUser();
       fetchData();
     });
@@ -83,8 +78,11 @@ export default function Dashboard() {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <RefreshCw className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Đang tải dữ liệu...</p>
+          <div className="w-16 h-16 mx-auto mb-4 relative">
+            <div className="absolute inset-0 rounded-full border-4 border-[var(--border)]"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[var(--accent-primary)] animate-spin"></div>
+          </div>
+          <p className="text-crypto-secondary">Đang tải dữ liệu...</p>
         </div>
       </div>
     );
@@ -92,7 +90,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Toast Container */}
+      {/* Toast */}
       {toast && (
         <div className="fixed top-20 right-6 z-50 min-w-[300px]">
           <Toast
@@ -104,134 +102,166 @@ export default function Dashboard() {
       )}
 
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Chào mừng trở lại, {user?.fullName || user?.email}!</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-crypto-primary">Dashboard</h1>
+          <p className="text-crypto-secondary mt-1">
+            Chào mừng trở lại, <span className="text-crypto-accent">{user?.fullName || user?.email}</span>!
+          </p>
+        </div>
+        <button
+          onClick={fetchData}
+          className="crypto-btn crypto-btn-secondary"
+        >
+          <RefreshCw className="w-4 h-4" />
+          <span>Làm mới</span>
+        </button>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Balance */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+        <div className="stat-card group">
           <div className="flex items-center justify-between mb-4">
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <Wallet className="w-6 h-6 text-blue-600" />
+            <div className="stat-card-icon group-hover:scale-110 transition-transform">
+              <Wallet className="w-6 h-6" />
             </div>
-            <span className="text-sm text-gray-500">USDT</span>
+            <span className="crypto-badge crypto-badge-success">USDT</span>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900">
+          <h3 className="text-3xl font-bold text-crypto-primary">
             ${user?.balance?.toLocaleString() || '0.00'}
           </h3>
-          <p className="text-sm text-gray-600 mt-1">Số dư khả dụng</p>
+          <p className="text-sm text-crypto-muted mt-2">Số dư khả dụng</p>
         </div>
 
         {/* Portfolio Value */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+        <div className="stat-card group">
           <div className="flex items-center justify-between mb-4">
-            <div className="bg-green-100 p-3 rounded-lg">
-              <Briefcase className="w-6 h-6 text-green-600" />
+            <div className="stat-card-icon bg-[rgba(139,92,246,0.1)] text-[#8b5cf6] group-hover:scale-110 transition-transform">
+              <Briefcase className="w-6 h-6" />
             </div>
-            <span className="text-sm text-gray-500">Portfolio</span>
+            <span className="text-xs text-crypto-muted">Portfolio</span>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900">
+          <h3 className="text-3xl font-bold text-crypto-primary">
             ${portfolio?.totalValue?.toLocaleString() || '0.00'}
           </h3>
-          <p className="text-sm text-gray-600 mt-1">Tổng giá trị</p>
+          <p className="text-sm text-crypto-muted mt-2">Tổng giá trị đầu tư</p>
         </div>
 
         {/* Profit/Loss */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+        <div className="stat-card group">
           <div className="flex items-center justify-between mb-4">
-            <div className={`${portfolio?.totalProfit >= 0 ? 'bg-green-100' : 'bg-red-100'} p-3 rounded-lg`}>
+            <div className={`stat-card-icon group-hover:scale-110 transition-transform ${portfolio?.totalProfit >= 0
+                ? 'bg-[rgba(16,185,129,0.1)] text-[var(--success)]'
+                : 'bg-[rgba(239,68,68,0.1)] text-[var(--error)]'
+              }`}>
               {portfolio?.totalProfit >= 0 ? (
-                <TrendingUp className="w-6 h-6 text-green-600" />
+                <TrendingUp className="w-6 h-6" />
               ) : (
-                <TrendingDown className="w-6 h-6 text-red-600" />
+                <TrendingDown className="w-6 h-6" />
               )}
             </div>
-            <span className="text-sm text-gray-500">P/L</span>
+            <span className={`crypto-badge ${portfolio?.totalProfit >= 0 ? 'crypto-badge-success' : 'crypto-badge-error'}`}>
+              {portfolio?.profitPercentage >= 0 ? '+' : ''}{portfolio?.profitPercentage?.toFixed(2) || '0.00'}%
+            </span>
           </div>
-          <h3 className={`text-2xl font-bold ${portfolio?.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          <h3 className={`text-3xl font-bold ${portfolio?.totalProfit >= 0 ? 'text-[var(--success)]' : 'text-[var(--error)]'}`}>
             {portfolio?.totalProfit >= 0 ? '+' : ''}${portfolio?.totalProfit?.toFixed(2) || '0.00'}
           </h3>
-          <p className="text-sm text-gray-600 mt-1">
-            {portfolio?.profitPercentage >= 0 ? '+' : ''}{portfolio?.profitPercentage?.toFixed(2) || '0.00'}%
-          </p>
+          <p className="text-sm text-crypto-muted mt-2">Lãi/Lỗ</p>
         </div>
 
         {/* Total Assets */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+        <div className="stat-card group">
           <div className="flex items-center justify-between mb-4">
-            <div className="bg-purple-100 p-3 rounded-lg">
-              <DollarSign className="w-6 h-6 text-purple-600" />
+            <div className="stat-card-icon bg-[rgba(245,158,11,0.1)] text-[var(--warning)] group-hover:scale-110 transition-transform">
+              <DollarSign className="w-6 h-6" />
             </div>
-            <span className="text-sm text-gray-500">Total</span>
+            <Activity className="w-4 h-4 text-crypto-muted" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900">
+          <h3 className="text-3xl font-bold text-gradient-crypto">
             ${((user?.balance || 0) + (portfolio?.totalValue || 0)).toLocaleString()}
           </h3>
-          <p className="text-sm text-gray-600 mt-1">Tổng tài sản</p>
+          <p className="text-sm text-crypto-muted mt-2">Tổng tài sản</p>
         </div>
       </div>
 
       {/* Market Overview */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+      <div className="crypto-card">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900">Thị trường Crypto</h2>
-          <button 
-            onClick={fetchData}
-            className="flex items-center space-x-2 text-blue-600 hover:text-blue-700"
-          >
-            <RefreshCw className="w-4 h-4" />
-            <span className="text-sm">Làm mới</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-crypto flex items-center justify-center">
+              <Activity className="w-5 h-5 text-black" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-crypto-primary">Thị trường Crypto</h2>
+              <p className="text-sm text-crypto-muted">Giá realtime từ CoinGecko</p>
+            </div>
+          </div>
         </div>
 
         {/* Coin Table */}
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="crypto-table">
             <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Coin</th>
-                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Giá</th>
-                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">24h %</th>
-                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Volume 24h</th>
-                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Market Cap</th>
+              <tr>
+                <th>Coin</th>
+                <th className="text-right">Giá (USD)</th>
+                <th className="text-right">24h %</th>
+                <th className="text-right hidden md:table-cell">Volume 24h</th>
+                <th className="text-right hidden lg:table-cell">Market Cap</th>
               </tr>
             </thead>
             <tbody>
-              {coins.map((coin) => (
-                <tr 
-                  key={coin.symbol} 
-                  className="border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition"
+              {coins.map((coin, index) => (
+                <tr
+                  key={coin.symbol}
+                  className="cursor-pointer transition-all hover:bg-[var(--bg-hover)]"
                   onClick={() => navigate(`/coin/${coin.coinId}`)}
                 >
-                  <td className="py-4 px-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-600">
-                        {coin.symbol.substring(0, 1)}
+                  <td>
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <div className={`coin-icon ${index === 0 ? 'bg-gradient-to-br from-amber-400 to-orange-500' :
+                            index === 1 ? 'bg-gradient-to-br from-blue-400 to-indigo-500' :
+                              index === 2 ? 'bg-gradient-to-br from-yellow-400 to-amber-500' :
+                                'bg-gradient-to-br from-gray-400 to-gray-600'
+                          } text-white`}>
+                          {coin.symbol.substring(0, 1)}
+                        </div>
+                        <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[var(--bg-card)] text-[10px] flex items-center justify-center text-crypto-muted font-bold">
+                          {index + 1}
+                        </span>
                       </div>
                       <div>
-                        <div className="flex items-center space-x-2">
-                          <p className="font-semibold text-gray-900">{coin.symbol}</p>
-                          <ExternalLink className="w-3 h-3 text-gray-400" />
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-crypto-primary">{coin.symbol}</span>
+                          <ExternalLink className="w-3 h-3 text-crypto-muted" />
                         </div>
-                        <p className="text-xs text-gray-500">{coin.name}</p>
+                        <span className="text-xs text-crypto-muted capitalize">{coin.name}</span>
                       </div>
                     </div>
                   </td>
-                  <td className="text-right py-4 px-4 font-semibold text-gray-900">
-                    ${coin.price.toLocaleString()}
+                  <td className="text-right">
+                    <span className="font-bold text-crypto-primary">
+                      ${coin.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
                   </td>
-                  <td className={`text-right py-4 px-4 font-semibold ${
-                    coin.change24h >= 0 ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {coin.change24h >= 0 ? '+' : ''}{coin.change24h.toFixed(2)}%
+                  <td className="text-right">
+                    <span className={`inline-flex items-center gap-1 font-semibold ${coin.change24h >= 0 ? 'price-up' : 'price-down'
+                      }`}>
+                      {coin.change24h >= 0 ? (
+                        <TrendingUp className="w-3 h-3" />
+                      ) : (
+                        <TrendingDown className="w-3 h-3" />
+                      )}
+                      {coin.change24h >= 0 ? '+' : ''}{coin.change24h.toFixed(2)}%
+                    </span>
                   </td>
-                  <td className="text-right py-4 px-4 text-gray-600">
+                  <td className="text-right hidden md:table-cell text-crypto-secondary">
                     ${(coin.volume24h / 1000000).toFixed(2)}M
                   </td>
-                  <td className="text-right py-4 px-4 text-gray-600">
+                  <td className="text-right hidden lg:table-cell text-crypto-secondary">
                     ${(coin.marketCap / 1000000000).toFixed(2)}B
                   </td>
                 </tr>
@@ -242,16 +272,55 @@ export default function Dashboard() {
       </div>
 
       {/* Price Chart */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-        <h2 className="text-xl font-bold text-gray-900 mb-6">Biểu đồ giá</h2>
+      <div className="crypto-card">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-[rgba(139,92,246,0.1)] flex items-center justify-center">
+            <TrendingUp className="w-5 h-5 text-[#8b5cf6]" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-crypto-primary">So sánh giá Top Coins</h2>
+            <p className="text-sm text-crypto-muted">Biểu đồ so sánh giá các coin hàng đầu</p>
+          </div>
+        </div>
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Line type="monotone" dataKey="price" stroke="#3B82F6" strokeWidth={2} />
-          </LineChart>
+          <AreaChart data={chartData}>
+            <defs>
+              <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#00d4aa" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#00d4aa" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <XAxis
+              dataKey="name"
+              stroke="var(--text-muted)"
+              fontSize={12}
+              tickLine={false}
+            />
+            <YAxis
+              stroke="var(--text-muted)"
+              fontSize={12}
+              tickLine={false}
+              tickFormatter={(value) => `$${value.toLocaleString()}`}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: 'var(--bg-card)',
+                border: '1px solid var(--border)',
+                borderRadius: '12px',
+                color: 'var(--text-primary)'
+              }}
+              formatter={(value) => [`$${value.toLocaleString()}`, 'Giá']}
+            />
+            <Area
+              type="monotone"
+              dataKey="price"
+              stroke="#00d4aa"
+              strokeWidth={2}
+              fillOpacity={1}
+              fill="url(#colorPrice)"
+            />
+          </AreaChart>
         </ResponsiveContainer>
       </div>
     </div>

@@ -1,10 +1,10 @@
 import { NavLink } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  TrendingUp, 
-  Briefcase, 
+import {
+  LayoutDashboard,
+  TrendingUp,
+  Briefcase,
   History,
-  Bell, 
+  Bell,
   Settings,
   Shield
 } from 'lucide-react';
@@ -19,10 +19,10 @@ const menuItems = [
   { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 
-const adminMenuItem = { 
-  icon: Shield, 
-  label: 'Admin Panel', 
-  path: '/admin' 
+const adminMenuItem = {
+  icon: Shield,
+  label: 'Admin Panel',
+  path: '/admin'
 };
 
 export default function Sidebar() {
@@ -30,18 +30,18 @@ export default function Sidebar() {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <aside className="fixed left-0 top-16 bottom-0 w-64 bg-white border-r border-gray-200 overflow-y-auto">
-      <nav className="p-4 space-y-2">
+    <aside className="fixed left-0 top-16 bottom-0 w-64 bg-crypto-secondary border-r border-crypto overflow-y-auto">
+      {/* Navigation */}
+      <nav className="p-4 space-y-1">
+        <p className="text-xs font-semibold text-crypto-muted uppercase tracking-wider mb-3 px-3">
+          Menu
+        </p>
         {menuItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
-              `flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
-                isActive
-                  ? 'bg-blue-50 text-blue-600 font-medium'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`
+              `sidebar-link ${isActive ? 'active' : ''}`
             }
           >
             <item.icon className="w-5 h-5" />
@@ -49,18 +49,17 @@ export default function Sidebar() {
           </NavLink>
         ))}
 
-        {/* Admin Menu Item - Only show for admins */}
+        {/* Admin Menu Item */}
         {isAdmin && (
           <>
-            <div className="border-t border-gray-200 my-2"></div>
+            <div className="border-t border-crypto my-4"></div>
+            <p className="text-xs font-semibold text-crypto-muted uppercase tracking-wider mb-3 px-3">
+              Admin
+            </p>
             <NavLink
               to={adminMenuItem.path}
               className={({ isActive }) =>
-                `flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
-                  isActive
-                    ? 'bg-purple-50 text-purple-600 font-medium'
-                    : 'text-gray-700 hover:bg-purple-50 hover:text-purple-600'
-                }`
+                `sidebar-link ${isActive ? 'active bg-[rgba(139,92,246,0.1)] !text-[#8b5cf6]' : ''}`
               }
             >
               <adminMenuItem.icon className="w-5 h-5" />
@@ -69,6 +68,25 @@ export default function Sidebar() {
           </>
         )}
       </nav>
+
+      {/* Bottom Section */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-crypto">
+        <div className="crypto-card !p-3 bg-gradient-to-r from-[var(--bg-card)] to-[var(--bg-hover)]">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-crypto flex items-center justify-center text-black font-bold text-sm">
+              {user?.fullName?.charAt(0) || user?.email?.charAt(0) || 'U'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-crypto-primary truncate">
+                {user?.fullName || 'User'}
+              </p>
+              <p className="text-xs text-crypto-muted truncate">
+                ${user?.balance?.toLocaleString() || '0.00'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </aside>
   );
 }
