@@ -18,7 +18,6 @@ router.get('/balance', userController.getBalance);
 
 // Internal service routes (for inter-service communication)
 router.put('/balance', userController.updateBalance);
-router.get('/info/:userId', userController.getUserInfo);
 
 // Admin routes (API Gateway will apply adminMiddleware)
 router.get('/admin/users', userController.getAllUsers);

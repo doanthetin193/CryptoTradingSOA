@@ -232,7 +232,6 @@ _Rollback Strategy:_
 - `GET /profile` - Lấy thông tin profile (auth required)
 - `PUT /profile` - Cập nhật profile
 - `GET /balance` - Lấy số dư hiện tại
-- `GET /balance/history` - Lịch sử thay đổi số dư
 - `PUT /balance/deduct` - Trừ tiền (internal API)
 - `PUT /balance/add` - Cộng tiền (internal API)
 - `GET /admin/users` - Danh sách users (admin only)
@@ -942,7 +941,6 @@ CREATE TABLE price_alerts (
 | GET    | `/api/users/profile`         | Xem profile       | Yes  | -          |
 | PUT    | `/api/users/profile`         | Cập nhật profile  | Yes  | -          |
 | GET    | `/api/users/balance`         | Xem số dư         | Yes  | -          |
-| GET    | `/api/users/balance/history` | Lịch sử balance   | Yes  | -          |
 
 ##### Admin
 

@@ -155,12 +155,12 @@ backend/services/market-service/
 
 **Endpoints:**
 
-**a) GET /coins** - Top cryptocurrencies
+**a) GET /prices** - Giá tất cả coins
 
-- Call CoinGecko API: `https://api.coingecko.com/api/v3/coins/markets`
-- Params: `vs_currency=usd&order=market_cap_desc&per_page=100`
+- Call CoinGecko API: `https://api.coingecko.com/api/v3/simple/price`
+- Params: `ids=bitcoin,ethereum,...&vs_currencies=usd`
 - Cache: 2 phút (NodeCache)
-- Response: Array of coins với price, market cap, 24h change
+- Response: Array of coins với price, 24h change
 
 **b) GET /price/:coinId** - Single coin price
 
@@ -199,7 +199,7 @@ cache.set(cacheKey, data);
 
 #### ✅ Checklist Market Service
 
-- [ ] GET /coins - Top 100 coins
+- [x] GET /prices - All supported coins prices
 - [ ] GET /price/:coinId - Single price
 - [ ] GET /chart/:coinId - 7 days chart
 - [ ] NodeCache implementation (2 min cho price, 5 min cho chart)

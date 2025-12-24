@@ -16,15 +16,6 @@ router.get('/price/:coinId', marketController.getCoinPrice);
 // Get historical chart data
 router.get('/chart/:coinId', marketController.getChartData);
 
-// Get supported coins list
-router.get('/coins', marketController.getSupportedCoins);
-
-// Get trending coins
-router.get('/trending', marketController.getTrendingCoins);
-
-// Clear cache (admin only)
-router.post('/cache/clear', marketController.clearCache);
-
 // Health check
 router.get('/health', (req, res) => {
   res.json({
