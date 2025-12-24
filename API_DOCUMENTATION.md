@@ -209,49 +209,6 @@ Lấy số dư ví USDT.
 
 ---
 
-### GET `/api/users/balance/history`
-
-Lấy lịch sử thay đổi số dư.
-
-**Auth Required:** ✅
-
-**Query Parameters:**
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| page | number | 1 | Trang hiện tại |
-| limit | number | 20 | Số items/trang |
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "history": [
-      {
-        "amount": -150.15,
-        "type": "trade",
-        "description": "Mua 0.002 BTC",
-        "timestamp": "2024-01-02T10:30:00.000Z"
-      },
-      {
-        "amount": 1000,
-        "type": "initial",
-        "description": "Số dư ban đầu",
-        "timestamp": "2024-01-01T00:00:00.000Z"
-      }
-    ],
-    "pagination": {
-      "page": 1,
-      "limit": 20,
-      "total": 2,
-      "pages": 1
-    }
-  }
-}
-```
-
----
-
 ## 📈 Market APIs
 
 ### GET `/api/market/prices`

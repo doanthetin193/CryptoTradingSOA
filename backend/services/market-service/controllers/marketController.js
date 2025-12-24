@@ -39,7 +39,7 @@ const SUPPORTED_COINS = process.env.SUPPORTED_COINS?.split(',') || Object.keys(C
 exports.getPrices = async (req, res) => {
   try {
     const cacheKey = 'current_prices';
-    
+
     // Check cache first
     const cachedData = cache.get(cacheKey);
     if (cachedData) {
@@ -87,7 +87,7 @@ exports.getPrices = async (req, res) => {
     });
   } catch (error) {
     logger.error(`❌ Get prices error: ${error.message}`);
-    
+
     // Return cached data if API fails
     const cachedData = cache.get('current_prices');
     if (cachedData) {
@@ -117,7 +117,7 @@ exports.getPrices = async (req, res) => {
 exports.getCoinPrice = async (req, res) => {
   try {
     const { coinId } = req.params;
-    
+
     // Validate coin
     if (!SUPPORTED_COINS.includes(coinId.toLowerCase())) {
       return res.status(400).json({
@@ -194,7 +194,7 @@ exports.getCoinPrice = async (req, res) => {
     });
   } catch (error) {
     logger.error(`❌ Get coin price error: ${error.message}`);
-    
+
     // Fallback 1: Check /prices cache again
     const allPricesCache = cache.get('current_prices');
     if (allPricesCache) {
@@ -209,11 +209,11 @@ exports.getCoinPrice = async (req, res) => {
         });
       }
     }
-    
+
     // Fallback 2: Try individual coin cache
     const cacheKey = `price_${req.params.coinId}`;
     const cachedData = cache.get(cacheKey);
-    
+
     if (cachedData) {
       logger.warn('⚠️  API failed, returning cached price data');
       return res.json({
@@ -223,7 +223,7 @@ exports.getCoinPrice = async (req, res) => {
         data: cachedData,
       });
     }
-    
+
     res.status(500).json({
       success: false,
       message: 'Error fetching coin price',
@@ -251,7 +251,7 @@ exports.getChartData = async (req, res) => {
     }
 
     const cacheKey = `chart_${coinId}_${days}`;
-    
+
     // Check cache
     const cachedData = cache.get(cacheKey);
     if (cachedData) {
@@ -290,10 +290,10 @@ exports.getChartData = async (req, res) => {
     } catch (geckoError) {
       // Fallback to CoinPaprika if CoinGecko fails
       logger.warn(`⚠️  CoinGecko failed (${geckoError.message}), trying CoinPaprika...`);
-      
+
       try {
         const paprikaData = await coinPaprikaProvider.getChartData(coinId.toLowerCase(), parseInt(days));
-        
+
         chartData = {
           coinId: coinId.toLowerCase(),
           days: parseInt(days),
@@ -304,7 +304,7 @@ exports.getChartData = async (req, res) => {
             price: price,
           })),
         };
-        
+
         logger.info(`✅ Fetched chart data from CoinPaprika fallback`);
       } catch (paprikaError) {
         logger.error(`❌ Both providers failed: ${paprikaError.message}`);
@@ -324,11 +324,11 @@ exports.getChartData = async (req, res) => {
     });
   } catch (error) {
     logger.error(`❌ Get chart data error: ${error.message}`);
-    
+
     // Try to return cached data even if expired
     const cacheKey = `chart_${req.params.coinId}_${req.query.days || 7}`;
     const cachedData = cache.get(cacheKey);
-    
+
     if (cachedData) {
       logger.warn('⚠️  API failed, returning cached chart data');
       return res.json({
@@ -338,111 +338,11 @@ exports.getChartData = async (req, res) => {
         data: cachedData,
       });
     }
-    
+
     res.status(500).json({
       success: false,
       message: 'Error fetching chart data. Please try again later.',
       error: error.response?.status === 429 ? 'Rate limit exceeded' : error.message,
-    });
-  }
-};
-
-/**
- * @desc    Get list of supported coins
- * @route   GET /coins
- * @access  Public
- */
-exports.getSupportedCoins = async (req, res) => {
-  try {
-    const coins = SUPPORTED_COINS.map((coinId) => ({
-      coinId,
-      symbol: COIN_MAP[coinId] || coinId.toUpperCase(),
-      name: coinId.charAt(0).toUpperCase() + coinId.slice(1),
-    }));
-
-    res.json({
-      success: true,
-      count: coins.length,
-      data: coins,
-    });
-  } catch (error) {
-    logger.error(`❌ Get supported coins error: ${error.message}`);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching supported coins',
-      error: error.message,
-    });
-  }
-};
-
-/**
- * @desc    Get trending coins
- * @route   GET /trending
- * @access  Public
- */
-exports.getTrendingCoins = async (req, res) => {
-  try {
-    const cacheKey = 'trending_coins';
-    
-    // Check cache
-    const cachedData = cache.get(cacheKey);
-    if (cachedData) {
-      return res.json({
-        success: true,
-        cached: true,
-        data: cachedData,
-      });
-    }
-
-    // Fetch from CoinGecko
-    const response = await axios.get(`${COINGECKO_API}/search/trending`);
-
-    const trending = response.data.coins.slice(0, 10).map((item) => ({
-      coinId: item.item.id,
-      symbol: item.item.symbol,
-      name: item.item.name,
-      marketCapRank: item.item.market_cap_rank,
-      thumb: item.item.thumb,
-    }));
-
-    // Cache for 1 hour
-    cache.set(cacheKey, trending, 3600);
-
-    res.json({
-      success: true,
-      cached: false,
-      data: trending,
-    });
-  } catch (error) {
-    logger.error(`❌ Get trending coins error: ${error.message}`);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching trending coins',
-      error: error.message,
-    });
-  }
-};
-
-/**
- * @desc    Clear cache (admin function)
- * @route   POST /cache/clear
- * @access  Private
- */
-exports.clearCache = (req, res) => {
-  try {
-    cache.flushAll();
-    logger.info('🗑️  Cache cleared');
-
-    res.json({
-      success: true,
-      message: 'Cache cleared successfully',
-    });
-  } catch (error) {
-    logger.error(`❌ Clear cache error: ${error.message}`);
-    res.status(500).json({
-      success: false,
-      message: 'Error clearing cache',
-      error: error.message,
     });
   }
 };

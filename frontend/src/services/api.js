@@ -92,7 +92,6 @@ export const authAPI = {
 // ===========================
 export const userAPI = {
   getBalance: () => api.get('/users/balance'),
-  getBalanceHistory: () => api.get('/users/balance/history'),
   updateProfile: (data) => api.put('/users/profile', data),
 };
 
@@ -103,8 +102,6 @@ export const marketAPI = {
   getPrices: () => api.get('/market/prices'),
   getCoinPrice: (coinId) => api.get(`/market/price/${coinId}`),
   getChartData: (coinId, days = 7) => api.get(`/market/chart/${coinId}`, { params: { days } }),
-  getSupportedCoins: () => api.get('/market/coins'),
-  getMarketStats: () => api.get('/market/stats'),
 };
 
 // ===========================

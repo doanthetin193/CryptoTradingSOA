@@ -187,7 +187,7 @@ exports.login = async (req, res) => {
 exports.getProfile = async (req, res) => {
   try {
     const userId = req.headers['x-user-id'];
-    
+
     if (!userId) {
       return res.status(401).json({
         success: false,
@@ -235,7 +235,7 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const userId = req.headers['x-user-id'];
-    
+
     if (!userId) {
       return res.status(401).json({
         success: false,
@@ -299,7 +299,7 @@ exports.updateProfile = async (req, res) => {
 exports.getBalance = async (req, res) => {
   try {
     const userId = req.headers['x-user-id'] || req.query.userId;
-    
+
     if (!userId) {
       return res.status(400).json({
         success: false,
@@ -425,44 +425,6 @@ exports.updateBalance = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get user info (for other services)
- * @route   GET /info/:userId
- * @access  Private (Internal)
- */
-exports.getUserInfo = async (req, res) => {
-  try {
-    const { userId } = req.params;
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found',
-      });
-    }
-
-    res.json({
-      success: true,
-      data: {
-        user: {
-          id: user._id,
-          email: user.email,
-          fullName: user.fullName,
-          balance: user.balance,
-        },
-      },
-    });
-  } catch (error) {
-    logger.error(`❌ Get user info error: ${error.message}`);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching user info',
-      error: error.message,
-    });
-  }
-};
-
 // ===========================
 // ADMIN FUNCTIONS
 // ===========================
@@ -480,11 +442,11 @@ exports.getAllUsers = async (req, res) => {
     // Build search query
     const searchQuery = search
       ? {
-          $or: [
-            { email: { $regex: search, $options: 'i' } },
-            { fullName: { $regex: search, $options: 'i' } },
-          ],
-        }
+        $or: [
+          { email: { $regex: search, $options: 'i' } },
+          { fullName: { $regex: search, $options: 'i' } },
+        ],
+      }
       : {};
 
     const users = await User.find(searchQuery)

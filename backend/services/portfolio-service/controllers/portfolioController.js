@@ -38,47 +38,6 @@ exports.getPortfolio = async (req, res) => {
 };
 
 /**
- * @desc    Update portfolio value (called by API Gateway with prices)
- * @route   PUT /value
- * @access  Internal
- */
-exports.updatePortfolioValue = async (req, res) => {
-  try {
-    const userId = req.headers['x-user-id'];
-    const { prices } = req.body;
-
-    if (!userId || !prices) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing userId or prices',
-      });
-    }
-
-    const portfolio = await Portfolio.findOrCreateByUserId(userId);
-
-    // Update value with provided prices
-    const pricesMap = {};
-    prices.forEach(coin => {
-      pricesMap[coin.symbol] = coin.price;
-    });
-
-    portfolio.calculateValue(pricesMap);
-    await portfolio.save();
-
-    res.json({
-      success: true,
-      data: portfolio,
-    });
-  } catch (error) {
-    logger.error(`❌ Update portfolio value error: ${error.message}`);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to update portfolio value',
-    });
-  }
-};
-
-/**
  * @desc    Add holding to portfolio
  * @route   POST /holding
  * @access  Internal (called by API Gateway)

@@ -20,9 +20,6 @@ router.get('/health', (req, res) => {
 // Get user portfolio
 router.get('/', portfolioController.getPortfolio);
 
-// Update portfolio value (Internal - called by API Gateway)
-router.put('/value', portfolioController.updatePortfolioValue);
-
 // Add holding (Internal - called by API Gateway)
 router.post('/holding', portfolioController.addHolding);
 
