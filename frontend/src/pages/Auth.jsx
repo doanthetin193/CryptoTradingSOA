@@ -101,7 +101,8 @@ export default function Auth() {
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleChange}
-                    className="crypto-input pl-12"
+                    className="crypto-input"
+                    style={{ paddingLeft: '3rem' }}
                     placeholder="Nguyễn Văn A"
                     required={!isLogin}
                   />
@@ -121,7 +122,8 @@ export default function Auth() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="crypto-input pl-12"
+                  className="crypto-input"
+                  style={{ paddingLeft: '3rem' }}
                   placeholder="email@example.com"
                   required
                 />
@@ -140,7 +142,8 @@ export default function Auth() {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="crypto-input pl-12"
+                  className="crypto-input"
+                  style={{ paddingLeft: '3rem' }}
                   placeholder="••••••••"
                   required
                   minLength={6}
