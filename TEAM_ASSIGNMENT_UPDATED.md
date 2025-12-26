@@ -1,6 +1,6 @@
 # 👥 PHÂN CÔNG NHIỆM VỤ NHÓM - CryptoTradingSOA
 
-> **Cập nhật:** 17/12/2025  
+> **Cập nhật:** 26/12/2024  
 > **Nhóm:** 3 thành viên  
 > **Timeline:** 6 tuần
 
@@ -54,9 +54,13 @@ backend/services/trade-service/
   price: Number,          // Giá tại thời điểm giao dịch
   totalCost: Number,      // Tổng giá trị
   fee: Number,            // Phí giao dịch
-  feePercentage: Number,  // % phí
+  feePercentage: Number,  // % phí (default: 0.1)
+  status: String,         // 'pending', 'completed', 'failed', 'cancelled'
   balanceBefore: Number,  // Số dư trước giao dịch
   balanceAfter: Number,   // Số dư sau giao dịch
+  notes: String,          // Ghi chú (optional, max 500 chars)
+  errorMessage: String,   // Thông báo lỗi (cho giao dịch failed)
+  executedAt: Date,
   createdAt: Date
 }
 ```
@@ -239,11 +243,15 @@ backend/services/notification-service/
 ```javascript
 {
   userId: ObjectId,
-  type: String,        // 'trade', 'alert', 'system'
+  type: String,        // 'trade', 'price_alert', 'system', 'warning'
   title: String,
   message: String,
-  data: Object,        // Additional data
-  isRead: Boolean,
+  status: String,      // 'unread', 'read', 'archived' (default: 'unread')
+  priority: String,    // 'low', 'medium', 'high', 'urgent' (default: 'medium')
+  channel: String,     // 'app' (chỉ hỗ trợ thông báo trong app)
+  data: Object,        // Additional data (tradeId, alertId, etc.)
+  sentAt: Date,        // Thời điểm gửi
+  readAt: Date,        // Thời điểm đọc
   createdAt: Date
 }
 ```
@@ -257,19 +265,20 @@ backend/services/notification-service/
   symbol: String,      // 'BTC', 'ETH'
   targetPrice: Number,
   condition: String,   // 'above' hoặc 'below'
-  isActive: Boolean,   // ⚠️ QUAN TRỌNG: Dùng isActive, KHÔNG phải status
-  triggeredAt: Date,
+  isActive: Boolean,   // (default: true) Deactivate sau khi triggered
+  triggered: Boolean,  // (default: false) Đã trigger chưa
+  triggeredAt: Date,   // Thời điểm trigger
+  lastChecked: Date,   // Lần kiểm tra cuối
   createdAt: Date
 }
 ```
 
 **⚠️ LƯU Ý QUAN TRỌNG:**
 
-- PriceAlert model KHÔNG CÓ field `status`
-- Dùng `isActive: Boolean` thay vì `status`
-- Đã có 2 bugs trong code cũ (đã được fix):
-  - Line 259: Bỏ field 'status' khi create
-  - Line 295: Filter bằng 'isActive' không phải 'status'
+- PriceAlert model sử dụng `isActive: Boolean` và `triggered: Boolean`
+- Khi alert triggered: set `isActive = false`, `triggered = true`, `triggeredAt = now`
+- Notification model sử dụng `status: enum` không phải `isRead: Boolean`
+- Channel chỉ hỗ trợ `'app'` (không còn email)
 
 **2. Controller (controllers/notificationController.js)**
 

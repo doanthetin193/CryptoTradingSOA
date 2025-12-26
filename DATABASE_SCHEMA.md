@@ -440,7 +440,7 @@ Lưu trữ tất cả thông báo gửi đến người dùng (giao dịch, cả
   },
   channel: {
     type: String,
-    enum: ['app', 'email', 'both'],
+    enum: ['app'],                  // Chỉ hỗ trợ thông báo trong app
     default: 'app'
   },
   sentAt: {
@@ -691,11 +691,12 @@ db.trades.aggregate([
 ### Bán Coin
 
 ```
-1. Portfolio Service: holding.amount -= sellAmount
+1. Portfolio Service: kiểm tra holdings có đủ coin không
+2. User Service: balance += (totalValue - fee)  ← CỘNG TIỀN TRƯỚC
+3. Portfolio Service: holding.amount -= sellAmount  ← GIẢM HOLDING SAU
    - Nếu amount = 0 → xóa holding
-2. User Service: balance += (totalValue - fee)
-3. Trade Service: tạo trade record
-4. Notification Service: tạo notification
+4. Trade Service: tạo trade record
+5. Notification Service: tạo notification
 ```
 
 ### Price Alert Trigger
