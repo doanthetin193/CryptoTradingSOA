@@ -189,7 +189,7 @@ export default function Admin() {
       {/* Search */}
       <div className="flex items-center gap-4">
         <div className="flex-1 relative">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-crypto-muted w-5 h-5" />
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-crypto-muted w-5 h-5 z-10" />
           <input
             type="text"
             placeholder="Tìm theo email hoặc tên..."
@@ -198,7 +198,8 @@ export default function Admin() {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
-            className="crypto-input pl-12"
+            className="crypto-input"
+            style={{ paddingLeft: '48px' }}
           />
         </div>
       </div>
@@ -231,8 +232,8 @@ export default function Admin() {
                     <td>
                       <div className="flex items-center gap-3">
                         <div className={`coin-icon text-white text-sm ${user.role === 'admin'
-                            ? 'bg-gradient-to-br from-purple-500 to-pink-500'
-                            : 'bg-gradient-to-br from-blue-500 to-cyan-500'
+                          ? 'bg-gradient-to-br from-purple-500 to-pink-500'
+                          : 'bg-gradient-to-br from-blue-500 to-cyan-500'
                           }`}>
                           {user.fullName?.substring(0, 1) || 'U'}
                         </div>
@@ -251,8 +252,8 @@ export default function Admin() {
                     </td>
                     <td>
                       <span className={`crypto-badge ${user.role === 'admin'
-                          ? 'bg-[rgba(139,92,246,0.1)] text-[#8b5cf6]'
-                          : 'bg-crypto-hover text-crypto-secondary'
+                        ? 'bg-[rgba(139,92,246,0.1)] text-[#8b5cf6]'
+                        : 'bg-crypto-hover text-crypto-secondary'
                         }`}>
                         {user.role === 'admin' ? '👑 Admin' : 'User'}
                       </span>
@@ -262,8 +263,8 @@ export default function Admin() {
                         <button
                           onClick={() => handleToggleStatus(user._id)}
                           className={`p-2 rounded-lg transition ${user.isActive
-                              ? 'text-[var(--error)] hover:bg-[rgba(239,68,68,0.1)]'
-                              : 'text-[var(--success)] hover:bg-[rgba(16,185,129,0.1)]'
+                            ? 'text-[var(--error)] hover:bg-[rgba(239,68,68,0.1)]'
+                            : 'text-[var(--success)] hover:bg-[rgba(16,185,129,0.1)]'
                             }`}
                           title={user.isActive ? 'Block User' : 'Unblock User'}
                         >
@@ -276,7 +277,7 @@ export default function Admin() {
                         >
                           <DollarSign className="w-5 h-5" />
                         </button>
-                        {user.role !== 'admin' && (
+                        {user.role !== 'admin' ? (
                           <button
                             onClick={() => handleDeleteUser(user._id)}
                             className="p-2 text-[var(--error)] hover:bg-[rgba(239,68,68,0.1)] rounded-lg transition"
@@ -284,6 +285,8 @@ export default function Admin() {
                           >
                             <Trash2 className="w-5 h-5" />
                           </button>
+                        ) : (
+                          <div className="w-9 h-9"></div>
                         )}
                       </div>
                     </td>
@@ -306,8 +309,8 @@ export default function Admin() {
                   key={page}
                   onClick={() => setCurrentPage(page)}
                   className={`w-10 h-10 rounded-lg font-medium transition ${page === currentPage
-                      ? 'bg-gradient-crypto text-black'
-                      : 'bg-crypto-hover text-crypto-secondary hover:text-crypto-primary'
+                    ? 'bg-gradient-crypto text-black'
+                    : 'bg-crypto-hover text-crypto-secondary hover:text-crypto-primary'
                     }`}
                 >
                   {page}

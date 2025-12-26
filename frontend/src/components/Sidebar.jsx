@@ -68,25 +68,6 @@ export default function Sidebar() {
           </>
         )}
       </nav>
-
-      {/* Bottom Section */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-crypto">
-        <div className="crypto-card !p-3 bg-gradient-to-r from-[var(--bg-card)] to-[var(--bg-hover)]">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-crypto flex items-center justify-center text-black font-bold text-sm">
-              {user?.fullName?.charAt(0) || user?.email?.charAt(0) || 'U'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-crypto-primary truncate">
-                {user?.fullName || 'User'}
-              </p>
-              <p className="text-xs text-crypto-muted truncate">
-                ${user?.balance?.toLocaleString() || '0.00'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
     </aside>
   );
 }
