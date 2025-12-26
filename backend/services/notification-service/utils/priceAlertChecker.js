@@ -6,7 +6,7 @@
 const axios = require('axios');
 const logger = require('../../../shared/utils/logger');
 const websocket = require('../../../shared/utils/websocket');
-const emailService = require('../../../shared/utils/emailService');
+
 const serviceDiscovery = require('../../../shared/utils/serviceDiscovery');
 const PriceAlert = require('../models/PriceAlert');
 const Notification = require('../models/Notification');
@@ -61,7 +61,7 @@ const checkPriceAlerts = async () => {
 
       if (shouldTrigger) {
         logger.info(`🔔 Price alert triggered: ${alert.symbol} ${alert.condition} ${alert.targetPrice}`);
-        
+
         // Trigger the alert
         await alert.trigger();
         triggeredCount++;
@@ -91,27 +91,7 @@ const checkPriceAlerts = async () => {
           timestamp: new Date(),
         });
 
-        // Send email notification if enabled
-        if (process.env.ENABLE_EMAIL_NOTIFICATIONS === 'true') {
-          try {
-            const apiGatewayUrl = process.env.API_GATEWAY_URL || 'http://localhost:3000';
-            const userResponse = await axios.get(`${apiGatewayUrl}/api/users/profile`, {
-              headers: { 'X-User-Id': alert.userId },
-            });
-            
-            if (userResponse.data.success) {
-              const userEmail = userResponse.data.data.email;
-              await emailService.sendPriceAlertEmail(userEmail, {
-                symbol: alert.symbol,
-                targetPrice: alert.targetPrice,
-                currentPrice,
-                condition: alert.condition,
-              });
-            }
-          } catch (emailError) {
-            logger.error(`Failed to send email for alert: ${emailError.message}`);
-          }
-        }
+
       } else {
         await alert.save(); // Just update lastChecked
       }

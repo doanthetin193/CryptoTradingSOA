@@ -131,7 +131,7 @@ Xây dựng một nền tảng giao dịch tiền điện tử mô phỏng theo 
 |----|-----------|----------------|
 | FR19 | Xem danh sách user | Admin xem tất cả người dùng |
 | FR20 | Khóa/Mở khóa user | Toggle trạng thái active của user |
-| FR21 | Reset số dư user | Set lại số dư về 1000 USDT |
+| FR21 | Cập nhật số dư user | Điều chỉnh số dư (+ hoặc -) của user |
 | FR22 | Xóa user | Xóa tài khoản người dùng |
 | FR23 | Xem thống kê hệ thống | Xem tổng user, tổng số dư, v.v. |
 
@@ -285,7 +285,7 @@ flowchart TB
 | **Routing** | Định tuyến request đến đúng service |
 | **Authentication** | Xác thực JWT token |
 | **Rate Limiting** | Giới hạn số request (1000/15 phút) |
-| **Orchestration** | Điều phối các service cho giao dịch buy/sell |
+| **Orchestration** | Điều phối các service cho giao dịch buy/sell và portfolio |
 | **WebSocket** | Quản lý kết nối real-time |
 
 **Công nghệ:** Express.js, http-proxy-middleware, Socket.IO
@@ -309,7 +309,7 @@ flowchart TB
 | GET | /admin/users | [Admin] Danh sách users |
 | GET | /admin/stats | [Admin] Thống kê hệ thống |
 | PUT | /admin/users/:id/toggle | [Admin] Khóa/Mở khóa user |
-| PUT | /admin/users/:id/balance | [Admin] Reset số dư |
+| PUT | /admin/users/:id/balance | [Admin] Cập nhật số dư |
 | DELETE | /admin/users/:id | [Admin] Xóa user |
 
 **Database:** MongoDB - Collection `users`
@@ -976,6 +976,10 @@ Authorization: Bearer <JWT_TOKEN>
 
 **BASE URL:** `http://localhost:3000/api`
 
+**Tổng cộng: 30 REST API Endpoints (25 Client-facing + 5 Internal)**
+
+#### Client-facing APIs (25 endpoints)
+
 | Service | Method | Endpoint | Auth | Mô tả |
 |---------|--------|----------|------|-------|
 | **User** | POST | /users/register | ❌ | Đăng ký |
@@ -986,15 +990,33 @@ Authorization: Bearer <JWT_TOKEN>
 | **Market** | GET | /market/prices | ✅ | Giá tất cả coins |
 | | GET | /market/price/:coinId | ✅ | Giá một coin |
 | | GET | /market/chart/:coinId | ✅ | Dữ liệu chart |
-| **Trade** | POST | /trade/buy | ✅ | Mua coin |
-| | POST | /trade/sell | ✅ | Bán coin |
+| **Trade** | POST | /trade/buy | ✅ | Mua coin (Orchestration) |
+| | POST | /trade/sell | ✅ | Bán coin (Orchestration) |
 | | GET | /trade/history | ✅ | Lịch sử giao dịch |
 | **Portfolio** | GET | /portfolio | ✅ | Xem portfolio |
 | **Notification** | GET | /notifications | ✅ | Danh sách thông báo |
+| | GET | /notifications/unread-count | ✅ | Số thông báo chưa đọc |
 | | PUT | /notifications/:id/read | ✅ | Đánh dấu đã đọc |
+| | PUT | /notifications/read-all | ✅ | Đánh dấu tất cả đã đọc |
+| | DELETE | /notifications/:id | ✅ | Xóa thông báo |
 | | POST | /notifications/alert | ✅ | Tạo cảnh báo giá |
+| | GET | /notifications/alerts | ✅ | Danh sách alerts |
+| | DELETE | /notifications/alert/:id | ✅ | Xóa alert |
 | **Admin** | GET | /users/admin/users | ✅ Admin | Danh sách users |
+| | GET | /users/admin/stats | ✅ Admin | Thống kê hệ thống |
 | | PUT | /users/admin/users/:id/toggle | ✅ Admin | Khóa/Mở user |
+| | PUT | /users/admin/users/:id/balance | ✅ Admin | Cập nhật số dư |
+| | DELETE | /users/admin/users/:id | ✅ Admin | Xóa user |
+
+#### Internal APIs (5 endpoints - Service-to-service)
+
+| Service | Method | Endpoint | Mục đích |
+|---------|--------|----------|----------|
+| User | PUT | /users/balance | Cập nhật số dư từ orchestration |
+| Portfolio | POST | /portfolio/holding | Thêm coin khi mua |
+| Portfolio | PUT | /portfolio/holding | Giảm coin khi bán |
+| Trade | POST | /trade | Tạo trade record |
+| Notification | POST | /notifications/send | Gửi notification |
 
 ### 5.1.4. Chi tiết API Request/Response
 

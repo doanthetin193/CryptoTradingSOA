@@ -44,7 +44,7 @@ const notificationSchema = new mongoose.Schema(
     },
     channel: {
       type: String,
-      enum: ['app', 'email', 'both'],
+      enum: ['app'],
       default: 'app',
     },
     sentAt: {
