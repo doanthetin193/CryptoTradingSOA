@@ -45,7 +45,7 @@ Hệ thống được xây dựng theo **kiến trúc SOA (Service-Oriented Arch
 ### 👑 Quản trị viên (Admin)
 - ✅ Xem danh sách tất cả người dùng
 - ✅ Khóa/Mở khóa tài khoản
-- ✅ Reset số dư về 1000 USDT
+- ✅ Cập nhật số dư user (điều chỉnh + hoặc -)
 
 ### 🛡️ Hệ thống
 - ✅ Service Discovery với Consul
@@ -255,12 +255,6 @@ INITIAL_BALANCE=1000
 # Price Alerts
 ENABLE_PRICE_ALERTS=true
 
-# Email (Optional)
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASSWORD=your_app_password
-
 # Environment
 NODE_ENV=development
 ```
@@ -382,7 +376,7 @@ npm run dev
 |--------|----------|-------|------|
 | GET | `/api/users/admin/users` | Lấy danh sách users | ✅ Admin |
 | PUT | `/api/users/admin/users/:id/toggle` | Khóa/Mở khóa user | ✅ Admin |
-| PUT | `/api/users/admin/users/:id/balance` | Reset số dư | ✅ Admin |
+| PUT | `/api/users/admin/users/:id/balance` | Cập nhật số dư | ✅ Admin |
 
 ## 📁 Cấu trúc thư mục
 

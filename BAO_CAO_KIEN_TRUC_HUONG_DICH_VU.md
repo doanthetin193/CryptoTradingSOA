@@ -228,8 +228,9 @@ flowchart TB
         NS[Notification Service<br/>Port 3005]
     end
 
-    subgraph External["🌐 External"]
-        CG[CoinGecko API]
+    subgraph External["🌐 External APIs"]
+        CG[CoinGecko API<br/>Primary]
+        CP[CoinPaprika API<br/>Fallback]
     end
 
     subgraph Data["💾 Shared Database"]
@@ -248,6 +249,7 @@ flowchart TB
     GW <--> NS
     
     MS <-->|API Call| CG
+    MS -.->|Fallback| CP
     
     US --> DB
     PS --> DB
@@ -569,65 +571,73 @@ sequenceDiagram
 
 ### 3.4.1. Luồng xác thực (Authentication Flow)
 
-```
-┌─────────┐         ┌─────────────┐         ┌──────────────┐
-│ Client  │ ──1──▶  │ API Gateway │ ──2──▶  │ User Service │
-│         │         │             │         │              │
-│         │ ◀──4──  │             │ ◀──3──  │              │
-└─────────┘         └─────────────┘         └──────────────┘
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant GW as API Gateway
+    participant US as User Service
 
-1. POST /login {email, password}
-2. Forward to User Service
-3. Verify password, generate JWT
-4. Return {token, user}
+    C->>GW: 1. POST /login {email, password}
+    GW->>US: 2. Chuyển tiếp đến User Service
+    US->>US: 3. Xác thực mật khẩu, tạo JWT
+    US-->>GW: 4. Trả về {token, user}
+    GW-->>C: ✅ Đăng nhập thành công
 ```
+
+**Các bước:**
+1. Client gửi email và password đến API Gateway
+2. API Gateway chuyển tiếp request đến User Service
+3. User Service xác thực mật khẩu (bcrypt) và tạo JWT token (7 ngày)
+4. Trả về token và thông tin user cho client
 
 **DFD Level 0 - Authentication:**
 
 ```mermaid
 flowchart LR
     U((User)) -->|email, password| P1[1.0<br/>Xác thực]
-    P1 -->|query| D1[(users)]
-    D1 -->|user data| P1
+    P1 -->|truy vấn| D1[(users)]
+    D1 -->|dữ liệu user| P1
     P1 -->|JWT token + user info| U
 ```
 
 ### 3.4.2. Luồng xem portfolio (Portfolio Flow)
 
-```
-┌─────────┐         ┌─────────────┐         ┌───────────────────┐
-│ Client  │ ──1──▶  │ API Gateway │ ──2──▶  │ Portfolio Service │
-│         │         │ (Orchestr.) │         │                   │
-│         │         │      │      │ ◀──3──  │                   │
-│         │         │      │      │         └───────────────────┘
-│         │         │      │      │
-│         │         │      ▼      │         ┌────────────────┐
-│         │         │    ──4──────│──────▶  │ Market Service │
-│         │         │      │      │         │                │
-│         │         │      │ ◀──5─│─────────│                │
-│         │ ◀──6──  │      ▼      │         └────────────────┘
-└─────────┘         └─────────────┘
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant GW as API Gateway
+    participant PS as Portfolio Service
+    participant MS as Market Service
 
-1. GET /portfolio
-2. Get holdings from Portfolio Service
-3. Return holdings list
-4. Get current prices for each coin
-5. Return prices
-6. Return enriched portfolio with P&L
+    C->>GW: 1. GET /portfolio
+    GW->>PS: 2. Lấy holdings từ Portfolio Service
+    PS-->>GW: 3. Trả về danh sách holdings
+    GW->>MS: 4. Lấy giá hiện tại cho từng coin
+    MS-->>GW: 5. Trả về giá
+    GW->>GW: Tính toán P&L
+    GW-->>C: 6. Trả về portfolio với lãi/lỗ
 ```
+
+**Các bước:**
+1. Client gửi request lấy portfolio
+2. API Gateway gọi Portfolio Service để lấy danh sách holdings
+3. Portfolio Service trả về holdings (coin, số lượng, giá mua trung bình)
+4. API Gateway gọi Market Service để lấy giá hiện tại cho từng coin
+5. Market Service trả về giá từ CoinGecko/CoinPaprika
+6. API Gateway tính toán P&L và trả về portfolio đã được làm giàu (enriched)
 
 **DFD Level 0 - Portfolio:**
 
 ```mermaid
 flowchart LR
     U((User)) -->|request| P1[1.0<br/>Lấy Portfolio]
-    P1 -->|query holdings| D1[(portfolios)]
+    P1 -->|truy vấn holdings| D1[(portfolios)]
     D1 -->|holdings| P1
-    P1 -->|get prices| P2[2.0<br/>Lấy giá]
-    P2 -->|API call| E1[CoinGecko]
-    E1 -->|prices| P2
-    P2 -->|prices| P1
-    P1 -->|portfolio + P&L| U
+    P1 -->|lấy giá| P2[2.0<br/>Lấy giá]
+    P2 -->|gọi API| E1[CoinGecko]
+    E1 -->|giá| P2
+    P2 -->|giá| P1
+    P1 -->|portfolio + lãi/lỗ| U
 ```
 
 ### 3.4.3. Luồng giao dịch (Trade Flow)
@@ -654,6 +664,134 @@ flowchart TB
 ```
 
 ---
+
+## 3.5. Các patterns và kỹ thuật nâng cao
+
+Hệ thống áp dụng nhiều patterns và kỹ thuật nâng cao để đảm bảo tính ổn định, bảo mật và hiệu năng.
+
+### 3.5.1. Rate Limiting
+
+**Mục đích:** Bảo vệ hệ thống khỏi DDoS và abuse.
+
+**Cấu hình:**
+- **Global:** 1000 requests / 15 phút cho tất cả APIs
+- Trả về HTTP 429 khi vượt giới hạn
+
+**Công nghệ:** express-rate-limit
+
+```mermaid
+flowchart LR
+    Client -->|Request| RL{Rate Limiter}
+    RL -->|Accepted| API[API Gateway]
+    RL -->|Rejected 429| Error[Too Many Requests]
+```
+
+---
+
+### 3.5.2. Circuit Breaker Pattern
+
+**Mục đích:** Ngăn chặn cascading failures khi một service gặp sự cố.
+
+**Cơ chế hoạt động:**
+- **Closed:** Hoạt động bình thường
+- **Open:** Service lỗi → ngắt kết nối, trả lỗi ngay
+- **Half-Open:** Thử lại sau một khoảng thời gian
+
+**Công nghệ:** Opossum
+
+```mermaid
+stateDiagram-v2
+    [*] --> Closed
+    Closed --> Open : Failures >= threshold
+    Open --> HalfOpen : Timeout elapsed
+    HalfOpen --> Closed : Success
+    HalfOpen --> Open : Failure
+```
+
+---
+
+### 3.5.3. Orchestration Pattern
+
+**Mục đích:** Điều phối nhiều services để hoàn thành một giao dịch phức tạp.
+
+**Đặc điểm:**
+- API Gateway đóng vai trò **Orchestrator**
+- Giao dịch Buy/Sell có **7 bước** tuần tự
+- Có cơ chế **ROLLBACK** khi một bước thất bại
+
+```mermaid
+flowchart TD
+    A[Start Buy] --> B[Step 1: Get Price]
+    B --> C[Step 2: Check Balance]
+    C --> D{Đủ tiền?}
+    D -->|Không| E[Return Error]
+    D -->|Có| F[Step 3: Deduct Balance]
+    F --> G[Step 4: Add Holding]
+    G --> H[Step 5: Create Trade]
+    H --> I[Step 6: Send Notification]
+    I --> J[Step 7: WebSocket Event]
+    J --> K[Success]
+    
+    F -.->|Error| R1[ROLLBACK: Refund]
+    G -.->|Error| R2[ROLLBACK: Remove Holding + Refund]
+```
+
+---
+
+### 3.5.4. WebSocket Real-time
+
+**Mục đích:** Push notifications đến client mà không cần polling.
+
+**Events được hỗ trợ:**
+
+| Event | Mô tả |
+|-------|-------|
+| `trade_confirmation` | Thông báo giao dịch thành công |
+| `price_alert` | Cảnh báo giá đạt mục tiêu |
+| `balance_update` | Số dư thay đổi |
+| `notification` | Thông báo mới |
+
+**Công nghệ:** Socket.IO
+
+---
+
+### 3.5.5. Fallback API Pattern
+
+**Mục đích:** Đảm bảo hệ thống vẫn hoạt động khi API chính gặp sự cố.
+
+**Cấu hình:**
+- **Primary:** CoinGecko API
+- **Fallback:** CoinPaprika API
+
+```mermaid
+flowchart TD
+    A[Market Service cần giá] --> B{CoinGecko API}
+    B -->|Success| C[Trả về giá]
+    B -->|Error/Timeout| D{CoinPaprika API}
+    D -->|Success| C
+    D -->|Error| E[Return cached data / Error]
+```
+
+---
+
+### 3.5.6. DCA Calculation (Dollar Cost Averaging)
+
+**Mục đích:** Tính giá mua trung bình khi user mua nhiều lần cùng một coin.
+
+**Công thức:**
+
+```
+newTotalInvested = oldTotalInvested + newInvestment
+newTotalAmount = oldAmount + newAmount
+newAverageBuyPrice = newTotalInvested / newTotalAmount
+```
+
+**Ví dụ:**
+- Lần 1: Mua 0.001 BTC giá $70,000 → averageBuyPrice = $70,000
+- Lần 2: Mua 0.001 BTC giá $80,000 → averageBuyPrice = (70+80)/2 = $75,000
+
+---
+
 
 # 4. PHÂN TÍCH VÀ THIẾT KẾ DỮ LIỆU
 
@@ -706,6 +844,7 @@ erDiagram
         Number totalInvested
         Number totalProfit
         Number profitPercentage
+        Date lastCalculated
     }
     HOLDING {
         String symbol
@@ -714,6 +853,7 @@ erDiagram
         Number amount
         Number averageBuyPrice
         Number totalInvested
+        Date lastUpdated
     }
     PORTFOLIO ||--o{ HOLDING : contains
 ```
@@ -729,6 +869,7 @@ erDiagram
 | totalInvested | Number | Default: 0 | Tổng chi phí đầu tư |
 | totalProfit | Number | Default: 0 | Tổng lãi/lỗ |
 | profitPercentage | Number | Default: 0 | Phần trăm lãi/lỗ |
+| lastCalculated | Date | Default: now | Thời điểm tính toán cuối |
 
 **Cấu trúc Holding:**
 
@@ -740,6 +881,7 @@ erDiagram
 | amount | Number | Số lượng coin |
 | averageBuyPrice | Number | Giá mua trung bình |
 | totalInvested | Number | Tổng chi phí |
+| lastUpdated | Date | Thời điểm cập nhật cuối |
 
 ---
 
@@ -758,9 +900,12 @@ erDiagram
         Number price
         Number totalCost
         Number fee
+        Number feePercentage
         Enum status
         Number balanceBefore
         Number balanceAfter
+        String notes
+        String errorMessage
         Date executedAt
     }
 ```
@@ -783,6 +928,8 @@ erDiagram
 | status | Enum | Default: 'completed' | Trạng thái |
 | balanceBefore | Number | Required | Số dư trước giao dịch |
 | balanceAfter | Number | Required | Số dư sau giao dịch |
+| notes | String | maxlength: 500 | Ghi chú (optional) |
+| errorMessage | String | - | Thông báo lỗi (cho giao dịch failed) |
 | executedAt | Date | Default: now | Thời điểm thực hiện |
 
 ---
@@ -799,8 +946,10 @@ erDiagram
         String message
         Enum status
         Enum priority
+        Enum channel
         Object data
         Date sentAt
+        Date readAt
     }
     PRICEALERT {
         ObjectId _id PK
@@ -812,6 +961,7 @@ erDiagram
         Boolean isActive
         Boolean triggered
         Date triggeredAt
+        Date lastChecked
     }
 ```
 
@@ -826,8 +976,10 @@ erDiagram
 | message | String | Nội dung |
 | status | Enum | unread/read/archived |
 | priority | Enum | low/medium/high/urgent |
+| channel | Enum | app (chỉ thông báo trong app) |
 | data | Object | Dữ liệu bổ sung |
 | sentAt | Date | Thời điểm gửi |
+| readAt | Date | Thời điểm đọc |
 
 **Entity 2: PriceAlert**
 
@@ -842,6 +994,7 @@ erDiagram
 | isActive | Boolean | Còn hoạt động không |
 | triggered | Boolean | Đã trigger chưa |
 | triggeredAt | Date | Thời điểm trigger |
+| lastChecked | Date | Lần kiểm tra cuối |
 
 ---
 
@@ -855,6 +1008,7 @@ erDiagram
     USER ||--o{ TRADE : makes
     USER ||--o{ NOTIFICATION : receives
     USER ||--o{ PRICEALERT : creates
+    PORTFOLIO ||--o{ HOLDING : contains
     
     USER {
         ObjectId _id PK
@@ -864,6 +1018,11 @@ erDiagram
     PORTFOLIO {
         ObjectId _id PK
         ObjectId userId FK
+    }
+    HOLDING {
+        String symbol
+        String coinId
+        Number amount
     }
     TRADE {
         ObjectId _id PK
@@ -880,34 +1039,6 @@ erDiagram
 ```
 
 **Mô tả quan hệ:**
-
-```
-┌──────────────────┐
-│      users       │
-│   (User Service) │
-└────────┬─────────┘
-         │
-         │ 1:1
-         ▼
-┌──────────────────┐
-│   portfolios     │
-│(Portfolio Service)│
-└──────────────────┘
-         │
-         │ 1:N
-         ▼
-┌──────────────────┐     ┌──────────────────┐
-│     trades       │     │  notifications   │
-│ (Trade Service)  │     │(Notif. Service)  │
-└──────────────────┘     └──────────────────┘
-                                  │
-                                  │ 1:N
-                                  ▼
-                         ┌──────────────────┐
-                         │   pricealerts    │
-                         │(Notif. Service)  │
-                         └──────────────────┘
-```
 
 | Quan hệ | Mô tả |
 |---------|-------|
@@ -1034,9 +1165,10 @@ Response (200):
 ```json
 {
   "success": true,
+  "message": "Login successful",
   "data": {
     "user": {
-      "_id": "64a1b2c3d4e5f6a7b8c9d0e1",
+      "id": "64a1b2c3d4e5f6a7b8c9d0e1",
       "email": "user@example.com",
       "fullName": "Nguyễn Văn A",
       "balance": 1000,
@@ -1109,22 +1241,58 @@ Response (200):
 
 **[CHỪA TRỐNG - Chèn screenshot hoặc mockup các màn hình]**
 
-**Màn hình Dashboard:**
+**1. Màn hình Auth (Đăng nhập/Đăng ký):**
+- Form đăng ký với email, password, fullName
+- Form đăng nhập với email, password
+- Chuyển đổi giữa Login/Register
+- Validation lỗi hiển thị rõ ràng
+
+**2. Màn hình Dashboard:**
 - Hiển thị số dư hiện tại
 - Bảng giá coins real-time
-- Tóm tắt portfolio
-- Chart xu hướng giá
+- Tóm tắt portfolio (tổng giá trị, lãi/lỗ)
+- Chart so sánh giá top 5 coins
 
-**Màn hình Trade:**
-- Chọn coin để giao dịch
-- Tab Buy/Sell
+**3. Màn hình Trade:**
+- Danh sách coins có tìm kiếm
+- Tab Buy/Sell chuyển đổi
 - Nhập số tiền USDT hoặc số lượng coin
-- Preview tổng chi phí và phí
+- Preview tổng chi phí, phí (0.1%), số dư sau giao dịch
 
-**Màn hình Portfolio:**
-- Biểu đồ tròn phân bổ
-- Bảng holdings với P&L
-- Tổng lãi/lỗ
+**4. Màn hình Chi tiết Coin:**
+- Thông tin coin (tên, symbol, giá, market cap)
+- Biểu đồ giá 7 ngày
+- Biến động 24h (tăng/giảm %)
+- Nút Trade nhanh
+
+**5. Màn hình Portfolio:**
+- Biểu đồ tròn phân bổ holdings
+- Bảng holdings với giá hiện tại, P&L
+- Tổng lãi/lỗ, % lãi/lỗ
+
+**6. Màn hình History (Lịch sử):**
+- Bảng lịch sử giao dịch (Buy/Sell)
+- Filter theo loại, symbol, thời gian
+- Phân trang
+- Chi tiết: amount, price, fee, status
+
+**7. Màn hình Notifications:**
+- Danh sách thông báo
+- Badge số chưa đọc
+- Đánh dấu đã đọc (1 hoặc tất cả)
+- Xóa thông báo
+
+**8. Màn hình Settings:**
+- Thông tin profile (email, fullName)
+- Quản lý cảnh báo giá (tạo, xem, xóa)
+- Lịch sử số dư (balanceHistory)
+
+**9. Màn hình Admin:**
+- Danh sách users với tìm kiếm
+- Thống kê hệ thống (tổng users, tổng balance)
+- Khóa/Mở khóa user
+- Điều chỉnh số dư user
+- Xóa user
 
 ---
 
@@ -1270,5 +1438,3 @@ npm run dev
 ```
 
 ---
-
-**[HẾT BÁO CÁO]**
