@@ -3,125 +3,80 @@ const axios = require('axios');
 const logger = require('./logger');
 
 /**
- * Circuit Breaker Utility
- * Wrap service calls to prevent cascading failures
+ * Tiện ích Circuit Breaker
+ * Bọc các cuộc gọi service để ngăn chặn lỗi dây chuyền (cascading failures)
  */
 
-// Circuit breaker configuration
+// Cấu hình Circuit Breaker
 const circuitBreakerOptions = {
-  timeout: 5000, // 5 seconds timeout
-  errorThresholdPercentage: 50, // Open circuit if 50% of requests fail
-  resetTimeout: 30000, // Try to close circuit after 30 seconds
-  rollingCountTimeout: 10000, // Rolling window for failure stats (10s)
-  rollingCountBuckets: 10, // Number of buckets in rolling window
+  timeout: 5000, // Timeout 5 giây
+  errorThresholdPercentage: 50, // Mở mạch nếu 50% request thất bại
+  resetTimeout: 30000, // Thử đóng mạch sau 30 giây
+  rollingCountTimeout: 10000, // Cửa sổ trượt để tính toán lỗi (10 giây)
+  rollingCountBuckets: 10, // Số lượng bucket trong cửa sổ trượt
   name: 'ServiceCircuitBreaker',
-  volumeThreshold: 5, // Minimum number of requests before checking error percentage
+  volumeThreshold: 5, // Số lượng request tối thiểu trước khi kiểm tra tỷ lệ lỗi
 };
 
 /**
- * Create a circuit breaker for HTTP requests
- * @param {string} serviceName - Name of the service (for logging)
- * @param {object} options - Custom circuit breaker options
- * @returns {CircuitBreaker} Circuit breaker instance
+ * Tạo một circuit breaker cho các HTTP request
+ * @param {string} serviceName - Tên của service (để log)
+ * @param {object} options - Tùy chọn circuit breaker tùy chỉnh
+ * @returns {CircuitBreaker} Instance của Circuit breaker
  */
 function createCircuitBreaker(serviceName, options = {}) {
   const mergedOptions = { ...circuitBreakerOptions, ...options, name: serviceName };
 
-  // Create the circuit breaker
+  // Tạo circuit breaker
   const breaker = new CircuitBreaker(
     async (config) => {
-      // Execute the actual HTTP request
+      // Thực hiện HTTP request thực tế
       return await axios(config);
     },
     mergedOptions
   );
 
   // ===========================
-  // Event Listeners
+  // Event Listeners (Lắng nghe sự kiện)
   // ===========================
 
   breaker.on('open', () => {
-    logger.warn(`🔴 [Circuit Breaker] ${serviceName} - Circuit OPENED (too many failures)`);
+    logger.warn(`🔴 [Circuit Breaker] ${serviceName} - Mạch đã MỞ (quá nhiều lỗi)`);
   });
 
   breaker.on('halfOpen', () => {
-    logger.info(`🟡 [Circuit Breaker] ${serviceName} - Circuit HALF-OPEN (testing recovery)`);
+    logger.info(`🟡 [Circuit Breaker] ${serviceName} - Mạch NỬA-MỞ (đang thử khôi phục)`);
   });
 
   breaker.on('close', () => {
-    logger.info(`🟢 [Circuit Breaker] ${serviceName} - Circuit CLOSED (service recovered)`);
+    logger.info(`🟢 [Circuit Breaker] ${serviceName} - Mạch đã ĐÓNG (service đã khôi phục)`);
   });
 
   breaker.on('timeout', () => {
-    logger.error(`⏱️ [Circuit Breaker] ${serviceName} - Request TIMEOUT (>${mergedOptions.timeout}ms)`);
+    logger.error(`⏱️ [Circuit Breaker] ${serviceName} - Request QUÁ HẠN (>${mergedOptions.timeout}ms)`);
   });
 
   breaker.on('reject', () => {
-    logger.error(`❌ [Circuit Breaker] ${serviceName} - Request REJECTED (circuit open)`);
+    logger.error(`❌ [Circuit Breaker] ${serviceName} - Request BỊ TỪ CHỐI (mạch đang mở)`);
   });
 
   breaker.on('fallback', (result) => {
-    logger.warn(`🔄 [Circuit Breaker] ${serviceName} - Fallback executed`);
+    logger.warn(`🔄 [Circuit Breaker] ${serviceName} - Fallback đã được thực thi`);
   });
 
   breaker.on('success', (result) => {
-    logger.debug(`✅ [Circuit Breaker] ${serviceName} - Request succeeded`);
+    logger.debug(`✅ [Circuit Breaker] ${serviceName} - Request thành công`);
   });
 
   breaker.on('failure', (error) => {
-    logger.error(`❌ [Circuit Breaker] ${serviceName} - Request failed: ${error.message}`);
+    logger.error(`❌ [Circuit Breaker] ${serviceName} - Request thất bại: ${error.message}`);
   });
 
   return breaker;
 }
 
-/**
- * Create a circuit breaker with fallback
- * @param {string} serviceName - Name of the service
- * @param {function} fallbackFunction - Function to execute when circuit is open
- * @param {object} options - Custom circuit breaker options
- */
-function createCircuitBreakerWithFallback(serviceName, fallbackFunction, options = {}) {
-  const breaker = createCircuitBreaker(serviceName, options);
-  breaker.fallback(fallbackFunction);
-  return breaker;
-}
-
-/**
- * Get circuit breaker status
- * @param {CircuitBreaker} breaker - Circuit breaker instance
- * @returns {object} Status information
- */
-function getBreakerStats(breaker) {
-  const stats = breaker.stats;
-  return {
-    name: breaker.name,
-    state: breaker.opened ? 'OPEN' : breaker.halfOpen ? 'HALF-OPEN' : 'CLOSED',
-    stats: {
-      fires: stats.fires,
-      successes: stats.successes,
-      failures: stats.failures,
-      timeouts: stats.timeouts,
-      rejects: stats.rejects,
-      fallbacks: stats.fallbacks,
-      latencyMean: stats.latencyMean,
-    },
-  };
-}
-
-/**
- * Health check for circuit breaker
- * @param {CircuitBreaker} breaker - Circuit breaker instance
- * @returns {boolean} true if circuit is closed (healthy)
- */
-function isHealthy(breaker) {
-  return !breaker.opened;
-}
 
 module.exports = {
   createCircuitBreaker,
-  createCircuitBreakerWithFallback,
-  getBreakerStats,
-  isHealthy,
   circuitBreakerOptions,
 };
