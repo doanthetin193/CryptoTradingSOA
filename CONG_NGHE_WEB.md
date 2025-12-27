@@ -1,7 +1,7 @@
-# BÁO CÁO MÔN HỌC
-# KIẾN TRÚC HƯỚNG DỊCH VỤ (SOA)
+# BÁO CÁO CUỐI KỲ
+# MÔN CÔNG NGHỆ WEB
 
-## ĐỀ TÀI: HỆ THỐNG GIAO DỊCH TIỀN ĐIỆN TỬ (CryptoTrading)
+## ĐỀ TÀI: HỆ THỐNG QUẢN LÝ DANH MỤC VÀ GIAO DỊCH ẢO CRYPTO
 
 ---
 
@@ -18,6 +18,9 @@ I. [Bài toán](#i-bài-toán)
 II. [Phân tích chức năng của hệ thống](#ii-phân-tích-chức-năng-của-hệ-thống)
 III. [Phân tích và thiết kế dữ liệu](#iii-phân-tích-và-thiết-kế-dữ-liệu)
 IV. [Giao diện của hệ thống](#iv-giao-diện-của-hệ-thống)
+  - IV.1. Giao diện API
+  - IV.2. Giao diện người dùng
+  - IV.3. Công nghệ Frontend *(MỚI)*
 V. [Kết luận](#v-kết-luận)
 
 ---
@@ -1292,6 +1295,384 @@ Response (200):
 - Khóa/Mở khóa user
 - Điều chỉnh số dư user
 - Xóa user
+
+---
+
+## IV.3. Công nghệ Frontend
+
+### IV.3.1. Kiến trúc ứng dụng React
+
+Ứng dụng frontend được xây dựng theo kiến trúc **Component-Based** với React 18 và Vite.
+
+**Sơ đồ kiến trúc Frontend:**
+
+```mermaid
+flowchart TB
+    subgraph App["🖥️ React Application"]
+        subgraph Pages["📄 Pages (9 trang)"]
+            Auth[Auth]
+            Dashboard[Dashboard]
+            Trade[Trade]
+            CoinDetail[CoinDetail]
+            Portfolio[Portfolio]
+            History[History]
+            Notifications[Notifications]
+            Settings[Settings]
+            Admin[Admin]
+        end
+        
+        subgraph Components["🧩 Reusable Components"]
+            Navbar[Navbar]
+            Sidebar[Sidebar]
+            Layout[Layout]
+            Charts[Charts]
+        end
+        
+        subgraph Context["🔄 Context"]
+            AuthContext[AuthContext]
+        end
+        
+        subgraph Services["📡 Services"]
+            API[API Service]
+            WS[WebSocket Service]
+        end
+    end
+    
+    Pages --> Components
+    Pages --> Context
+    Pages --> Services
+    Services --> Backend[API Gateway]
+```
+
+**Công nghệ sử dụng:**
+
+| Công nghệ | Phiên bản | Mục đích |
+|-----------|-----------|----------|
+| React | 18.x | UI Library |
+| Vite | 5.x | Build tool, Dev server |
+| React Router | 6.x | Client-side routing |
+| TailwindCSS | 3.x | Utility-first CSS |
+| Recharts | 2.x | Charts và biểu đồ |
+| Axios | 1.x | HTTP client |
+| Socket.IO Client | 4.x | WebSocket |
+| Lucide React | - | Icon library |
+
+---
+
+### IV.3.2. React Hooks sử dụng
+
+| Hook | Mục đích | Ví dụ sử dụng |
+|------|----------|---------------|
+| `useState` | Quản lý state component | `const [coins, setCoins] = useState([])` |
+| `useEffect` | Side effects, fetch data | Gọi API khi component mount |
+| `useContext` | Global state (Auth) | Lấy user info từ AuthContext |
+| `useCallback` | Memoize functions | Tối ưu re-renders |
+| `useMemo` | Memoize computed values | Tính toán P&L |
+| `useNavigate` | Điều hướng programmatic | Redirect sau login |
+| `useParams` | Lấy URL params | `/coin/:coinId` |
+
+**Ví dụ Custom Hook - useAuth:**
+
+```javascript
+// hooks/useAuth.js
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+}
+
+// Sử dụng trong component
+function Dashboard() {
+  const { user, logout } = useAuth();
+  return <div>Welcome, {user.fullName}</div>;
+}
+```
+
+---
+
+### IV.3.3. Component Structure
+
+**Cấu trúc thư mục:**
+
+```
+frontend/src/
+├── components/           # Reusable components
+│   ├── Layout.jsx       # Main layout wrapper
+│   ├── Navbar.jsx       # Top navigation bar
+│   └── Sidebar.jsx      # Side navigation
+├── context/             # React Context
+│   └── AuthContext.jsx  # Authentication state
+├── hooks/               # Custom hooks
+│   └── useAuth.js       # Auth hook
+├── pages/               # Page components (9 trang)
+│   ├── Auth.jsx
+│   ├── Dashboard.jsx
+│   ├── Trade.jsx
+│   ├── CoinDetail.jsx
+│   ├── Portfolio.jsx
+│   ├── History.jsx
+│   ├── Notifications.jsx
+│   ├── Settings.jsx
+│   └── Admin.jsx
+├── services/            # API và WebSocket
+│   ├── api.js          # Axios instance + API calls
+│   └── socket.js       # Socket.IO client
+└── App.jsx              # Root component + Router
+```
+
+**Component Types:**
+
+| Type | Mô tả | Ví dụ |
+|------|-------|-------|
+| **Page Components** | Đại diện cho một route | Dashboard, Trade, Portfolio |
+| **Layout Components** | Cấu trúc chung | Layout, Navbar, Sidebar |
+| **UI Components** | Tái sử dụng | Button, Card, Modal |
+
+---
+
+### IV.3.4. Responsive Design
+
+**TailwindCSS Breakpoints:**
+
+| Breakpoint | Min-width | Thiết bị |
+|------------|-----------|----------|
+| `sm` | 640px | Mobile landscape |
+| `md` | 768px | Tablet |
+| `lg` | 1024px | Desktop |
+| `xl` | 1280px | Large desktop |
+| `2xl` | 1536px | Extra large |
+
+**Mobile-first Approach:**
+
+```html
+<!-- Ví dụ: Grid responsive -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <CoinCard />
+  <CoinCard />
+  <CoinCard />
+</div>
+
+<!-- Sidebar ẩn trên mobile -->
+<aside class="hidden md:block w-64">
+  <Sidebar />
+</aside>
+```
+
+**Các kỹ thuật Responsive:**
+- **Flexbox & Grid:** Layout linh hoạt
+- **Hidden/Block classes:** Ẩn/hiện theo breakpoint
+- **Typography responsive:** Text size thay đổi theo màn hình
+
+---
+
+### IV.3.5. State Management
+
+**AuthContext - Global State:**
+
+```javascript
+// context/AuthContext.jsx
+export const AuthContext = createContext(null);
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
+
+  const login = async (credentials) => {
+    const response = await api.post('/users/login', credentials);
+    setUser(response.data.user);
+    setToken(response.data.token);
+    localStorage.setItem('token', response.data.token);
+  };
+
+  const logout = () => {
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem('token');
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, token, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+```
+
+**Data Flow:**
+
+```mermaid
+flowchart LR
+    subgraph Frontend
+        A[User Action] --> B[API Call]
+        B --> C[Update State]
+        C --> D[Re-render UI]
+    end
+    
+    B <--> E[Backend API]
+```
+
+---
+
+### IV.3.6. API Service
+
+**Axios Instance với Interceptors:**
+
+```javascript
+// services/api.js
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'http://localhost:3000/api',
+  timeout: 10000,
+});
+
+// Request interceptor - thêm JWT token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Response interceptor - xử lý lỗi
+api.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token hết hạn, logout
+      localStorage.removeItem('token');
+      window.location.href = '/auth';
+    }
+    return Promise.reject(error);
+  }
+);
+```
+
+**API Functions:**
+
+```javascript
+export const userAPI = {
+  login: (data) => api.post('/users/login', data),
+  register: (data) => api.post('/users/register', data),
+  getProfile: () => api.get('/users/profile'),
+};
+
+export const tradeAPI = {
+  buy: (data) => api.post('/trade/buy', data),
+  sell: (data) => api.post('/trade/sell', data),
+  getHistory: () => api.get('/trade/history'),
+};
+```
+
+---
+
+### IV.3.7. WebSocket Real-time
+
+**Socket.IO Client:**
+
+```javascript
+// services/socket.js
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:3000', {
+  autoConnect: false,
+  auth: { token: localStorage.getItem('token') }
+});
+
+// Kết nối khi login
+export const connectSocket = (userId) => {
+  socket.connect();
+  socket.emit('join', userId);
+};
+
+// Lắng nghe events
+export const onTradeConfirmation = (callback) => {
+  socket.on('trade_confirmation', callback);
+};
+
+export const onPriceAlert = (callback) => {
+  socket.on('price_alert', callback);
+};
+
+// Ngắt kết nối khi logout
+export const disconnectSocket = () => {
+  socket.disconnect();
+};
+```
+
+**Sử dụng trong Component:**
+
+```javascript
+function Dashboard() {
+  useEffect(() => {
+    connectSocket(user.id);
+    
+    onTradeConfirmation((data) => {
+      toast.success(`Giao dịch thành công: ${data.message}`);
+      refetchBalance();
+    });
+    
+    return () => disconnectSocket();
+  }, [user.id]);
+}
+```
+
+---
+
+### IV.3.8. Charts với Recharts
+
+**Line Chart - Biểu đồ giá:**
+
+```javascript
+import { LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
+
+function PriceChart({ data }) {
+  return (
+    <LineChart width={600} height={300} data={data}>
+      <XAxis dataKey="date" />
+      <YAxis />
+      <Tooltip />
+      <Line 
+        type="monotone" 
+        dataKey="price" 
+        stroke="#00d4aa" 
+        strokeWidth={2}
+      />
+    </LineChart>
+  );
+}
+```
+
+**Pie Chart - Phân bổ Portfolio:**
+
+```javascript
+import { PieChart, Pie, Cell, Legend } from 'recharts';
+
+function PortfolioChart({ holdings }) {
+  const COLORS = ['#00d4aa', '#8b5cf6', '#f59e0b', '#ef4444'];
+  
+  return (
+    <PieChart width={400} height={400}>
+      <Pie
+        data={holdings}
+        dataKey="value"
+        nameKey="symbol"
+        cx="50%"
+        cy="50%"
+        outerRadius={120}
+      >
+        {holdings.map((_, index) => (
+          <Cell key={index} fill={COLORS[index % COLORS.length]} />
+        ))}
+      </Pie>
+      <Legend />
+    </PieChart>
+  );
+}
+```
 
 ---
 
