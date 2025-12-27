@@ -14,11 +14,11 @@ export default function AuthProvider({ children }) {
     const initAuth = async () => {
       const storedToken = localStorage.getItem('token');
       const storedUser = localStorage.getItem('user');
-      
+
       if (storedToken && storedUser) {
         try {
           const userData = JSON.parse(storedUser);
-          
+
           // Set token và user
           setToken(storedToken);
           setUser(userData);
@@ -30,7 +30,7 @@ export default function AuthProvider({ children }) {
       }
       setLoading(false);
     };
-    
+
     initAuth();
 
     // Listen for manual balance updates from Trade page
@@ -50,22 +50,22 @@ export default function AuthProvider({ children }) {
   const login = async (email, password) => {
     try {
       const response = await authAPI.login({ email, password });
-      
+
       if (response.success) {
         const { user: userData, token: userToken } = response.data;
-        
+
         setUser(userData);
         setToken(userToken);
-        
+
         localStorage.setItem('token', userToken);
         localStorage.setItem('user', JSON.stringify(userData));
-        
+
         // Initialize WebSocket
         initializeSocket(userToken);
-        
+
         return { success: true };
       }
-      
+
       return { success: false, message: response.message };
     } catch (error) {
       return { success: false, message: error.message };
@@ -76,22 +76,22 @@ export default function AuthProvider({ children }) {
   const register = async (email, password, fullName) => {
     try {
       const response = await authAPI.register({ email, password, fullName });
-      
+
       if (response.success) {
         const { user: userData, token: userToken } = response.data;
-        
+
         setUser(userData);
         setToken(userToken);
-        
+
         localStorage.setItem('token', userToken);
         localStorage.setItem('user', JSON.stringify(userData));
-        
+
         // Initialize WebSocket
         initializeSocket(userToken);
-        
+
         return { success: true };
       }
-      
+
       return { success: false, message: response.message };
     } catch (error) {
       return { success: false, message: error.message };
@@ -113,27 +113,27 @@ export default function AuthProvider({ children }) {
     if (!token) {
       return null;
     }
-    
+
     try {
       // Lấy profile đầy đủ thay vì chỉ balance
       const profileRes = await authAPI.getProfile();
       if (profileRes.success) {
         const updatedUser = profileRes.data.user;
-        
+
         // Force update state và localStorage ngay lập tức
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
-        
+
         return updatedUser;
       }
     } catch (error) {
       console.error('Failed to refresh user:', error.message);
-      
+
       // Nếu lỗi 401, user sẽ bị logout bởi interceptor
       if (error.message.includes('401') || error.message.includes('Unauthorized')) {
         return null;
       }
-      
+
       // Fallback: chỉ lấy balance cho các lỗi khác
       try {
         const balanceRes = await userAPI.getBalance();
@@ -142,11 +142,11 @@ export default function AuthProvider({ children }) {
             ...user,
             balance: balanceRes.data.balance,
           };
-          
+
           // Force update
           setUser(updatedUser);
           localStorage.setItem('user', JSON.stringify(updatedUser));
-          
+
           return updatedUser;
         }
       } catch (err) {
