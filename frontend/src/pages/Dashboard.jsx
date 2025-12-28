@@ -205,7 +205,7 @@ export default function Dashboard() {
           <table className="crypto-table">
             <thead>
               <tr>
-                <th>Coin</th>
+                <th className="text-left">Coin</th>
                 <th className="text-right">Giá (USD)</th>
                 <th className="text-right">24h %</th>
                 <th className="text-right hidden md:table-cell">Volume 24h</th>
@@ -304,6 +304,8 @@ export default function Dashboard() {
                 borderRadius: '12px',
                 color: 'var(--text-primary)'
               }}
+              labelStyle={{ color: 'var(--text-primary)', fontWeight: 'bold' }}
+              itemStyle={{ color: '#00d4aa' }}
               formatter={(value) => [`$${value.toLocaleString()}`, 'Giá']}
             />
             <Bar

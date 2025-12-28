@@ -279,13 +279,24 @@ body {
 
 .crypto-table th {
   padding: 1rem;
-  text-align: left;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-muted);
   border-bottom: 1px solid var(--border);
+}
+
+.crypto-table th.text-left {
+  text-align: left;
+}
+
+.crypto-table th.text-right {
+  text-align: right;
+}
+
+.crypto-table th.text-center {
+  text-align: center;
 }
 
 .crypto-table td {
