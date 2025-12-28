@@ -319,6 +319,7 @@ export default function Trade() {
                   className="crypto-input"
                   placeholder={inputType === 'amount' ? '0.00000000' : '0.00'}
                   step={inputType === 'amount' ? '0.00000001' : '0.01'}
+                  min="0"
                 />
                 {inputType === 'total' && (
                   <p className="text-xs text-crypto-muted mt-2">
@@ -335,7 +336,7 @@ export default function Trade() {
                   </span>
                   <span className="font-semibold text-crypto-primary">${user?.balance?.toLocaleString() || '0.00'} USDT</span>
                 </div>
-                {amount && (
+                {amount && parseFloat(amount) > 0 && (
                   <>
                     <div className="flex justify-between text-sm mb-2">
                       <span className="text-crypto-muted">Số lượng:</span>
@@ -353,13 +354,15 @@ export default function Trade() {
                     </div>
                   </>
                 )}
-                <div className="border-t border-crypto pt-3 mt-3">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-crypto-primary">Tổng thanh toán:</span>
-                    <span className="text-xl font-bold text-gradient-crypto">${calculateTotal().toFixed(2)}</span>
+                {amount && parseFloat(amount) > 0 && (
+                  <div className="border-t border-crypto pt-3 mt-3">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-crypto-primary">Tổng thanh toán:</span>
+                      <span className="text-xl font-bold text-gradient-crypto">${calculateTotal().toFixed(2)}</span>
+                    </div>
                   </div>
-                </div>
-                {tradeType === 'buy' && amount && calculateTotal() > (user?.balance || 0) && (
+                )}
+                {tradeType === 'buy' && amount && parseFloat(amount) > 0 && calculateTotal() > (user?.balance || 0) && (
                   <p className="text-xs text-[var(--error)] mt-3 flex items-center gap-1">
                     ⚠️ Số dư không đủ! Cần thêm ${(calculateTotal() - (user?.balance || 0)).toFixed(2)} USDT
                   </p>
