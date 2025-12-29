@@ -102,8 +102,8 @@ export default function Portfolio() {
         <div className="stat-card group">
           <div className="flex items-center justify-between mb-4">
             <div className={`stat-card-icon group-hover:scale-110 transition-transform ${portfolio?.totalProfit >= 0
-                ? 'bg-[rgba(16,185,129,0.1)] text-[var(--success)]'
-                : 'bg-[rgba(239,68,68,0.1)] text-[var(--error)]'
+              ? 'bg-[rgba(16,185,129,0.1)] text-[var(--success)]'
+              : 'bg-[rgba(239,68,68,0.1)] text-[var(--error)]'
               }`}>
               {portfolio?.totalProfit >= 0 ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
             </div>
@@ -151,6 +151,8 @@ export default function Portfolio() {
                     borderRadius: '12px',
                     color: 'var(--text-primary)'
                   }}
+                  labelStyle={{ color: '#ffffff', fontWeight: 'bold' }}
+                  itemStyle={{ color: '#00d4aa' }}
                   formatter={(value) => [`$${value.toFixed(2)}`, 'Giá trị']}
                 />
                 <Legend

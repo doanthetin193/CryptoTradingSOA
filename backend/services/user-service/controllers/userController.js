@@ -498,18 +498,11 @@ exports.getSystemStats = async (req, res) => {
         $group: {
           _id: null,
           totalBalance: { $sum: '$balance' },
-          avgBalance: { $avg: '$balance' },
         },
       },
     ]);
 
-    const balanceStats = balanceAgg[0] || { totalBalance: 0, avgBalance: 0 };
-
-    // Get recent users
-    const recentUsers = await User.find()
-      .select('-password')
-      .sort({ createdAt: -1 })
-      .limit(5);
+    const totalBalance = balanceAgg[0]?.totalBalance || 0;
 
     logger.info('✅ Admin fetched system stats');
 
@@ -519,9 +512,7 @@ exports.getSystemStats = async (req, res) => {
         totalUsers,
         activeUsers,
         inactiveUsers,
-        totalBalance: balanceStats.totalBalance,
-        avgBalance: balanceStats.avgBalance,
-        recentUsers,
+        totalBalance,
       },
     });
   } catch (error) {
