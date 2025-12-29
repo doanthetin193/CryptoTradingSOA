@@ -136,8 +136,8 @@ export default function Notifications() {
               key={f}
               onClick={() => setFilter(f)}
               className={`px-4 py-2 rounded-lg font-medium transition ${filter === f
-                  ? 'bg-gradient-crypto text-black'
-                  : 'text-crypto-muted hover:text-crypto-primary hover:bg-crypto-hover'
+                ? 'bg-gradient-crypto text-black'
+                : 'text-crypto-muted hover:text-crypto-primary hover:bg-crypto-hover'
                 }`}
             >
               {f === 'all' ? 'Tất cả' : f === 'unread' ? '🔵 Chưa đọc' : '✅ Đã đọc'}
@@ -163,8 +163,8 @@ export default function Notifications() {
             <div
               key={notification._id}
               className={`crypto-card !p-4 flex items-start gap-4 transition ${notification.status === 'unread'
-                  ? 'border-l-4 border-l-[var(--accent-primary)] bg-[rgba(0,212,170,0.05)]'
-                  : ''
+                ? 'border-l-4 border-l-[var(--accent-primary)] bg-[rgba(0,212,170,0.05)]'
+                : ''
                 }`}
             >
               <div className="w-12 h-12 rounded-xl bg-crypto-hover flex items-center justify-center text-2xl flex-shrink-0">

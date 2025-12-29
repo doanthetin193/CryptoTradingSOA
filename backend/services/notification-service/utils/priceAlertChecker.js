@@ -67,7 +67,7 @@ const checkPriceAlerts = async () => {
         triggeredCount++;
 
         // Create notification
-        const notification = await Notification.create({
+        await Notification.create({
           userId: alert.userId,
           type: 'price_alert',
           title: `Price Alert: ${alert.symbol}`,

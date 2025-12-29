@@ -69,12 +69,7 @@ export default function Settings() {
   const createAlert = async (e) => {
     e.preventDefault();
     try {
-      const payload = {
-        ...newAlert,
-        coinId: symbolToCoinId[newAlert.symbol] || newAlert.symbol.toLowerCase(),
-      };
-
-      const res = await notificationAPI.createPriceAlert(payload);
+      const res = await notificationAPI.createPriceAlert(newAlert);
       if (res.success) {
         showToast('success', 'Tạo cảnh báo giá thành công!');
         setAlerts([...alerts, res.data]);
@@ -274,14 +269,14 @@ export default function Settings() {
               <div
                 key={alert._id}
                 className={`flex items-center justify-between p-4 rounded-xl border transition ${alert.triggered
-                    ? 'bg-[rgba(16,185,129,0.1)] border-[var(--success)]'
-                    : 'bg-crypto-secondary border-crypto hover:border-[var(--border-hover)]'
+                  ? 'bg-[rgba(16,185,129,0.1)] border-[var(--success)]'
+                  : 'bg-crypto-secondary border-crypto hover:border-[var(--border-hover)]'
                   }`}
               >
                 <div className="flex items-center gap-4">
                   <div className={`coin-icon text-white ${alert.condition === 'above'
-                      ? 'bg-gradient-to-br from-green-400 to-emerald-500'
-                      : 'bg-gradient-to-br from-red-400 to-rose-500'
+                    ? 'bg-gradient-to-br from-green-400 to-emerald-500'
+                    : 'bg-gradient-to-br from-red-400 to-rose-500'
                     }`}>
                     {alert.symbol?.substring(0, 2)}
                   </div>

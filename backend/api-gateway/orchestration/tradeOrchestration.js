@@ -73,7 +73,7 @@ async function callServiceWithBreaker(serviceName, endpoint, config = {}) {
       ...config,
       url: `${serviceUrl}${endpoint}`,
     };
-    
+
     const response = await breaker.fire(fullConfig);
     return response;
   } catch (error) {
@@ -182,7 +182,7 @@ exports.buyCoin = async (req, res) => {
       method: 'GET',
       timeout: REQUEST_TIMEOUT,
     });
-    
+
     if (!priceResponse.data.success) {
       return res.status(503).json({
         success: false,
@@ -291,46 +291,43 @@ exports.buyCoin = async (req, res) => {
           transactionState.tradeId = trade._id;
           logger.info(`✅ [BUY] Step 5 completed: Trade recorded`)
 
-    // STEP 6: Send notification (non-blocking)
-    logger.info(`🔄 [BUY] Step 6: Sending notification`);
-    getServiceUrl('notification-service').then(notificationUrl => {
-      axios.post(
-        `${notificationUrl}/send`,
-        {
-          userId,
-          type: 'trade',
-          title: 'Buy Order Completed',
-          message: `Successfully bought ${amount} ${symbol} at ${currentPrice} USDT`,
-          data: { tradeId: trade._id, type: 'buy', symbol, amount },
-        },
-        {
-          headers: { 'X-User-Id': userId },
-        }
-      ).catch(err => logger.warn(`Failed to send notification: ${err.message}`));
-    }).catch(err => logger.warn(`Failed to get notification service URL: ${err.message}`));
+          // STEP 6: Send notification (non-blocking with circuit breaker)
+          logger.info(`🔄 [BUY] Step 6: Sending notification`);
+          callServiceWithBreaker('NOTIFICATION', '/send', {
+            method: 'POST',
+            data: {
+              userId,
+              type: 'trade',
+              title: 'Buy Order Completed',
+              message: `Successfully bought ${amount} ${symbol} at ${currentPrice} USDT`,
+              data: { tradeId: trade._id, type: 'buy', symbol, amount },
+            },
+            headers: { 'X-User-Id': userId },
+            timeout: REQUEST_TIMEOUT,
+          }).catch(err => logger.warn(`Failed to send notification: ${err.message}`));
 
-    // STEP 7: Send real-time WebSocket notification
-    logger.info(`🔄 [BUY] Step 7: Sending WebSocket notification`);
-    websocket.sendTradeConfirmation(userId, {
-      type: 'buy',
-      symbol,
-      amount,
-      price: currentPrice,
-      totalCost: finalCost,
-      newBalance,
-      timestamp: new Date(),
-    });
+          // STEP 7: Send real-time WebSocket notification
+          logger.info(`🔄 [BUY] Step 7: Sending WebSocket notification`);
+          websocket.sendTradeConfirmation(userId, {
+            type: 'buy',
+            symbol,
+            amount,
+            price: currentPrice,
+            totalCost: finalCost,
+            newBalance,
+            timestamp: new Date(),
+          });
 
-    logger.info(`✅ [BUY] Completed: ${amount} ${symbol} for user ${userId}`);
+          logger.info(`✅ [BUY] Completed: ${amount} ${symbol} for user ${userId}`);
 
-    res.status(200).json({
-      success: true,
-      message: 'Buy order completed successfully',
-      data: {
-        trade,
-        newBalance,
-      },
-    });
+          res.status(200).json({
+            success: true,
+            message: 'Buy order completed successfully',
+            data: {
+              trade,
+              newBalance,
+            },
+          });
         } catch (tradeError) {
           logger.error(`❌ [BUY] Step 5 failed: ${tradeError.message}`);
           throw tradeError;
@@ -397,7 +394,7 @@ exports.buyCoin = async (req, res) => {
         const errMsg = `Failed to rollback balance: ${rollbackError.message}`;
         logger.error(`❌ [BUY] CRITICAL: ${errMsg}`);
         rollbackErrors.push(errMsg);
-        
+
         // CRITICAL: Send alert to admin
         logger.error(`🚨 [BUY] CRITICAL DATA INCONSISTENCY: User ${userId} may have lost ${transactionState.deductedAmount} USDT`);
       }
@@ -564,88 +561,85 @@ exports.sellCoin = async (req, res) => {
         transactionState.reducedHolding = { symbol: symbol.toUpperCase(), amount };
         logger.info(`✅ [SELL] Step 5 completed: Holding reduced`);
 
-    // STEP 6: Create trade record
-    logger.info(`🔄 [SELL] Step 6: Creating trade record`);
-    try {
-      const profitLoss = (currentPrice - holding.averageBuyPrice) * amount - fee;
-      
-      const tradeResponse = await callServiceWithBreaker('TRADE', '/', {
-        method: 'POST',
-        data: {
-          userId,
-          type: 'sell',
-          symbol: symbol.toUpperCase(),
-          coinId: holding.coinId,
-          coinName,
-          amount,
-          price: currentPrice,
-          totalCost: totalProceeds,
-          fee,
-          feePercentage: TRADING_FEE_PERCENTAGE,
-          balanceBefore: currentBalance,
-          balanceAfter: newBalance,
-        },
-        headers: { 'X-User-Id': userId },
-        timeout: REQUEST_TIMEOUT,
-      });
+        // STEP 6: Create trade record
+        logger.info(`🔄 [SELL] Step 6: Creating trade record`);
+        try {
+          const profitLoss = (currentPrice - holding.averageBuyPrice) * amount - fee;
 
-      const trade = tradeResponse.data.data;
-      transactionState.tradeRecorded = true;
-      transactionState.tradeId = trade._id;
-      logger.info(`✅ [SELL] Step 6 completed: Trade recorded`);
-
-      // STEP 7: Send notification (non-blocking)
-      logger.info(`🔄 [SELL] Step 7: Sending notification`);
-      getServiceUrl('notification-service').then(notificationUrl => {
-        axios.post(
-          `${notificationUrl}/send`,
-          {
-            userId,
-            type: 'trade',
-            title: 'Sell Order Completed',
-            message: `Successfully sold ${amount} ${symbol} at ${currentPrice} USDT. P/L: ${profitLoss.toFixed(2)} USDT`,
-            data: { 
-              tradeId: trade._id, 
-              type: 'sell', 
-              symbol, 
+          const tradeResponse = await callServiceWithBreaker('TRADE', '/', {
+            method: 'POST',
+            data: {
+              userId,
+              type: 'sell',
+              symbol: symbol.toUpperCase(),
+              coinId: holding.coinId,
+              coinName,
               amount,
-              profitLoss: profitLoss.toFixed(2),
+              price: currentPrice,
+              totalCost: totalProceeds,
+              fee,
+              feePercentage: TRADING_FEE_PERCENTAGE,
+              balanceBefore: currentBalance,
+              balanceAfter: newBalance,
             },
-          },
-          {
             headers: { 'X-User-Id': userId },
-          }
-        ).catch(err => logger.warn(`Failed to send notification: ${err.message}`));
-      }).catch(err => logger.warn(`Failed to get notification service URL: ${err.message}`));
+            timeout: REQUEST_TIMEOUT,
+          });
 
-      // STEP 8: Send real-time WebSocket notification
-      logger.info(`🔄 [SELL] Step 8: Sending WebSocket notification`);
-      websocket.sendTradeConfirmation(userId, {
-        type: 'sell',
-        symbol,
-        amount,
-        price: currentPrice,
-        totalProceeds: finalProceeds,
-        profitLoss,
-        newBalance,
-        timestamp: new Date(),
-      });
+          const trade = tradeResponse.data.data;
+          transactionState.tradeRecorded = true;
+          transactionState.tradeId = trade._id;
+          logger.info(`✅ [SELL] Step 6 completed: Trade recorded`);
 
-      logger.info(`✅ [SELL] Completed: ${amount} ${symbol} for user ${userId}`);
+          // STEP 7: Send notification (non-blocking with circuit breaker)
+          logger.info(`🔄 [SELL] Step 7: Sending notification`);
+          callServiceWithBreaker('NOTIFICATION', '/send', {
+            method: 'POST',
+            data: {
+              userId,
+              type: 'trade',
+              title: 'Sell Order Completed',
+              message: `Successfully sold ${amount} ${symbol} at ${currentPrice} USDT. P/L: ${profitLoss.toFixed(2)} USDT`,
+              data: {
+                tradeId: trade._id,
+                type: 'sell',
+                symbol,
+                amount,
+                profitLoss: profitLoss.toFixed(2),
+              },
+            },
+            headers: { 'X-User-Id': userId },
+            timeout: REQUEST_TIMEOUT,
+          }).catch(err => logger.warn(`Failed to send notification: ${err.message}`));
 
-      res.status(200).json({
-        success: true,
-        message: 'Sell order completed successfully',
-        data: {
-          trade,
-          newBalance,
-          profitLoss,
-        },
-      });
-    } catch (tradeError) {
-      logger.error(`❌ [SELL] Step 6 failed: ${tradeError.message}`);
-      throw tradeError;
-    }
+          // STEP 8: Send real-time WebSocket notification
+          logger.info(`🔄 [SELL] Step 8: Sending WebSocket notification`);
+          websocket.sendTradeConfirmation(userId, {
+            type: 'sell',
+            symbol,
+            amount,
+            price: currentPrice,
+            totalProceeds: finalProceeds,
+            profitLoss,
+            newBalance,
+            timestamp: new Date(),
+          });
+
+          logger.info(`✅ [SELL] Completed: ${amount} ${symbol} for user ${userId}`);
+
+          res.status(200).json({
+            success: true,
+            message: 'Sell order completed successfully',
+            data: {
+              trade,
+              newBalance,
+              profitLoss,
+            },
+          });
+        } catch (tradeError) {
+          logger.error(`❌ [SELL] Step 6 failed: ${tradeError.message}`);
+          throw tradeError;
+        }
       } catch (portfolioError) {
         logger.error(`❌ [SELL] Step 5 failed: ${portfolioError.message}`);
         throw portfolioError;
@@ -708,7 +702,7 @@ exports.sellCoin = async (req, res) => {
         const errMsg = `Failed to rollback balance: ${rollbackError.message}`;
         logger.error(`❌ [SELL] CRITICAL: ${errMsg}`);
         rollbackErrors.push(errMsg);
-        
+
         // CRITICAL: Send alert to admin
         logger.error(`🚨 [SELL] CRITICAL DATA INCONSISTENCY: User ${userId} may have gained ${transactionState.addedAmount} USDT incorrectly`);
       }

@@ -303,19 +303,55 @@ export default function Admin() {
             <p className="text-sm text-crypto-muted">
               Hiển thị {(currentPage - 1) * 10 + 1} - {Math.min(currentPage * 10, pagination.total)} / {pagination.total} users
             </p>
-            <div className="flex gap-1">
-              {Array.from({ length: Math.min(pagination.pages, 5) }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`w-10 h-10 rounded-lg font-medium transition ${page === currentPage
-                    ? 'bg-gradient-crypto text-black'
-                    : 'bg-crypto-hover text-crypto-secondary hover:text-crypto-primary'
-                    }`}
-                >
-                  {page}
-                </button>
-              ))}
+            <div className="flex items-center gap-2">
+              {/* Previous Button */}
+              <button
+                onClick={() => setCurrentPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-2 rounded-lg font-medium transition bg-crypto-hover text-crypto-secondary hover:text-crypto-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                ← Trước
+              </button>
+
+              {/* Page Numbers */}
+              <div className="flex gap-1">
+                {[...Array(pagination.pages)].map((_, idx) => {
+                  const pageNum = idx + 1;
+                  if (
+                    pageNum === 1 ||
+                    pageNum === pagination.pages ||
+                    (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`w-10 h-10 rounded-lg font-medium transition ${pageNum === currentPage
+                          ? 'bg-gradient-crypto text-black'
+                          : 'bg-crypto-hover text-crypto-secondary hover:text-crypto-primary'
+                          }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  } else if (
+                    pageNum === currentPage - 2 ||
+                    pageNum === currentPage + 2
+                  ) {
+                    return <span key={pageNum} className="px-2 py-2 text-crypto-muted">...</span>;
+                  }
+                  return null;
+                })}
+              </div>
+
+              {/* Next Button */}
+              <button
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={currentPage === pagination.pages}
+                className="px-3 py-2 rounded-lg font-medium transition bg-crypto-hover text-crypto-secondary hover:text-crypto-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Sau →
+              </button>
             </div>
           </div>
         )}
