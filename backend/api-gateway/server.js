@@ -122,7 +122,7 @@ const createServiceProxy = (serviceName, apiPrefix) => {
     logLevel: 'debug',
     onProxyReq: (proxyReq, req, res) => {
       logger.info(`📤 Proxying to ${serviceName}: ${req.method} ${req.url}`);
-      
+
       // Forward user info to service
       if (req.userId) {
         proxyReq.setHeader('X-User-Id', req.userId);
@@ -160,7 +160,7 @@ const notificationProxy = createServiceProxy('notification-service', 'notificati
 // ===========================
 app.get('/health', async (req, res) => {
   const consulHealth = await serviceDiscovery.healthCheck();
-  
+
   res.json({
     success: true,
     service: 'API Gateway',
@@ -202,7 +202,7 @@ app.use('/api/users/admin', authMiddleware, adminMiddleware, userProxy);
 app.use('/api/users', authMiddleware, userProxy);
 
 // MARKET SERVICE
-app.use('/api/market', optionalAuth, marketProxy);
+app.use('/api/market', authMiddleware, marketProxy);
 
 // PORTFOLIO SERVICE - Orchestrated route for enriched data
 app.get('/api/portfolio', authMiddleware, portfolioOrchestration.getEnrichedPortfolio);
@@ -266,10 +266,10 @@ io.use((socket, next) => {
 // WebSocket connection handling
 io.on('connection', (socket) => {
   logger.info(`🔌 WebSocket connected: User ${socket.userId}`);
-  
+
   // Join user's private room for targeted notifications
   socket.join(`user_${socket.userId}`);
-  
+
   socket.on('disconnect', () => {
     logger.info(`🔌 WebSocket disconnected: User ${socket.userId}`);
   });

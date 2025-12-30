@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect } from 'react';
 import { authAPI, userAPI } from '../services/api';
-import { initializeSocket, disconnectSocket } from '../services/websocket';
+import { initializeSocket, disconnectSocket, removeAllListeners } from '../services/websocket';
 
 export const AuthContext = createContext(null);
 
@@ -104,54 +104,26 @@ export default function AuthProvider({ children }) {
     setToken(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    removeAllListeners();
     disconnectSocket();
   };
 
   // Refresh user data (sau khi trade)
   const refreshUser = async () => {
-    // Nếu không có token, không cần refresh
     if (!token) {
       return null;
     }
 
     try {
-      // Lấy profile đầy đủ thay vì chỉ balance
       const profileRes = await authAPI.getProfile();
       if (profileRes.success) {
         const updatedUser = profileRes.data.user;
-
-        // Force update state và localStorage ngay lập tức
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
-
         return updatedUser;
       }
     } catch (error) {
       console.error('Failed to refresh user:', error.message);
-
-      // Nếu lỗi 401, user sẽ bị logout bởi interceptor
-      if (error.message.includes('401') || error.message.includes('Unauthorized')) {
-        return null;
-      }
-
-      // Fallback: chỉ lấy balance cho các lỗi khác
-      try {
-        const balanceRes = await userAPI.getBalance();
-        if (balanceRes.success) {
-          const updatedUser = {
-            ...user,
-            balance: balanceRes.data.balance,
-          };
-
-          // Force update
-          setUser(updatedUser);
-          localStorage.setItem('user', JSON.stringify(updatedUser));
-
-          return updatedUser;
-        }
-      } catch (err) {
-        console.error('Failed to refresh balance:', err.message);
-      }
     }
     return null;
   };
