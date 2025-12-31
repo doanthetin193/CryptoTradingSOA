@@ -43,13 +43,6 @@ const sendNotification = (userId, notification) => {
 };
 
 /**
- * Send price update to all users
- */
-const sendPriceUpdate = (prices) => {
-  broadcast('price_update', prices);
-};
-
-/**
  * Send trade confirmation to user
  */
 const sendTradeConfirmation = (userId, trade) => {
@@ -67,7 +60,6 @@ module.exports = {
   emitToUser,
   broadcast,
   sendNotification,
-  sendPriceUpdate,
   sendTradeConfirmation,
   sendPriceAlert,
 };
