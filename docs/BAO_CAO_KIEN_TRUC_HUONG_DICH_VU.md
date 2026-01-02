@@ -573,6 +573,10 @@ sequenceDiagram
 
 #### II.5.1. Luồng xác thực (Authentication Flow)
 
+**Mô tả:** User gửi thông tin đăng nhập, hệ thống xác thực và trả về JWT token để sử dụng cho các request tiếp theo.
+
+**Sequence Diagram - Authentication:**
+
 ```mermaid
 sequenceDiagram
     participant C as Client
@@ -603,6 +607,10 @@ flowchart LR
 ```
 
 #### II.5.2. Luồng xem portfolio (Portfolio Flow)
+
+**Mô tả:** API Gateway điều phối 2 services (Portfolio + Market) để trả về danh mục đầu tư với giá hiện tại và lãi/lỗ.
+
+**Sequence Diagram - Portfolio:**
 
 ```mermaid
 sequenceDiagram
@@ -644,6 +652,8 @@ flowchart LR
 
 #### II.5.3. Luồng giao dịch (Trade Flow)
 
+**Mô tả:** Giao dịch mua coin đi qua 6 bước xử lý với nhiều services tham gia, có cơ chế rollback khi lỗi.
+
 **DFD Level 1 - Trade Flow (Buy):**
 
 ```mermaid
@@ -667,129 +677,464 @@ flowchart TB
 
 ---
 
+#### II.5.4. Luồng cảnh báo giá (Price Alert Trigger Flow)
+
+**Mô tả:** Hệ thống tự động kiểm tra giá coin mỗi phút và gửi thông báo khi giá đạt mục tiêu user đã đặt.
+
+**Sequence Diagram - Price Alert Check (Cron Job):**
+
+```mermaid
+sequenceDiagram
+    participant CRON as ⏰ Cron Job<br/>(mỗi 1 phút)
+    participant NS as Notification Service
+    participant MS as Market Service
+    participant DB as MongoDB
+    participant WS as WebSocket
+
+    CRON->>NS: Trigger checkPriceAlerts()
+    NS->>DB: Lấy tất cả active alerts
+    DB-->>NS: List of active alerts
+    
+    NS->>MS: GET /prices (lấy giá hiện tại)
+    MS-->>NS: {prices: [...]}
+    
+    loop Với mỗi alert
+        NS->>NS: Check điều kiện (above/below)
+        alt Điều kiện thỏa mãn
+            NS->>DB: Tạo notification mới
+            NS->>DB: Đánh dấu alert đã triggered
+            NS->>WS: Emit 'price_alert' to user
+            Note over WS: User nhận thông báo<br/>real-time
+        else Chưa thỏa mãn
+            NS->>NS: Bỏ qua, kiểm tra alert tiếp
+        end
+    end
+```
+
+**DFD Level 0 - Price Alert:**
+
+```mermaid
+flowchart LR
+    T((⏰ Timer)) -->|trigger mỗi 1 phút| P1[1.0<br/>Kiểm tra<br/>Price Alerts]
+    P1 -->|lấy alerts| D1[(pricealerts)]
+    D1 -->|active alerts| P1
+    P1 -->|lấy giá| E1[CoinGecko]
+    E1 -->|prices| P1
+    P1 -->|create notification| D2[(notifications)]
+    P1 -->|update alert status| D1
+    P1 -->|emit event| WS((WebSocket))
+    WS -->|push| U((User))
+```
+
+**Các bước:**
+1. **Cron Job** chạy mỗi 1 phút, gọi hàm `checkPriceAlerts()`
+2. Lấy tất cả **active alerts** từ database
+3. Gọi **Market Service** để lấy giá hiện tại của các coins
+4. So sánh giá với điều kiện:
+   - `above`: Giá hiện tại >= Target Price
+   - `below`: Giá hiện tại <= Target Price
+5. Nếu thỏa mãn:
+   - Tạo **Notification** mới
+   - Đánh dấu alert `triggered = true`, `isActive = false`
+   - Emit **WebSocket event** `price_alert` đến user
+
+---
+
+#### II.5.5. Luồng Admin cập nhật số dư (Admin Update Balance Flow)
+
+**Mô tả:** Admin có thể điều chỉnh số dư (cộng/trừ) của bất kỳ user nào trong hệ thống.
+
+**Sequence Diagram - Admin Update Balance:**
+
+```mermaid
+sequenceDiagram
+    participant A as 👑 Admin
+    participant GW as API Gateway
+    participant US as User Service
+    participant DB as MongoDB
+
+    A->>GW: PUT /users/admin/users/:id/balance<br/>{amount: 100, description: "Bonus"}
+    GW->>GW: Xác thực JWT token
+    GW->>GW: Kiểm tra role === 'admin'
+    
+    alt Không phải Admin
+        GW-->>A: ❌ 403 Forbidden
+    else Là Admin
+        GW->>US: PUT /admin/users/:id/balance
+        US->>DB: Tìm user theo ID
+        DB-->>US: User data
+        
+        alt User không tồn tại
+            US-->>GW: ❌ 404 User not found
+        else User tồn tại
+            US->>US: newBalance = balance + amount
+            US->>DB: Cập nhật balance
+            US->>DB: Thêm vào balanceHistory
+            DB-->>US: ✓ Updated
+            US-->>GW: ✓ {user, newBalance}
+            GW-->>A: ✅ Cập nhật thành công
+        end
+    end
+```
+
+**DFD Level 0 - Admin Update Balance:**
+
+```mermaid
+flowchart LR
+    A((👑 Admin)) -->|userId, amount, description| P1[1.0<br/>Cập nhật<br/>số dư]
+    P1 -->|kiểm tra quyền| AUTH{Admin?}
+    AUTH -->|Không| E1[403 Forbidden]
+    AUTH -->|Có| P2[2.0<br/>Xử lý]
+    P2 -->|truy vấn user| D1[(users)]
+    D1 -->|user data| P2
+    P2 -->|cập nhật balance| D1
+    P2 -->|thêm history| D1
+    P2 -->|kết quả| A
+```
+
+**Các bước:**
+1. Admin gửi request với `userId`, `amount` (có thể âm/dương), `description`
+2. API Gateway **xác thực JWT** và **kiểm tra role = admin**
+3. Nếu không phải admin → Trả về **403 Forbidden**
+4. User Service tìm user theo ID
+5. Cập nhật: `newBalance = currentBalance + amount`
+6. Ghi vào **balanceHistory** để audit:
+   ```json
+   {
+     "amount": 100,
+     "type": "admin",
+     "description": "Bonus cho user tích cực",
+     "timestamp": "2024-01-05T10:30:00Z"
+   }
+   ```
+7. Trả về kết quả với balance mới
+
+---
+
+
 ### II.6. Các patterns và kỹ thuật nâng cao
 
-Hệ thống áp dụng nhiều patterns và kỹ thuật nâng cao để đảm bảo tính ổn định, bảo mật và hiệu năng.
+Hệ thống áp dụng nhiều patterns và kỹ thuật nâng cao để đảm bảo tính ổn định, bảo mật và hiệu năng. Các kỹ thuật này giúp hệ thống có khả năng chịu lỗi cao, bảo vệ khỏi các cuộc tấn công, và cung cấp trải nghiệm người dùng tốt hơn.
 
 #### II.6.1. Rate Limiting
 
-**Mục đích:** Bảo vệ hệ thống khỏi DDoS và abuse.
+**Mục đích:** Bảo vệ hệ thống khỏi DDoS (Distributed Denial of Service) và abuse từ các client gửi quá nhiều requests trong thời gian ngắn.
 
-**Cấu hình:**
-- **Global:** 1000 requests / 15 phút cho tất cả APIs
-- Trả về HTTP 429 khi vượt giới hạn
+**Vấn đề cần giải quyết:** Trong môi trường production, các API có thể bị tấn công bởi các bot hoặc người dùng độc hại gửi hàng nghìn requests trong thời gian ngắn, gây quá tải server và ảnh hưởng đến người dùng hợp lệ.
+
+**Giải pháp:** Áp dụng Rate Limiting tại API Gateway để giới hạn số lượng requests từ mỗi IP address trong một khoảng thời gian nhất định.
+
+**Cấu hình trong hệ thống:**
+- **Giới hạn:** 1000 requests / 15 phút cho mỗi IP
+- **Phản hồi khi vượt giới hạn:** HTTP 429 (Too Many Requests)
+- **Headers trả về:** `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
 
 **Công nghệ:** express-rate-limit
 
 ```mermaid
 flowchart LR
     Client -->|Request| RL{Rate Limiter}
-    RL -->|Accepted| API[API Gateway]
-    RL -->|Rejected 429| Error[Too Many Requests]
+    RL -->|"Count < 1000"| API[API Gateway]
+    RL -->|"Count >= 1000"| Error[HTTP 429 Too Many Requests]
+    API --> Response[Response to Client]
 ```
+
+**Ưu điểm:**
+- Bảo vệ server khỏi quá tải
+- Ngăn chặn brute-force attacks vào login API
+- Đảm bảo công bằng cho tất cả người dùng
 
 ---
 
 #### II.6.2. Circuit Breaker Pattern
 
-**Mục đích:** Ngăn chặn cascading failures khi một service gặp sự cố.
+**Mục đích:** Ngăn chặn cascading failures (lỗi dây chuyền) khi một service gặp sự cố, tránh làm sập toàn bộ hệ thống.
 
-**Cơ chế hoạt động:**
-- **Closed:** Hoạt động bình thường
-- **Open:** Service lỗi → ngắt kết nối, trả lỗi ngay
-- **Half-Open:** Thử lại sau một khoảng thời gian
+**Vấn đề cần giải quyết:** Trong kiến trúc SOA, khi một service (ví dụ: Market Service) gặp sự cố, các service phụ thuộc vào nó sẽ liên tục gửi requests và chờ đợi, dẫn đến timeout và tiêu tốn tài nguyên. Điều này có thể lan truyền và làm sập các service khác.
 
-**Công nghệ:** Opossum
+**Giải pháp:** Áp dụng Circuit Breaker pattern - một "cầu dao" tự động ngắt khi phát hiện service lỗi quá nhiều.
+
+**Cơ chế hoạt động (3 trạng thái):**
+
+| Trạng thái | Mô tả | Hành vi |
+|------------|-------|---------|
+| **Closed** | Bình thường | Requests đi qua, đếm số lỗi |
+| **Open** | Phát hiện quá nhiều lỗi | Từ chối tất cả requests ngay lập tức, không gọi service |
+| **Half-Open** | Sau timeout, thử lại | Cho phép 1 request thử, nếu thành công → Closed, nếu lỗi → Open |
+
+**Cấu hình trong hệ thống:**
+- **Timeout:** 5 giây cho mỗi request
+- **Error threshold:** 50% requests thất bại
+- **Reset timeout:** 30 giây trước khi thử lại
+- **Volume threshold:** Ít nhất 5 requests trước khi đánh giá
+
+**Công nghệ:** Opossum (thư viện Circuit Breaker cho Node.js)
 
 ```mermaid
 stateDiagram-v2
     [*] --> Closed
-    Closed --> Open : Failures >= threshold
-    Open --> HalfOpen : Timeout elapsed
-    HalfOpen --> Closed : Success
-    HalfOpen --> Open : Failure
+    Closed --> Open : Failures >= 50%
+    Open --> HalfOpen : After 30 seconds
+    HalfOpen --> Closed : Request thành công
+    HalfOpen --> Open : Request thất bại
+    
+    note right of Closed : Đếm số lỗi\ntrong 10 giây
+    note right of Open : Từ chối ngay\nkhông gọi service
+    note right of HalfOpen : Thử 1 request\nđể kiểm tra
 ```
+
+**Ưu điểm:**
+- Fail-fast: Trả lỗi ngay thay vì chờ timeout
+- Giảm tải cho service đang lỗi
+- Tự động phục hồi khi service hoạt động trở lại
 
 ---
 
 #### II.6.3. Orchestration Pattern
 
-**Mục đích:** Điều phối nhiều services để hoàn thành một giao dịch phức tạp.
+**Mục đích:** Điều phối nhiều services để hoàn thành một giao dịch phức tạp, đảm bảo tính toàn vẹn dữ liệu và có khả năng rollback khi lỗi.
 
-**Đặc điểm:**
-- API Gateway đóng vai trò **Orchestrator**
+**Vấn đề cần giải quyết:** Một giao dịch mua coin cần thao tác trên nhiều services:
+1. Market Service: Lấy giá
+2. User Service: Kiểm tra và trừ số dư
+3. Portfolio Service: Thêm coin vào danh mục
+4. Trade Service: Ghi lịch sử
+5. Notification Service: Gửi thông báo
+
+Nếu bước 4 thất bại, cần rollback bước 2 và 3 để đảm bảo dữ liệu nhất quán.
+
+**Giải pháp:** API Gateway đóng vai trò **Orchestrator** - điều phối tuần tự các bước và quản lý rollback.
+
+**Đặc điểm triển khai:**
 - Giao dịch Buy/Sell có **7 bước** tuần tự
-- Có cơ chế **ROLLBACK** khi một bước thất bại
+- Mỗi bước thành công được ghi nhận vào **transactionState**
+- Nếu lỗi xảy ra, rollback các bước đã hoàn thành theo thứ tự ngược
 
 ```mermaid
 flowchart TD
-    A[Start Buy] --> B[Step 1: Get Price]
-    B --> C[Step 2: Check Balance]
+    A[Start Buy] --> B[Step 1: Get Price từ Market Service]
+    B --> C[Step 2: Check Balance từ User Service]
     C --> D{Đủ tiền?}
     D -->|Không| E[Return Error]
     D -->|Có| F[Step 3: Deduct Balance]
-    F --> G[Step 4: Add Holding]
-    G --> H[Step 5: Create Trade]
+    F --> G[Step 4: Add Holding to Portfolio]
+    G --> H[Step 5: Create Trade Record]
     H --> I[Step 6: Send Notification]
-    I --> J[Step 7: WebSocket Event]
-    J --> K[Success]
+    I --> J[Step 7: Emit WebSocket Event]
+    J --> K[✅ Success Response]
     
-    F -.->|Error| R1[ROLLBACK: Refund]
-    G -.->|Error| R2[ROLLBACK: Remove Holding + Refund]
+    F -.->|Error| R1[🔄 ROLLBACK: Hoàn tiền]
+    G -.->|Error| R2[🔄 ROLLBACK: Xóa holding + Hoàn tiền]
+    H -.->|Error| R3[🔄 ROLLBACK: Xóa holding + Hoàn tiền]
 ```
+
+**Ưu điểm:**
+- Đảm bảo ACID-like properties cho distributed transactions
+- Dễ debug: log từng bước tuần tự
+- Rollback tự động khi có lỗi
 
 ---
 
-#### II.6.4. WebSocket Real-time
+#### II.6.4. WebSocket Real-time Communication
 
-**Mục đích:** Push notifications đến client mà không cần polling.
+**Mục đích:** Push notifications và updates đến client ngay lập tức mà không cần client liên tục gửi requests (polling).
 
-**Events được hỗ trợ:**
+**Vấn đề cần giải quyết:** Với HTTP truyền thống, client phải liên tục gửi requests để kiểm tra có thông báo mới không (polling), gây lãng phí bandwidth và làm chậm thông báo.
 
-| Event | Mô tả |
-|-------|-------|
-| `trade_confirmation` | Thông báo giao dịch thành công |
-| `price_alert` | Cảnh báo giá đạt mục tiêu |
-| `notification` | Thông báo mới |
+**Giải pháp:** Sử dụng WebSocket để duy trì kết nối 2 chiều giữa server và client, cho phép server push data bất cứ khi nào có events.
 
-**Công nghệ:** Socket.IO
+**Events được hỗ trợ trong hệ thống:**
+
+| Event | Trigger khi | Dữ liệu gửi |
+|-------|------------|-------------|
+| `trade_confirmation` | Giao dịch buy/sell thành công | Trade details, new balance |
+| `price_alert` | Giá coin đạt mục tiêu đã đặt | Coin symbol, current price, target price |
+| `notification` | Có thông báo hệ thống mới | Notification object |
+
+**Cách hoạt động:**
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant GW as API Gateway
+    participant NS as Notification Service
+    
+    C->>GW: Connect WebSocket (with JWT)
+    GW->>GW: Validate token, join user room
+    
+    Note over C,NS: Khi có giao dịch thành công...
+    NS->>GW: Emit 'trade_confirmation'
+    GW->>C: Push 'trade_confirmation' event
+    C->>C: Hiển thị toast notification
+    C->>C: Refresh balance
+```
+
+**Công nghệ:** Socket.IO (hỗ trợ fallback cho các browser cũ)
+
+**Ưu điểm:**
+- Real-time: Thông báo đến ngay lập tức (< 100ms)
+- Tiết kiệm bandwidth: Không cần polling
+- Bi-directional: Client cũng có thể gửi events (nếu cần)
 
 ---
 
 #### II.6.5. Fallback API Pattern
 
-**Mục đích:** Đảm bảo hệ thống vẫn hoạt động khi API chính gặp sự cố.
+**Mục đích:** Đảm bảo hệ thống vẫn hoạt động khi API chính gặp sự cố bằng cách tự động chuyển sang API dự phòng.
 
-**Cấu hình:**
-- **Primary:** CoinGecko API
-- **Fallback:** CoinPaprika API
+**Vấn đề cần giải quyết:** Hệ thống phụ thuộc vào CoinGecko API để lấy giá coin. Nếu CoinGecko bị down hoặc rate limit, toàn bộ tính năng giao dịch sẽ không hoạt động.
+
+**Giải pháp:** Cấu hình nhiều API providers với thứ tự ưu tiên, tự động fallback khi API trước đó thất bại.
+
+**Cấu hình trong hệ thống:**
+
+| Priority | Provider | Rate Limit | Đặc điểm |
+|----------|----------|------------|----------|
+| Primary | CoinGecko API | 30 calls/min | Dữ liệu đầy đủ, phổ biến |
+| Fallback | CoinPaprika API | 100 calls/min | Rate limit cao hơn |
+
+**Luồng xử lý:**
 
 ```mermaid
 flowchart TD
-    A[Market Service cần giá] --> B{CoinGecko API}
-    B -->|Success| C[Trả về giá]
-    B -->|Error/Timeout| D{CoinPaprika API}
-    D -->|Success| C
-    D -->|Error| E[Return cached data / Error]
+    A[Market Service cần giá coin] --> B{Gọi CoinGecko API}
+    B -->|✅ Success| C[Trả về giá + Cache]
+    B -->|❌ Error/Timeout| D{Gọi CoinPaprika API}
+    D -->|✅ Success| C
+    D -->|❌ Error| E{Có cached data?}
+    E -->|Có| F[Trả về cached data + warning]
+    E -->|Không| G[Return Error 503]
 ```
+
+**Ưu điểm:**
+- High availability: Hệ thống vẫn hoạt động khi 1 API down
+- Transparent: Client không biết đang dùng API nào
+- Graceful degradation: Trả về cached data nếu cả 2 đều lỗi
 
 ---
 
 #### II.6.6. DCA Calculation (Dollar Cost Averaging)
 
-**Mục đích:** Tính giá mua trung bình khi user mua nhiều lần cùng một coin.
+**Mục đích:** Tính giá mua trung bình chính xác khi user mua cùng một coin nhiều lần với các mức giá khác nhau.
 
-**Công thức:**
+**Vấn đề cần giải quyết:** User mua 0.001 BTC giá $70,000, sau đó mua thêm 0.002 BTC giá $80,000. Giá mua trung bình không phải là ($70,000 + $80,000) / 2 = $75,000 vì số lượng mỗi lần khác nhau.
+
+**Giải pháp:** Áp dụng công thức DCA (Dollar Cost Averaging):
 
 ```
-newTotalInvested = oldTotalInvested + newInvestment
+newTotalInvested = oldTotalInvested + (newAmount × newPrice)
 newTotalAmount = oldAmount + newAmount
 newAverageBuyPrice = newTotalInvested / newTotalAmount
 ```
 
-**Ví dụ:**
-- Lần 1: Mua 0.001 BTC giá $70,000 → averageBuyPrice = $70,000
-- Lần 2: Mua 0.001 BTC giá $80,000 → averageBuyPrice = (70+80)/2 = $75,000
+**Ví dụ tính toán:**
+
+| Lần mua | Amount | Price | Total Invested | Avg Buy Price |
+|---------|--------|-------|----------------|---------------|
+| Lần 1 | 0.001 BTC | $70,000 | $70 | $70,000 |
+| Lần 2 | 0.002 BTC | $80,000 | $70 + $160 = $230 | $230 / 0.003 = **$76,667** |
+
+**Profit Calculation:**
+```
+currentValue = totalAmount × currentPrice
+profit = currentValue - totalInvested
+profitPercentage = (profit / totalInvested) × 100
+```
+
+**Ưu điểm:**
+- Tính chính xác P&L cho mỗi coin
+- Phản ánh đúng chiến lược đầu tư của user
+- Cập nhật tự động sau mỗi giao dịch
+
+---
+
+#### II.6.7. Caching với NodeCache
+
+**Mục đích:** Giảm số lượng API calls đến external services và cải thiện response time.
+
+**Vấn đề cần giải quyết:** 
+- CoinGecko API có rate limit (30 calls/phút cho free tier)
+- Mỗi user xem giá coin đều gọi API → nhanh chóng hết quota
+- Response time chậm do network latency đến external API
+
+**Giải pháp:** Cache kết quả API trong memory với TTL (Time To Live) phù hợp.
+
+**Cấu hình trong hệ thống:**
+
+| Data Type | TTL | Lý do |
+|-----------|-----|-------|
+| Giá coin (prices) | 2 phút | Giá thay đổi thường xuyên nhưng không cần real-time tuyệt đối |
+| Chart data | 5 phút | Dữ liệu lịch sử ít thay đổi |
+
+**Cách hoạt động:**
+
+```mermaid
+flowchart TD
+    A[Request giá coin] --> B{Cache hit?}
+    B -->|✅ Có trong cache| C[Trả về cached data]
+    B -->|❌ Không có| D[Gọi CoinGecko API]
+    D --> E[Lưu vào cache với TTL]
+    E --> F[Trả về data]
+    
+    G[Background] --> H{TTL hết hạn?}
+    H -->|Có| I[Xóa entry khỏi cache]
+```
+
+**Công nghệ:** node-cache
+
+**Metrics cải thiện:**
+- Giảm ~90% API calls đến CoinGecko
+- Response time: 5-10ms (cache hit) vs 200-500ms (API call)
+- Không bị rate limit trong điều kiện bình thường
+
+---
+
+#### II.6.8. Cron Job Scheduling
+
+**Mục đích:** Thực hiện các tác vụ định kỳ tự động mà không cần user trigger.
+
+**Vấn đề cần giải quyết:** User đặt price alert "Thông báo khi BTC >= $80,000". Hệ thống cần liên tục kiểm tra giá để trigger alert đúng thời điểm.
+
+**Giải pháp:** Sử dụng Cron Job để chạy background tasks theo lịch định sẵn.
+
+**Cron Jobs trong hệ thống:**
+
+| Job Name | Schedule | Chức năng |
+|----------|----------|-----------|
+| Price Alert Checker | Mỗi 1 phút | Kiểm tra giá hiện tại với các alerts đang active |
+| Alert Cleanup | Mỗi 1 giờ | Xóa các alerts đã triggered quá 30 ngày |
+
+**Luồng Price Alert Check:**
+
+```mermaid
+flowchart TD
+    A[⏰ Cron trigger mỗi 1 phút] --> B[Lấy tất cả active alerts]
+    B --> C[Lấy giá hiện tại từ Market Service]
+    C --> D{Với mỗi alert}
+    D --> E{Điều kiện thỏa mãn?}
+    E -->|"above: price >= target"| F[Trigger Alert]
+    E -->|"below: price <= target"| F
+    E -->|Chưa thỏa| G[Bỏ qua]
+    F --> H[Tạo Notification]
+    H --> I[Emit WebSocket 'price_alert']
+    I --> J[Đánh dấu alert đã triggered]
+```
+
+**Công nghệ:** node-cron
+
+**Cron Expression Example:**
+```javascript
+// Chạy mỗi phút
+cron.schedule('* * * * *', checkPriceAlerts);
+
+// Chạy mỗi giờ vào phút 0
+cron.schedule('0 * * * *', cleanupOldAlerts);
+```
+
+**Ưu điểm:**
+- Tự động: Không cần user action
+- Reliable: Chạy đúng lịch kể cả khi không có user online
+- Scalable: Có thể xử lý hàng nghìn alerts
 
 ---
 
