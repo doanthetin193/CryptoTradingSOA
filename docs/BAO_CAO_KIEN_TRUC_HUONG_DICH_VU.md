@@ -1437,6 +1437,303 @@ erDiagram
 
 ## IV.1. Giao diện API cho từng dịch vụ
 
+### IV.1.0. Giới thiệu Framework và Công nghệ Backend
+
+#### A. Express.js Framework
+
+**Express.js** là một web framework nhẹ và linh hoạt cho Node.js, được sử dụng để xây dựng tất cả các services trong hệ thống CryptoTrading SOA.
+
+**Đặc điểm chính của Express.js:**
+
+| Đặc điểm | Mô tả |
+|----------|-------|
+| **Minimalist** | Core nhỏ gọn, dễ mở rộng qua middleware |
+| **Middleware Pipeline** | Xử lý request theo chuỗi các hàm middleware |
+| **Routing** | Router mạnh mẽ hỗ trợ RESTful APIs |
+| **Non-blocking I/O** | Xử lý nhiều requests đồng thời hiệu quả |
+
+**Middleware Pipeline - Cách Express xử lý Request:**
+
+Mỗi request đi qua một chuỗi các middleware functions trước khi đến route handler:
+
+```mermaid
+flowchart LR
+    A[Request] --> B[CORS Middleware]
+    B --> C[Helmet - Security Headers]
+    C --> D[Morgan - Logging]
+    D --> E[Rate Limiter]
+    E --> F[Body Parser]
+    F --> G[Auth Middleware]
+    G --> H[Route Handler]
+    H --> I[Response]
+```
+
+**Request-Response Cycle trong Express:**
+
+```javascript
+// Ví dụ cấu trúc một Express service
+const express = require('express');
+const app = express();
+
+// 1. Middleware cấp ứng dụng
+app.use(express.json());        // Parse JSON body
+app.use(cors());                // Enable CORS
+app.use(helmet());              // Security headers
+
+// 2. Middleware xác thực
+app.use('/api', authMiddleware);
+
+// 3. Route handlers
+app.get('/api/users/profile', (req, res) => {
+  // req.userId được set bởi authMiddleware
+  const user = await User.findById(req.userId);
+  res.json({ success: true, data: user });
+});
+
+// 4. Error handling middleware (cuối cùng)
+app.use(errorHandler);
+```
+
+**Routing trong Express:**
+
+Express sử dụng Router để tổ chức các endpoints theo nhóm:
+
+```javascript
+// routes/userRoutes.js
+const router = express.Router();
+
+router.post('/register', userController.register);
+router.post('/login', userController.login);
+router.get('/profile', userController.getProfile);
+
+module.exports = router;
+
+// server.js - Mount router
+app.use('/api/users', userRoutes);
+```
+
+---
+
+#### B. Kiến trúc và Luồng Xử lý API
+
+**Sơ đồ luồng xử lý request từ Client đến Database:**
+
+```mermaid
+flowchart TB
+    subgraph Client["🖥️ Client (React)"]
+        A[User Action] --> B[Axios Request]
+    end
+    
+    subgraph Gateway["🚪 API Gateway :3000"]
+        C[Receive Request]
+        D[CORS Check]
+        E[Rate Limiting]
+        F[JWT Auth Middleware]
+        G{Route Type?}
+    end
+    
+    subgraph Services["⚙️ Microservices"]
+        H[User Service :3001]
+        I[Market Service :3002]
+        J[Portfolio Service :3003]
+        K[Trade Service :3004]
+        L[Notification Service :3005]
+    end
+    
+    subgraph Database["💾 MongoDB"]
+        M[(users)]
+        N[(portfolios)]
+        O[(trades)]
+        P[(notifications)]
+    end
+    
+    B --> C
+    C --> D --> E --> F --> G
+    G -->|/users/*| H
+    G -->|/market/*| I
+    G -->|/portfolio/*| J
+    G -->|/trade/*| K
+    G -->|/notifications/*| L
+    
+    H --> M
+    J --> N
+    K --> O
+    L --> P
+    
+    I -->|External API| Q[CoinGecko]
+```
+
+**Chi tiết các bước xử lý một API Request:**
+
+| Bước | Component | Chức năng |
+|------|-----------|-----------|
+| 1 | **Client** | Gửi HTTP request với JWT token trong header |
+| 2 | **CORS Middleware** | Kiểm tra origin được phép |
+| 3 | **Rate Limiter** | Đếm requests, block nếu vượt giới hạn |
+| 4 | **Auth Middleware** | Verify JWT, extract userId, attach vào req |
+| 5 | **Proxy/Router** | Chuyển request đến service tương ứng |
+| 6 | **Service Controller** | Xử lý business logic |
+| 7 | **Mongoose ODM** | Query/Update database |
+| 8 | **Response** | Trả JSON response về client |
+
+**Ví dụ luồng xử lý Buy Coin:**
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant GW as API Gateway
+    participant Auth as Auth Middleware
+    participant Orch as Trade Orchestrator
+    participant US as User Service
+    participant MS as Market Service
+    participant PS as Portfolio Service
+    participant DB as MongoDB
+    
+    C->>GW: POST /api/trade/buy {symbol, amount}
+    GW->>Auth: Verify JWT Token
+    Auth-->>GW: userId = "abc123"
+    GW->>Orch: Forward to Orchestrator
+    
+    Orch->>MS: GET /price/bitcoin
+    MS-->>Orch: price = 75000
+    
+    Orch->>US: GET /balance
+    US->>DB: findById(userId)
+    DB-->>US: balance = 1000
+    US-->>Orch: balance = 1000
+    
+    Orch->>US: PUT /balance (deduct)
+    US->>DB: updateOne({balance: 925})
+    DB-->>US: OK
+    
+    Orch->>PS: POST /holding
+    PS->>DB: updateOne(portfolio)
+    DB-->>PS: OK
+    
+    Orch-->>GW: Trade Success
+    GW-->>C: {success: true, trade: {...}}
+```
+
+---
+
+#### C. Kết nối CSDL với Mongoose ODM
+
+**Mongoose** là Object Document Mapper (ODM) cho MongoDB và Node.js, cung cấp:
+- Schema-based modeling cho dữ liệu
+- Built-in type casting và validation
+- Query building và middleware hooks
+
+**Cấu hình kết nối Database:**
+
+```javascript
+// shared/config/db.js
+const mongoose = require('mongoose');
+
+const connectDB = async () => {
+  const conn = await mongoose.connect(process.env.MONGODB_URI, {
+    // Connection pooling - tối ưu hiệu năng
+    maxPoolSize: 10,      // Tối đa 10 connections đồng thời
+    minPoolSize: 2,       // Duy trì tối thiểu 2 connections
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+  });
+  
+  console.log(`MongoDB Connected: ${conn.connection.host}`);
+};
+
+module.exports = { mongoose, connectDB };
+```
+
+**Connection Pooling - Tối ưu hiệu năng:**
+
+```mermaid
+flowchart LR
+    subgraph Services["Microservices"]
+        S1[User Service]
+        S2[Portfolio Service]
+        S3[Trade Service]
+    end
+    
+    subgraph Pool["Connection Pool (maxPoolSize: 10)"]
+        C1[Conn 1]
+        C2[Conn 2]
+        C3[Conn 3]
+        C4[...]
+        C5[Conn 10]
+    end
+    
+    subgraph MongoDB["MongoDB Server"]
+        DB[(Database)]
+    end
+    
+    S1 --> C1
+    S2 --> C2
+    S3 --> C3
+    C1 --> DB
+    C2 --> DB
+    C3 --> DB
+```
+
+**Định nghĩa Schema với Mongoose:**
+
+```javascript
+// models/User.js
+const userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: [true, 'Email is required'],
+    unique: true,
+    lowercase: true,
+  },
+  password: {
+    type: String,
+    required: true,
+    select: false,  // Không trả về password trong queries
+  },
+  balance: {
+    type: Number,
+    default: 1000,
+    min: [0, 'Balance cannot be negative'],
+  },
+}, {
+  timestamps: true,  // Tự động thêm createdAt, updatedAt
+});
+
+// Middleware: Hash password trước khi save
+userSchema.pre('save', async function(next) {
+  if (this.isModified('password')) {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
+  next();
+});
+
+// Instance method
+userSchema.methods.comparePassword = async function(candidate) {
+  return await bcrypt.compare(candidate, this.password);
+};
+
+module.exports = mongoose.model('User', userSchema);
+```
+
+**Mongoose Query trong Controller:**
+
+```javascript
+// controllers/userController.js
+exports.getProfile = async (req, res) => {
+  try {
+    // Mongoose tự động sử dụng connection từ pool
+    const user = await User.findById(req.userId)
+      .select('-password -__v');  // Loại bỏ fields không cần
+    
+    res.json({ success: true, data: user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+```
+
+---
+
 ### IV.1.1. Chuẩn API Response
 
 **Success Response:**
