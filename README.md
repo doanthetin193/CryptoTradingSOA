@@ -225,9 +225,17 @@ brew install consul
 
 ### 1. Tạo file `.env` trong thư mục `backend/`
 
+```bash
+cp .env.example .env
+# Sau đó chỉnh sửa các giá trị phù hợp
+```
+
 ```env
-# MongoDB
-MONGODB_URI=mongodb://localhost:27017/crypto_trading
+# Database - Separate DB per Service (SOA Architecture)
+USER_DB_URI=mongodb://localhost:27017/crypto_users
+PORTFOLIO_DB_URI=mongodb://localhost:27017/crypto_portfolios
+TRADE_DB_URI=mongodb://localhost:27017/crypto_trades
+NOTIFICATION_DB_URI=mongodb://localhost:27017/crypto_notifications
 
 # JWT
 JWT_SECRET=your_super_secret_jwt_key_here
@@ -245,15 +253,12 @@ NOTIFICATION_SERVICE_PORT=3005
 CONSUL_HOST=localhost
 CONSUL_PORT=8500
 
-# External APIs (Optional - có default)
+# External APIs
 COINGECKO_API_URL=https://api.coingecko.com/api/v3
 
 # Trading Configuration
 TRADING_FEE_PERCENTAGE=0.1
 INITIAL_BALANCE=1000
-
-# Price Alerts
-ENABLE_PRICE_ALERTS=true
 
 # Environment
 NODE_ENV=development
