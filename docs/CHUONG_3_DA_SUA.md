@@ -814,8 +814,11 @@ flowchart TB
         CP[CoinPaprika API<br/>Fallback]
     end
 
-    subgraph Data["💾 Shared Database"]
-        DB[(MongoDB<br/>Shared Database)]
+    subgraph Data["💾 Distributed Databases"]
+        DB1[(crypto_users)]
+        DB2[(crypto_portfolios)]
+        DB3[(crypto_trades)]
+        DB4[(crypto_notifications)]
     end
 
     subgraph Discovery["🔍 Service Discovery"]
@@ -833,10 +836,10 @@ flowchart TB
     MS <-->|API Call| CG
     MS -.->|Fallback| CP
     
-    US --> DB
-    PS --> DB
-    TS --> DB
-    NS --> DB
+    US --> DB1
+    PS --> DB2
+    TS --> DB3
+    NS --> DB4
 
     US -.->|Register| CS
     MS -.->|Register| CS
@@ -851,11 +854,11 @@ flowchart TB
 | Service | Port | Chức năng | Database | External API |
 |---------|------|-----------|----------|--------------|
 | API Gateway | 3000 | - Điểm vào duy nhất cho client<br>- Xác thực JWT<br>- Rate limiting<br>- Proxy requests<br>- Trade orchestration (Buy/Sell)<br>- Portfolio orchestration (enrich với giá)<br>- WebSocket server | - | - |
-| User Service | 3001 | - Đăng ký/Đăng nhập<br>- Quản lý profile<br>- Quản lý ví USDT<br>- Admin functions | MongoDB: users | - |
+| User Service | 3001 | - Đăng ký/Đăng nhập<br>- Quản lý profile<br>- Quản lý ví USDT<br>- Admin functions | crypto_users.users | - |
 | Market Service | 3002 | - Lấy giá coin real-time<br>- Lấy chart data<br>- Cache giá (2 phút) | - | CoinGecko, CoinPaprika |
-| Portfolio Service | 3003 | - Quản lý holdings (add/reduce)<br>- Lưu trữ portfolio data | MongoDB: portfolios | - |
-| Trade Service | 3004 | - Lưu lịch sử giao dịch | MongoDB: trades | - |
-| Notification Service | 3005 | - Quản lý thông báo<br>- Price alerts<br>- Cron job kiểm tra giá | MongoDB: notifications, pricealerts | - |
+| Portfolio Service | 3003 | - Quản lý holdings (add/reduce)<br>- Lưu trữ portfolio data | crypto_portfolios.portfolios | - |
+| Trade Service | 3004 | - Lưu lịch sử giao dịch | crypto_trades.trades | - |
+| Notification Service | 3005 | - Quản lý thông báo<br>- Price alerts<br>- Cron job kiểm tra giá | crypto_notifications.notifications | - |
 
 **Các thành phần hỗ trợ:**
 
@@ -880,7 +883,7 @@ sequenceDiagram
     participant C as Client
     participant GW as API Gateway
     participant US as User Service
-    participant DB as MongoDB
+    participant DB as crypto_users
 
     Note over C,DB: Đăng ký tài khoản
     C->>GW: POST /api/users/register
@@ -1290,7 +1293,7 @@ erDiagram
 #### Schema Design (MongoDB)
 
 ```javascript
-// Collection: users
+// Database: crypto_users | Collection: users
 {
   _id: ObjectId,
   email: String,           // unique, required
@@ -1309,10 +1312,10 @@ erDiagram
   updatedAt: Date
 }
 
-// Collection: portfolios
+// Database: crypto_portfolios | Collection: portfolios
 {
   _id: ObjectId,
-  userId: ObjectId,        // ref: users, unique
+  userId: ObjectId,        // stored userId (via API Gateway)
   holdings: [{
     symbol: String,        // uppercase
     coinId: String,        // lowercase
@@ -1331,10 +1334,10 @@ erDiagram
   updatedAt: Date
 }
 
-// Collection: trades
+// Database: crypto_trades | Collection: trades
 {
   _id: ObjectId,
-  userId: ObjectId,        // ref: users
+  userId: ObjectId,        // stored userId (via API Gateway)
   type: "buy" | "sell",
   symbol: String,
   coinId: String,
@@ -1354,10 +1357,10 @@ erDiagram
   updatedAt: Date
 }
 
-// Collection: notifications
+// Database: crypto_notifications | Collection: notifications
 {
   _id: ObjectId,
-  userId: ObjectId,        // ref: users
+  userId: ObjectId,        // stored userId (via API Gateway)
   type: "trade" | "price_alert" | "system" | "warning",
   title: String,
   message: String,
@@ -1371,10 +1374,10 @@ erDiagram
   updatedAt: Date
 }
 
-// Collection: pricealerts
+// Database: crypto_notifications | Collection: pricealerts
 {
   _id: ObjectId,
-  userId: ObjectId,        // ref: users
+  userId: ObjectId,        // stored userId (via API Gateway)
   symbol: String,
   coinId: String,
   targetPrice: Number,
@@ -1390,23 +1393,21 @@ erDiagram
 
 **Mô tả collections:**
 
-| Collection | Mô tả | Indexes |
-|------------|-------|---------|
-| users | Lưu thông tin người dùng và ví USDT | email (unique) |
-| portfolios | Lưu danh mục đầu tư của user | userId (unique), holdings.symbol |
-| trades | Lưu lịch sử giao dịch mua/bán | userId + createdAt, type, symbol, status |
-| notifications | Lưu thông báo cho user | userId + createdAt, status, type |
-| pricealerts | Lưu cảnh báo giá | userId + isActive, symbol + isActive |
+| Collection | Database | Mô tả | Indexes |
+|------------|----------|-------|---------| 
+| users | crypto_users | Lưu thông tin người dùng và ví USDT | email (unique) |
+| portfolios | crypto_portfolios | Lưu danh mục đầu tư của user | userId (unique), holdings.symbol |
+| trades | crypto_trades | Lưu lịch sử giao dịch mua/bán | userId + createdAt, type, symbol, status |
+| notifications | crypto_notifications | Lưu thông báo cho user | userId + createdAt, status, type |
+| pricealerts | crypto_notifications | Lưu cảnh báo giá | userId + isActive, symbol + isActive |
 
-**Quan hệ giữa các Collections:**
+**Quan hệ giữa các Collections (Distributed Databases):**
+
+> **Lưu ý:** Với kiến trúc Database per Service, mỗi database độc lập. Quan hệ được duy trì qua `userId` (stored as ObjectId string) và giao tiếp qua HTTP API, không phải FK trực tiếp.
 
 ```mermaid
 erDiagram
-    users ||--|| portfolios : "1:1 owns"
-    users ||--o{ trades : "1:N makes"
-    users ||--o{ notifications : "1:N receives"
-    users ||--o{ pricealerts : "1:N creates"
-    
+    %% Database: crypto_users
     users {
         ObjectId _id PK
         String email UK
@@ -1414,42 +1415,52 @@ erDiagram
         Number balance
     }
     
+    %% Database: crypto_portfolios
     portfolios {
         ObjectId _id PK
-        ObjectId userId FK
+        String userId "ref: users (via API)"
         Array holdings
     }
     
+    %% Database: crypto_trades
     trades {
         ObjectId _id PK
-        ObjectId userId FK
+        String userId "ref: users (via API)"
         String type
         String symbol
     }
     
+    %% Database: crypto_notifications
     notifications {
         ObjectId _id PK
-        ObjectId userId FK
+        String userId "ref: users (via API)"
         String type
         String status
     }
     
     pricealerts {
         ObjectId _id PK
-        ObjectId userId FK
+        String userId "ref: users (via API)"
         String symbol
         Boolean isActive
     }
+
+    users ||--|| portfolios : "1:1 (via HTTP)"
+    users ||--o{ trades : "1:N (via HTTP)"
+    users ||--o{ notifications : "1:N (via HTTP)"
+    users ||--o{ pricealerts : "1:N (via HTTP)"
 ```
 
 **Giải thích quan hệ:**
 
-| Quan hệ | Từ | Đến | Mô tả |
-|---------|----|----|-------|
-| **1:1** | users | portfolios | Mỗi user có đúng 1 portfolio (userId unique trong portfolios) |
-| **1:N** | users | trades | Mỗi user có nhiều giao dịch |
-| **1:N** | users | notifications | Mỗi user có nhiều thông báo |
-| **1:N** | users | pricealerts | Mỗi user có nhiều cảnh báo giá |
+| Quan hệ | Database A | Database B | Mô tả |
+|---------|------------|------------|-------|
+| **1:1** | crypto_users.users | crypto_portfolios.portfolios | Mỗi user có đúng 1 portfolio |
+| **1:N** | crypto_users.users | crypto_trades.trades | Mỗi user có nhiều giao dịch |
+| **1:N** | crypto_users.users | crypto_notifications.notifications | Mỗi user có nhiều thông báo |
+| **1:N** | crypto_users.users | crypto_notifications.pricealerts | Mỗi user có nhiều cảnh báo giá |
+
+> **Ghi chú SOA:** Các services không query trực tiếp database của nhau. Thay vào đó, chúng nhận `userId` từ API Gateway (header `X-User-Id`) và chỉ lưu trữ giá trị này để reference.
 
 ---
 

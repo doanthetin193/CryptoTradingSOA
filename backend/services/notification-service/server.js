@@ -46,7 +46,7 @@ app.use((err, req, res, next) => {
 // Start Server
 // ===========================
 const startServer = async () => {
-  await connectDB(process.env.MONGODB_URI);
+  await connectDB(process.env.NOTIFICATION_DB_URI);
 
   // Background Jobs
   if (process.env.ENABLE_PRICE_ALERTS === 'true') {

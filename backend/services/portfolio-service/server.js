@@ -44,7 +44,7 @@ app.use((err, req, res, next) => {
 // Start Server
 // ===========================
 const startServer = async () => {
-  await connectDB(process.env.MONGODB_URI);
+  await connectDB(process.env.PORTFOLIO_DB_URI);
 
   app.listen(PORT, async () => {
     logger.info(`

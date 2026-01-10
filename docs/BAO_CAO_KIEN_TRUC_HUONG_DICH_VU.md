@@ -235,8 +235,11 @@ flowchart TB
         CP[CoinPaprika API<br/>Fallback]
     end
 
-    subgraph Data["💾 Shared Database"]
-        DB[(MongoDB<br/>Shared Database)]
+    subgraph Data["💾 Distributed Databases"]
+        DB1[(crypto_users)]
+        DB2[(crypto_portfolios)]
+        DB3[(crypto_trades)]
+        DB4[(crypto_notifications)]
     end
 
     subgraph Discovery["🔍 Service Discovery"]
@@ -253,10 +256,10 @@ flowchart TB
     MS <-->|API Call| CG
     MS -.->|Fallback| CP
     
-    US --> DB
-    PS --> DB
-    TS --> DB
-    NS --> DB
+    US --> DB1
+    PS --> DB2
+    TS --> DB3
+    NS --> DB4
 
     US -.->|Register| CS
     MS -.->|Register| CS
@@ -270,7 +273,7 @@ flowchart TB
 
 | Đặc điểm | Mô tả |
 |----------|-------|
-| **Shared Database** | Tất cả services kết nối cùng một MongoDB instance |
+| **Database per Service** | Mỗi service có database riêng để đảm bảo loose coupling |
 | **Service Discovery** | Consul quản lý đăng ký và khám phá services |
 | **API Gateway** | Single entry point, xử lý routing và authentication |
 | **Loose Coupling** | Services giao tiếp qua HTTP REST APIs |
@@ -316,7 +319,7 @@ flowchart TB
 | PUT | /admin/users/:id/balance | [Admin] Cập nhật số dư |
 | DELETE | /admin/users/:id | [Admin] Xóa user |
 
-**Database:** MongoDB - Collection `users`
+**Database:** MongoDB - Database `crypto_users`, Collection `users`
 
 **Công nghệ:** Express.js, bcryptjs, jsonwebtoken, Mongoose
 
@@ -367,7 +370,7 @@ flowchart TB
   profitPercentage = (profit / totalInvested) × 100
   ```
 
-**Database:** MongoDB - Collection `portfolios`
+**Database:** MongoDB - Database `crypto_portfolios`, Collection `portfolios`
 
 **Công nghệ:** Express.js, Mongoose
 
@@ -386,7 +389,7 @@ flowchart TB
 
 **Lưu ý:** Trade Service KHÔNG thực hiện logic mua/bán. Logic đó được xử lý bởi **Trade Orchestration** ở API Gateway.
 
-**Database:** MongoDB - Collection `trades`
+**Database:** MongoDB - Database `crypto_trades`, Collection `trades`
 
 **Công nghệ:** Express.js, Mongoose
 
@@ -412,7 +415,7 @@ flowchart TB
 
 **Cron Job:** Kiểm tra giá mỗi 1 phút, trigger alert khi đạt điều kiện
 
-**Database:** MongoDB - Collections `notifications`, `pricealerts`
+**Database:** MongoDB - Database `crypto_notifications`, Collections `notifications`, `pricealerts`
 
 **Công nghệ:** Express.js, Mongoose, node-cron
 
@@ -688,7 +691,7 @@ sequenceDiagram
     participant CRON as ⏰ Cron Job<br/>(mỗi 1 phút)
     participant NS as Notification Service
     participant MS as Market Service
-    participant DB as MongoDB
+    participant DB as crypto_notifications
     participant WS as WebSocket
 
     CRON->>NS: Trigger checkPriceAlerts()
@@ -751,7 +754,7 @@ sequenceDiagram
     participant A as 👑 Admin
     participant GW as API Gateway
     participant US as User Service
-    participant DB as MongoDB
+    participant DB as crypto_users
 
     A->>GW: PUT /users/admin/users/:id/balance<br/>{amount: 100, description: "Bonus"}
     GW->>GW: Xác thực JWT token
@@ -1143,7 +1146,7 @@ cron.schedule('0 * * * *', cleanupOldAlerts);
 
 ## III.1. Mô hình thực thể liên kết (ERD)
 
-#### III.1.1. User Service - Entity: User
+#### III.1.1. Database: crypto_users - Entity: User
 
 ```mermaid
 erDiagram
@@ -1178,7 +1181,7 @@ erDiagram
 
 ---
 
-#### III.1.2. Portfolio Service - Entity: Portfolio
+#### III.1.2. Database: crypto_portfolios - Entity: Portfolio
 
 ```mermaid
 erDiagram
@@ -1231,7 +1234,7 @@ erDiagram
 
 ---
 
-#### III.1.3. Trade Service - Entity: Trade
+#### III.1.3. Database: crypto_trades - Entity: Trade
 
 ```mermaid
 erDiagram
@@ -1280,7 +1283,7 @@ erDiagram
 
 ---
 
-#### III.1.4. Notification Service - Entities
+#### III.1.4. Database: crypto_notifications - Entities: Notification, PriceAlert
 
 ```mermaid
 erDiagram
@@ -1344,54 +1347,65 @@ erDiagram
 
 ---
 
-## III.2. Mô hình quan hệ
+## III.2. Mô hình quan hệ (Distributed Databases)
+
+> **Lưu ý:** Với kiến trúc Database per Service, mỗi entity thuộc database độc lập. Quan hệ được duy trì qua `userId` (lưu dưới dạng ObjectId string) và giao tiếp qua HTTP API, không phải Foreign Key trực tiếp.
 
 **Sơ đồ quan hệ giữa các collections:**
 
 ```mermaid
 erDiagram
-    USER ||--|| PORTFOLIO : has
-    USER ||--o{ TRADE : makes
-    USER ||--o{ NOTIFICATION : receives
-    USER ||--o{ PRICEALERT : creates
-    PORTFOLIO ||--o{ HOLDING : contains
-    
+    %% Database: crypto_users
     USER {
         ObjectId _id PK
         String email
         Number balance
     }
+    
+    %% Database: crypto_portfolios
     PORTFOLIO {
         ObjectId _id PK
-        ObjectId userId FK
+        String userId "ref via API"
     }
     HOLDING {
         String symbol
         String coinId
         Number amount
     }
+    
+    %% Database: crypto_trades
     TRADE {
         ObjectId _id PK
-        ObjectId userId FK
+        String userId "ref via API"
     }
+    
+    %% Database: crypto_notifications
     NOTIFICATION {
         ObjectId _id PK
-        ObjectId userId FK
+        String userId "ref via API"
     }
     PRICEALERT {
         ObjectId _id PK
-        ObjectId userId FK
+        String userId "ref via API"
     }
+    
+    USER ||--|| PORTFOLIO : "1:1 (via HTTP)"
+    USER ||--o{ TRADE : "1:N (via HTTP)"
+    USER ||--o{ NOTIFICATION : "1:N (via HTTP)"
+    USER ||--o{ PRICEALERT : "1:N (via HTTP)"
+    PORTFOLIO ||--o{ HOLDING : contains
 ```
 
 **Mô tả quan hệ:**
 
-| Quan hệ | Mô tả |
-|---------|-------|
-| User → Portfolio | 1:1 - Mỗi user có đúng 1 portfolio |
-| User → Trades | 1:N - Mỗi user có nhiều giao dịch |
-| User → Notifications | 1:N - Mỗi user có nhiều thông báo |
-| User → PriceAlerts | 1:N - Mỗi user có nhiều cảnh báo |
+| Quan hệ | Database A | Database B | Mô tả |
+|---------|------------|------------|-------|
+| 1:1 | crypto_users.users | crypto_portfolios.portfolios | Mỗi user có đúng 1 portfolio |
+| 1:N | crypto_users.users | crypto_trades.trades | Mỗi user có nhiều giao dịch |
+| 1:N | crypto_users.users | crypto_notifications.notifications | Mỗi user có nhiều thông báo |
+| 1:N | crypto_users.users | crypto_notifications.pricealerts | Mỗi user có nhiều cảnh báo |
+
+> **Ghi chú SOA:** Các services không query trực tiếp database của nhau. `userId` được truyền từ API Gateway qua header `X-User-Id` và chỉ lưu trữ để reference.
 
 ---
 
@@ -1540,11 +1554,11 @@ flowchart TB
         L[Notification Service :3005]
     end
     
-    subgraph Database["💾 MongoDB"]
-        M[(users)]
-        N[(portfolios)]
-        O[(trades)]
-        P[(notifications)]
+    subgraph Database["💾 Distributed Databases"]
+        M[(crypto_users.users)]
+        N[(crypto_portfolios.portfolios)]
+        O[(crypto_trades.trades)]
+        P[(crypto_notifications.notifications)]
     end
     
     B --> C
@@ -1587,7 +1601,7 @@ sequenceDiagram
     participant US as User Service
     participant MS as Market Service
     participant PS as Portfolio Service
-    participant DB as MongoDB
+    participant DB as Databases
     
     C->>GW: POST /api/trade/buy {symbol, amount}
     GW->>Auth: Verify JWT Token
@@ -1623,25 +1637,30 @@ sequenceDiagram
 - Built-in type casting và validation
 - Query building và middleware hooks
 
-**Cấu hình kết nối Database:**
+**Cấu hình kết nối Database (mỗi service có DB riêng):**
 
 ```javascript
-// shared/config/db.js
+// shared/config/db.js - Hàm dùng chung
 const mongoose = require('mongoose');
 
-const connectDB = async () => {
-  const conn = await mongoose.connect(process.env.MONGODB_URI, {
+const connectDB = async (dbUri) => {
+  const conn = await mongoose.connect(dbUri, {
     // Connection pooling - tối ưu hiệu năng
     maxPoolSize: 10,      // Tối đa 10 connections đồng thời
-    minPoolSize: 2,       // Duy trì tối thiểu 2 connections
-    serverSelectionTimeoutMS: 5000,
+    serverSelectionTimeoutMS: 30000,
     socketTimeoutMS: 45000,
   });
   
   console.log(`MongoDB Connected: ${conn.connection.host}`);
 };
 
-module.exports = { mongoose, connectDB };
+module.exports = connectDB;
+
+// Mỗi service sử dụng DB_URI riêng:
+// user-service:         process.env.USER_DB_URI         → crypto_users
+// portfolio-service:    process.env.PORTFOLIO_DB_URI    → crypto_portfolios
+// trade-service:        process.env.TRADE_DB_URI        → crypto_trades
+// notification-service: process.env.NOTIFICATION_DB_URI → crypto_notifications
 ```
 
 **Connection Pooling - Tối ưu hiệu năng:**
@@ -1654,24 +1673,21 @@ flowchart LR
         S3[Trade Service]
     end
     
-    subgraph Pool["Connection Pool (maxPoolSize: 10)"]
-        C1[Conn 1]
-        C2[Conn 2]
-        C3[Conn 3]
-        C4[...]
-        C5[Conn 10]
+    subgraph Pool["Connection Pools (maxPoolSize: 10 per service)"]
+        C1[Pool 1]
+        C2[Pool 2]
+        C3[Pool 3]
     end
     
-    subgraph MongoDB["MongoDB Server"]
-        DB[(Database)]
+    subgraph MongoDB["MongoDB Server - Distributed DBs"]
+        DB1[(crypto_users)]
+        DB2[(crypto_portfolios)]
+        DB3[(crypto_trades)]
     end
     
-    S1 --> C1
-    S2 --> C2
-    S3 --> C3
-    C1 --> DB
-    C2 --> DB
-    C3 --> DB
+    S1 --> C1 --> DB1
+    S2 --> C2 --> DB2
+    S3 --> C3 --> DB3
 ```
 
 **Định nghĩa Schema với Mongoose:**
@@ -2337,7 +2353,7 @@ function PortfolioChart({ holdings }) {
 
 ### Về mặt kiến trúc:
 
-1. **Áp dụng thành công kiến trúc SOA:** Hệ thống được chia thành 5 services độc lập sử dụng chung database, mỗi service có trách nhiệm rõ ràng và có thể phát triển, triển khai riêng biệt.
+1. **Áp dụng thành công kiến trúc SOA:** Hệ thống được chia thành 5 services độc lập với database riêng cho từng service, mỗi service có trách nhiệm rõ ràng và có thể phát triển, triển khai riêng biệt.
 
 2. **API Gateway Pattern:** Triển khai một điểm vào duy nhất giúp đơn giản hóa việc giao tiếp giữa client và các services, đồng thời tập trung xử lý cross-cutting concerns (authentication, rate limiting).
 
@@ -2376,7 +2392,7 @@ function PortfolioChart({ holdings }) {
 
 2. **Network Latency:** Giao tiếp giữa các services qua HTTP có độ trễ cao hơn in-process calls.
 
-3. **Data Consistency:** Với các services sử dụng chung database, cần đảm bảo tính nhất quán dữ liệu khi có nhiều transactions.
+3. **Data Consistency:** Với các services có database riêng biệt, việc đảm bảo tính nhất quán dữ liệu đòi hỏi cơ chế orchestration và rollback chặt chẽ.
 
 4. **Monitoring:** Cần công cụ logging và monitoring tập trung để theo dõi hệ thống.
 

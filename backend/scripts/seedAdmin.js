@@ -7,7 +7,7 @@ const bcrypt = require('bcryptjs');
  * Tạo admin user mặc định cho hệ thống
  */
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.USER_DB_URI;
 
 // Admin user credentials
 const ADMIN_USER = {
@@ -87,20 +87,20 @@ async function seedAdmin() {
 
     // Check if admin already exists
     const existingAdmin = await User.findOne({ email: ADMIN_USER.email });
-    
+
     if (existingAdmin) {
       console.log('⚠️  Admin user already exists!');
       console.log(`📧 Email: ${existingAdmin.email}`);
       console.log(`👤 Name: ${existingAdmin.fullName}`);
       console.log(`🔑 Role: ${existingAdmin.role}`);
-      
+
       // Update to admin role if not already
       if (existingAdmin.role !== 'admin') {
         existingAdmin.role = 'admin';
         await existingAdmin.save();
         console.log('✅ Updated existing user to admin role');
       }
-      
+
       await mongoose.connection.close();
       return;
     }

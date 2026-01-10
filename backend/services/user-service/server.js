@@ -48,7 +48,7 @@ app.use((err, req, res, next) => {
 // ===========================
 const startServer = async () => {
   try {
-    await connectDB(process.env.MONGODB_URI);
+    await connectDB(process.env.USER_DB_URI);
   } catch (error) {
     logger.error(`❌ MongoDB connection failed: ${error.message}`);
     process.exit(1);
