@@ -28,7 +28,7 @@
 - Theo dõi giá **real-time** từ thị trường thực
 - Quản lý danh mục đầu tư và xem lãi/lỗ
 
-Hệ thống được xây dựng theo **kiến trúc SOA (Service-Oriented Architecture)** với 5 microservices độc lập, đảm bảo khả năng mở rộng và bảo trì dễ dàng.
+Hệ thống được xây dựng theo **kiến trúc SOA (Service-Oriented Architecture)** với 5 services độc lập, đảm bảo khả năng mở rộng và bảo trì dễ dàng.
 
 ## ✨ Tính năng
 
@@ -82,7 +82,7 @@ Hệ thống được xây dựng theo **kiến trúc SOA (Service-Oriented Arch
            │ (3) Return address    │        │             │
            ▼                       │        │             │
 ┌──────────────────────────────────┴────────┴─────────────┴───────┐
-│                        MICROSERVICES                             │
+│                         SOA SERVICES                             │
 │  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐     │
 │  │   User    │  │  Market   │  │ Portfolio │  │   Trade   │     │
 │  │  Service  │  │  Service  │  │  Service  │  │  Service  │     │
@@ -151,7 +151,7 @@ Hệ thống được xây dựng theo **kiến trúc SOA (Service-Oriented Arch
 | **MongoDB** | NoSQL Database |
 | **Mongoose** | ODM cho MongoDB |
 | **JWT** | Xác thực stateless |
-| **bcrypt** | Hash password |
+| **bcryptjs** | Hash password |
 | **Socket.IO** | WebSocket real-time |
 | **Consul** | Service Discovery |
 | **Opossum** | Circuit Breaker |
@@ -424,8 +424,7 @@ CryptoTradingSOA/
 │   │       ├── circuitBreaker.js     # Circuit Breaker
 │   │       ├── serviceDiscovery.js   # Consul integration
 │   │       ├── websocket.js          # Socket.IO
-│   │       ├── logger.js             # Winston logger
-│   │       └── emailService.js
+│   │       └── logger.js             # Winston logger
 │   │
 │   ├── scripts/
 │   │   └── seedAdmin.js              # Tạo admin account
