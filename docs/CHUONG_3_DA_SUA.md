@@ -1053,6 +1053,7 @@ sequenceDiagram
     participant GW as API Gateway
     participant MS as Market Service
     participant WS as WebSocket
+    participant Client as Client (Browser)
 
     Note over CRON,WS: Cron job runs every 1 minute
     
@@ -1074,7 +1075,7 @@ sequenceDiagram
                 NS->>NS: Set triggered=true, isActive=false
                 NS->>NS: Create Notification (type=price_alert)
                 NS->>WS: sendPriceAlert(userId, data)
-                WS-->>C: 🔔 Real-time alert
+                WS-->>Client: 🔔 Real-time alert
             else Condition not met
                 NS->>NS: Update lastChecked only
             end
