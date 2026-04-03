@@ -56,6 +56,35 @@ foreach ($service in $services) {
 Write-Host ""
 Write-Host "All services started successfully!" -ForegroundColor Green
 Write-Host ""
+
+# Load .env để lấy CRYPTOCOMPARE_API_KEY cho Java
+$envFile = "$backendPath\.env"
+$cryptoCompareKey = ""
+if (Test-Path $envFile) {
+    $envLines = Get-Content $envFile | Where-Object { $_ -match "^CRYPTOCOMPARE_API_KEY=" }
+    if ($envLines) {
+        $cryptoCompareKey = ($envLines -split "=", 2)[1].Trim()
+    }
+}
+
+# Start News Service (Java)
+$newsJar = "D:\CryptoTradingSOA\news-service\target\news-service-1.0.0.jar"
+if (Test-Path $newsJar) {
+    Write-Host "  - Starting: News Service (Java) on port 3006" -ForegroundColor Green
+    # Kill existing Java process on port 3006 if any
+    $existingPid = netstat -ano 2>$null | Select-String ":3006\s.*LISTENING" | ForEach-Object { ($_ -split '\s+')[-1] } | Select-Object -First 1
+    if ($existingPid) {
+        Stop-Process -Id $existingPid -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 1
+    }
+    $javaCmd = "`$env:CRYPTOCOMPARE_API_KEY='$cryptoCompareKey'; `$host.UI.RawUI.WindowTitle='News Service (Java) :3006'; Write-Host 'Starting News Service on port 3006...'; java -jar '$newsJar'"
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", $javaCmd
+    Start-Sleep -Seconds 2
+} else {
+    Write-Host "  - News Service JAR not found; build first: cd D:\CryptoTradingSOA\news-service && mvn package -DskipTests" -ForegroundColor Yellow
+}
+
+Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Yellow
 Write-Host "  1. Wait for all services to be ready (check each window)"
 Write-Host "  2. Open new terminal and run: cd D:\CryptoTradingSOA\frontend && npm run dev"

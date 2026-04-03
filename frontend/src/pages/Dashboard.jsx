@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { marketAPI, portfolioAPI } from '../services/api';
+import { marketAPI, portfolioAPI, newsAPI } from '../services/api';
 import { onPriceUpdate, onTradeConfirmation, onPriceAlert } from '../services/websocket';
 import {
   Wallet,
@@ -11,7 +11,8 @@ import {
   DollarSign,
   RefreshCw,
   ExternalLink,
-  Activity
+  Activity,
+  Newspaper
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import Toast from '../components/Toast';
@@ -24,6 +25,7 @@ export default function Dashboard() {
   const [portfolio, setPortfolio] = useState(null);
   const [chartData, setChartData] = useState([]);
   const [toast, setToast] = useState(null);
+  const [breakingNews, setBreakingNews] = useState([]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -44,6 +46,14 @@ export default function Dashboard() {
       const portfolioRes = await portfolioAPI.getPortfolio();
       if (portfolioRes.success) {
         setPortfolio(portfolioRes.data);
+      }
+
+      // Load breaking news (optional – không làm fail nếu service chưa chạy)
+      try {
+        const newsRes = await newsAPI.getTrending(3);
+        if (newsRes.success) setBreakingNews(newsRes.data.trending || []);
+      } catch {
+        // news service optional
       }
     } catch (error) {
       showToast('error', 'Không thể tải dữ liệu: ' + error.message);
@@ -322,6 +332,54 @@ export default function Dashboard() {
           </BarChart>
         </ResponsiveContainer>
       </div>
+
+      {/* Breaking News Widget */}
+      {breakingNews.length > 0 && (
+        <div className="crypto-card">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                <Newspaper className="w-5 h-5 text-blue-400" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">Tin tức nổi bật</h2>
+                <p className="text-sm text-crypto-muted">Cập nhật từ thị trường crypto</p>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/news')}
+              className="text-sm text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+            >
+              Xem tất cả
+              <ExternalLink className="w-3 h-3" />
+            </button>
+          </div>
+          <div className="space-y-3">
+            {breakingNews.map(article => (
+              <div
+                key={article.id}
+                className="flex items-start gap-3 p-3 rounded-lg bg-crypto-secondary/50 hover:bg-crypto-secondary cursor-pointer transition-colors"
+                onClick={() => navigate('/news')}
+              >
+                <Newspaper className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-sm text-white font-medium line-clamp-1">{article.title}</p>
+                  <p className="text-xs text-crypto-muted mt-0.5">
+                    {article.source} •{' '}
+                    <span className={
+                      article.sentiment === 'positive' ? 'text-green-400' :
+                      article.sentiment === 'negative' ? 'text-red-400' : 'text-gray-400'
+                    }>
+                      {article.sentiment === 'positive' ? 'Tích cực' :
+                       article.sentiment === 'negative' ? 'Tiêu cực' : 'Trung lập'}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -149,4 +149,17 @@ export const adminAPI = {
   deleteUser: (userId) => api.delete(`/users/admin/users/${userId}`),
 };
 
+// ===========================
+// NEWS APIs
+// ===========================
+export const newsAPI = {
+  getNews: (page = 1, limit = 10, filters = {}) =>
+    api.get('/news', { params: { page, limit, ...filters } }),
+  getNewsById: (id) => api.get(`/news/${id}`),
+  getTrending: (limit = 5) => api.get('/news/trending', { params: { limit } }),
+  getNewsByCoin: (coin, page = 1, limit = 10) =>
+    api.get(`/news/coins/${coin}`, { params: { page, limit } }),
+  getHealth: () => api.get('/news/health'),
+};
+
 export default api;

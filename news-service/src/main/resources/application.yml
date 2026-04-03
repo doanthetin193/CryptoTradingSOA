@@ -1,0 +1,68 @@
+server:
+  port: 3006
+
+spring:
+  application:
+    name: news-service
+  cloud:
+    consul:
+      host: ${CONSUL_HOST:localhost}
+      port: ${CONSUL_PORT:8500}
+      discovery:
+        enabled: true
+        service-name: news-service
+        instance-id: news-service-3006
+        port: 3006
+        health-check-path: /news/health
+        health-check-interval: 10s
+        deregister-critical-service-after: 30s
+        prefer-ip-address: true
+        fail-fast: false          # Không crash nếu Consul không hoạt động
+        register: true
+      config:
+        enabled: false
+      catalog-services-watch-task:
+        enabled: false
+
+# CryptoCompare API (miễn phí, primary provider)
+# Đăng ký key tại: https://www.cryptocompare.com/cryptopian/api-keys
+cryptocompare:
+  api-url: https://min-api.cryptocompare.com/data/v2/news/
+  api-key: ${CRYPTOCOMPARE_API_KEY:}
+  timeout: 10000
+
+# NewsAPI fallback (cần đăng ký key tại newsapi.org)
+newsapi:
+  api-url: https://newsapi.org/v2/everything
+  api-key: ${NEWSAPI_KEY:}
+  timeout: 10000
+
+# Cache Configuration
+cache:
+  news-ttl-hours: 24
+  trending-ttl-hours: 6
+  max-size: 100
+
+# Scheduling
+scheduler:
+  news-fetch-interval-ms: 900000  # 15 minutes
+
+# Logging
+logging:
+  level:
+    com.cryptotrading.news: DEBUG
+    org.springframework.cloud.consul: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/news-service.log
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always

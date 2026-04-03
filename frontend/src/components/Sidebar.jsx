@@ -6,7 +6,8 @@ import {
   History,
   Bell,
   Settings,
-  Shield
+  Shield,
+  Newspaper
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
@@ -16,6 +17,7 @@ const menuItems = [
   { icon: Briefcase, label: 'Portfolio', path: '/portfolio' },
   { icon: History, label: 'History', path: '/history' },
   { icon: Bell, label: 'Notifications', path: '/notifications' },
+  { icon: Newspaper, label: 'Tin tức', path: '/news' },
   { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 

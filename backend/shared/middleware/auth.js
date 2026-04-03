@@ -141,8 +141,45 @@ const adminMiddleware = async (req, res, next) => {
   }
 };
 
+/**
+ * Internal Service Middleware - Cho phép service-to-service calls qua gateway
+ * Accepts either:
+ *   1. X-Internal-Service-Key header (cho service calls nội bộ)
+ *   2. Bearer JWT token (cho user calls thông thường)
+ * Đảm bảo gateway vẫn là trung tâm điều phối, không cần bypass gateway.
+ */
+const internalOrAuth = (req, res, next) => {
+  const internalKey = req.headers['x-internal-service-key'];
+
+  if (internalKey) {
+    const expectedKey = process.env.INTERNAL_SERVICE_KEY;
+    if (!expectedKey) {
+      logger.warn('⚠️ INTERNAL_SERVICE_KEY not configured');
+      return res.status(500).json({
+        success: false,
+        message: 'Internal service key not configured.',
+      });
+    }
+    if (internalKey !== expectedKey) {
+      logger.warn(`⚠️ Invalid internal service key from ${req.ip}`);
+      return res.status(403).json({
+        success: false,
+        message: 'Invalid internal service key.',
+      });
+    }
+    // Mark as internal call, no user context needed
+    req.isInternalCall = true;
+    logger.debug(`🔑 Internal service call: ${req.method} ${req.url}`);
+    return next();
+  }
+
+  // Fall back to normal JWT auth
+  return authMiddleware(req, res, next);
+};
+
 module.exports = {
   authMiddleware,
   optionalAuth,
   adminMiddleware,
+  internalOrAuth,
 };

@@ -25,11 +25,17 @@ const checkPriceAlerts = async () => {
 
     logger.info(`🔍 Checking ${alerts.length} price alerts...`);
 
-    // Get current prices via API Gateway (SOA compliance)
-    const apiGatewayUrl = process.env.API_GATEWAY_URL || 'http://localhost:3000';
-    const pricesResponse = await axios.get(`${apiGatewayUrl}/api/market/prices`);
+    // Get current prices qua API Gateway với Internal Service Key
+    // Đảm bảo gateway là trung tâm điều phối, không gọi trực tiếp market-service
+    const gatewayUrl = process.env.API_GATEWAY_URL || 'http://localhost:3000';
+    const internalKey = process.env.INTERNAL_SERVICE_KEY;
+    const pricesResponse = await axios.get(`${gatewayUrl}/api/market/prices`, {
+      headers: {
+        'X-Internal-Service-Key': internalKey,
+      },
+    });
     if (!pricesResponse.data.success) {
-      logger.error('Failed to get prices from API Gateway');
+      logger.error('Failed to get prices from market-service');
       return;
     }
 

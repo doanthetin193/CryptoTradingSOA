@@ -50,6 +50,14 @@ module.exports = {
     healthCheck: '/health',
   },
 
+  // News Service (Java Spring Boot)
+  NEWS_SERVICE: {
+    name: 'news-service',
+    host: 'localhost',
+    port: 3006,
+    healthCheck: '/health',
+  },
+
   // Consul Configuration
   CONSUL: {
     host: 'localhost',

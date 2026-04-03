@@ -1,0 +1,14 @@
+spring:
+  cloud:
+    consul:
+      discovery:
+        enabled: false
+      config:
+        enabled: false
+
+cryptopanic:
+  api-key: ""
+
+logging:
+  level:
+    com.cryptotrading.news: WARN

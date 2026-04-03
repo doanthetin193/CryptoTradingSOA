@@ -9,7 +9,7 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 // Import shared utilities and middleware
 const logger = require('../shared/utils/logger');
 const { errorHandler, notFoundHandler } = require('../shared/middleware/errorHandler');
-const { authMiddleware, optionalAuth, adminMiddleware } = require('../shared/middleware/auth');
+const { authMiddleware, optionalAuth, adminMiddleware, internalOrAuth } = require('../shared/middleware/auth');
 const serviceDiscovery = require('../shared/utils/serviceDiscovery');
 
 // Import orchestration
@@ -155,6 +155,37 @@ const portfolioProxy = createServiceProxy('portfolio-service', 'portfolio');
 const tradeProxy = createServiceProxy('trade-service', 'trade');
 const notificationProxy = createServiceProxy('notification-service', 'notifications');
 
+// News proxy: Spring controller dùng @RequestMapping("/news") nên chỉ strip "/api"
+// /api/news/health -> /news/health (Spring nhận đúng prefix)
+const newsProxy = createProxyMiddleware({
+  target: 'http://localhost:3006',
+  router: async () => await getServiceTarget('news-service'),
+  changeOrigin: true,
+  pathRewrite: (path) => {
+    const newPath = path.replace('/api', '');
+    logger.debug(`🔄 [news] Path rewrite: ${path} -> ${newPath}`);
+    return newPath;
+  },
+  logLevel: 'warn',
+  onProxyReq: (proxyReq, req) => {
+    logger.info(`📤 Proxying to news-service: ${req.method} ${req.url}`);
+  },
+  onProxyRes: (proxyRes, req) => {
+    logger.info(`✅ Response from news-service: ${proxyRes.statusCode}`);
+  },
+  onError: (err, req, res) => {
+    logger.error(`❌ Proxy error for news-service: ${err.message}`);
+    if (!res.headersSent) {
+      res.status(503).json({
+        success: false,
+        message: 'Service news-service is currently unavailable',
+        error: err.message,
+      });
+    }
+  },
+  timeout: 30000,
+});
+
 // ===========================
 // Health Check Endpoint
 // ===========================
@@ -183,6 +214,7 @@ app.get('/', (req, res) => {
       portfolio: '/api/portfolio',
       trade: '/api/trade',
       notifications: '/api/notifications',
+      news: '/api/news',
     },
   });
 });
@@ -202,7 +234,8 @@ app.use('/api/users/admin', authMiddleware, adminMiddleware, userProxy);
 app.use('/api/users', authMiddleware, userProxy);
 
 // MARKET SERVICE
-app.use('/api/market', authMiddleware, marketProxy);
+// internalOrAuth: chấp nhận JWT (user calls) HOẶC X-Internal-Service-Key (service-to-service calls)
+app.use('/api/market', internalOrAuth, marketProxy);
 
 // PORTFOLIO SERVICE - Orchestrated route for enriched data
 app.get('/api/portfolio', authMiddleware, portfolioOrchestration.getEnrichedPortfolio);
@@ -223,6 +256,9 @@ app.use('/api/trade', authMiddleware, tradeProxy);
 
 // NOTIFICATION SERVICE
 app.use('/api/notifications', authMiddleware, notificationProxy);
+
+// NEWS SERVICE - Public route (tin tức không cần xác thực)
+app.use('/api/news', newsProxy);
 
 // ===========================
 // Error Handling
