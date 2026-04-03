@@ -204,7 +204,7 @@ spring:
 
 youtube:
   api-key: ${YOUTUBE_API_KEY:your-youtube-api-key-here}
-  playlist-id: ${YOUTUBE_PLAYLIST_ID:PLmkMeQXrAX47_ZwxjoPXDAqanx4-ady6O}
+  playlist-id: ${YOUTUBE_PLAYLIST_ID:your-playlist-id-here}
   base-url: https://www.googleapis.com/youtube/v3
   cache-ttl-hours: 24    # ← Cache YouTube data 24 giờ
 ```
