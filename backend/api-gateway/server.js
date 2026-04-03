@@ -186,6 +186,37 @@ const newsProxy = createProxyMiddleware({
   timeout: 30000,
 });
 
+// Academy proxy: Spring controller dùng @RequestMapping("/academy") nên chỉ strip "/api"
+// /api/academy/courses -> /academy/courses
+const academyProxy = createProxyMiddleware({
+  target: 'http://localhost:3007',
+  router: async () => await getServiceTarget('academy-service'),
+  changeOrigin: true,
+  pathRewrite: (path) => {
+    const newPath = path.replace('/api', '');
+    logger.debug(`🔄 [academy] Path rewrite: ${path} -> ${newPath}`);
+    return newPath;
+  },
+  logLevel: 'warn',
+  onProxyReq: (proxyReq, req) => {
+    logger.info(`📤 Proxying to academy-service: ${req.method} ${req.url}`);
+  },
+  onProxyRes: (proxyRes, req) => {
+    logger.info(`✅ Response from academy-service: ${proxyRes.statusCode}`);
+  },
+  onError: (err, req, res) => {
+    logger.error(`❌ Proxy error for academy-service: ${err.message}`);
+    if (!res.headersSent) {
+      res.status(503).json({
+        success: false,
+        message: 'Service academy-service is currently unavailable',
+        error: err.message,
+      });
+    }
+  },
+  timeout: 30000,
+});
+
 // ===========================
 // Health Check Endpoint
 // ===========================
@@ -215,6 +246,7 @@ app.get('/', (req, res) => {
       trade: '/api/trade',
       notifications: '/api/notifications',
       news: '/api/news',
+      academy: '/api/academy',
     },
   });
 });
@@ -259,6 +291,9 @@ app.use('/api/notifications', authMiddleware, notificationProxy);
 
 // NEWS SERVICE - Public route (tin tức không cần xác thực)
 app.use('/api/news', newsProxy);
+
+// ACADEMY SERVICE - Public route (video học không cần xác thực)
+app.use('/api/academy', academyProxy);
 
 // ===========================
 // Error Handling

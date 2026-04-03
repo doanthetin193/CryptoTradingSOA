@@ -162,4 +162,13 @@ export const newsAPI = {
   getHealth: () => api.get('/news/health'),
 };
 
+// ===========================
+// ACADEMY APIs
+// ===========================
+export const academyAPI = {
+  getCourses: (params) => api.get('/academy/courses', { params }),
+  getCourseById: (videoId) => api.get(`/academy/courses/${videoId}`),
+  getHealth: () => api.get('/academy/health'),
+};
+
 export default api;

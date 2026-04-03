@@ -12,6 +12,7 @@ import Settings from './pages/Settings';
 import CoinDetail from './pages/CoinDetail';
 import Admin from './pages/Admin';
 import News from './pages/News';
+import Academy from './pages/Academy';
 
 // Protected Route Component
 function ProtectedRoute({ children }) {
@@ -70,6 +71,7 @@ function AppRoutes() {
         <Route path="history" element={<History />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="news" element={<News />} />
+        <Route path="academy" element={<Academy />} />
         <Route path="settings" element={<Settings />} />
         <Route path="admin" element={<Admin />} />
       </Route>

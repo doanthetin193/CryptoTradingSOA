@@ -84,6 +84,22 @@ if (Test-Path $newsJar) {
     Write-Host "  - News Service JAR not found; build first: cd D:\CryptoTradingSOA\news-service && mvn package -DskipTests" -ForegroundColor Yellow
 }
 
+# Start Academy Service (Java)
+$academyJar = "D:\CryptoTradingSOA\academy-service\target\academy-service-1.0.0.jar"
+if (Test-Path $academyJar) {
+    Write-Host "  - Starting: Academy Service (Java) on port 3007" -ForegroundColor Green
+    $existingPid = netstat -ano 2>$null | Select-String ":3007\s.*LISTENING" | ForEach-Object { ($_ -split '\s+')[-1] } | Select-Object -First 1
+    if ($existingPid) {
+        Stop-Process -Id $existingPid -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 1
+    }
+    $academyCmd = "`$host.UI.RawUI.WindowTitle='Academy Service (Java) :3007'; Write-Host 'Starting Academy Service on port 3007...'; java '-Dspring.datasource.password=123456' '-Dspring.datasource.url=jdbc:mysql://localhost:3306/crypto_academy?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8' -jar '$academyJar'"
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", $academyCmd
+    Start-Sleep -Seconds 2
+} else {
+    Write-Host "  - Academy Service JAR not found; build first: cd D:\CryptoTradingSOA\academy-service && mvn package -DskipTests" -ForegroundColor Yellow
+}
+
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Yellow
 Write-Host "  1. Wait for all services to be ready (check each window)"
