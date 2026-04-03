@@ -100,6 +100,22 @@ if (Test-Path $academyJar) {
     Write-Host "  - Academy Service JAR not found; build first: cd D:\CryptoTradingSOA\academy-service && mvn package -DskipTests" -ForegroundColor Yellow
 }
 
+# Start Sentiment Service (Python FinBERT)
+$sentimentScript = "D:\CryptoTradingSOA\sentiment-service\main.py"
+if (Test-Path $sentimentScript) {
+    Write-Host "  - Starting: Sentiment Service (Python FinBERT) on port 3008" -ForegroundColor Green
+    $existingPid = netstat -ano 2>$null | Select-String ":3008\s.*LISTENING" | ForEach-Object { ($_ -split '\s+')[-1] } | Select-Object -First 1
+    if ($existingPid) {
+        Stop-Process -Id $existingPid -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 1
+    }
+    $sentimentCmd = "`$host.UI.RawUI.WindowTitle='Sentiment Service (Python FinBERT) :3008'; Set-Location 'D:\CryptoTradingSOA\sentiment-service'; Write-Host 'Starting Sentiment Service (FinBERT will download on first run)...'; python main.py"
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", $sentimentCmd
+    Start-Sleep -Seconds 2
+} else {
+    Write-Host "  - Sentiment Service not found at D:\CryptoTradingSOA\sentiment-service\main.py" -ForegroundColor Yellow
+}
+
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Yellow
 Write-Host "  1. Wait for all services to be ready (check each window)"

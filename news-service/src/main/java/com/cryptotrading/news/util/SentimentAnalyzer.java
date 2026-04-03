@@ -2,20 +2,34 @@ package com.cryptotrading.news.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Phân tích sentiment đơn giản dựa trên keyword matching
- * positive / negative / neutral
+ * Phân tích sentiment bài báo crypto.
+ *
+ * Chiến lược 2 lớp:
+ *   1. Gọi Python FinBERT service (localhost:3008) — AI thực sự, chính xác hơn
+ *   2. Fallback về keyword matching nếu Python service chưa chạy / bị lỗi
+ *
+ * → News Service hoạt động bình thường kể cả khi sentiment-service down.
  */
 @Component
 public class SentimentAnalyzer {
 
     private static final Logger log = LoggerFactory.getLogger(SentimentAnalyzer.class);
+
+    @Value("${sentiment.service-url:http://localhost:3008}")
+    private String sentimentServiceUrl;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     private static final List<String> POSITIVE_KEYWORDS = Arrays.asList(
             "surge", "rally", "bull", "gain", "rise", "soar", "high", "record",
@@ -35,11 +49,51 @@ public class SentimentAnalyzer {
     private static final int MAX_SIMULATED_VIEWS = 2000;
 
     /**
-     * Phân tích sentiment từ title + summary
+     * Phân tích sentiment từ title + summary.
+     *
+     * Thử FinBERT (Python) trước, fallback về keyword nếu không có.
      */
     public String analyze(String title, String summary) {
         if (title == null) return "neutral";
 
+        // ── Bước 1: Thử Python FinBERT service ───────────────────────────
+        try {
+            // Gộp title + phần đầu summary (max ~300 ký tự) để FinBERT có context
+            String summarySnippet = (summary != null && summary.length() > 200)
+                    ? summary.substring(0, 200) : (summary != null ? summary : "");
+            String text = title + ". " + summarySnippet;
+
+            Map<String, String> request = Map.of("text", text);
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> response = restTemplate.postForObject(
+                    sentimentServiceUrl + "/sentiment/analyze",
+                    request,
+                    Map.class
+            );
+
+            if (response != null && response.containsKey("label")) {
+                String label = (String) response.get("label");
+                double score = response.get("score") instanceof Number
+                        ? ((Number) response.get("score")).doubleValue() : 0.0;
+                log.debug("[SentimentAnalyzer] FinBERT → {} ({:.0f}%) for: {}",
+                        label, score * 100, title);
+                return label;
+            }
+        } catch (Exception e) {
+            // Không log ERROR vì đây là expected khi sentiment-service chưa chạy
+            log.debug("[SentimentAnalyzer] FinBERT service unavailable ({}), using keyword fallback",
+                    e.getClass().getSimpleName());
+        }
+
+        // ── Bước 2: Fallback keyword matching ────────────────────────────
+        return analyzeByKeywords(title, summary);
+    }
+
+    /**
+     * Keyword-based sentiment (fallback khi FinBERT không khả dụng).
+     */
+    private String analyzeByKeywords(String title, String summary) {
         String combined = (title + " " + (summary != null ? summary : "")).toLowerCase();
 
         long positiveCount = POSITIVE_KEYWORDS.stream()

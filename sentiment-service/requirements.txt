@@ -1,0 +1,6 @@
+fastapi>=0.111.0
+uvicorn>=0.30.0
+transformers>=4.41.0
+pydantic>=2.0.0
+# torch được install riêng với CPU-only wheel (xem start.ps1)
+# để tránh download bản GPU ~2GB không cần thiết

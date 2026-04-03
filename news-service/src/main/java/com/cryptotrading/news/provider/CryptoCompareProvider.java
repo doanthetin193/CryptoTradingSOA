@@ -360,6 +360,12 @@ public class CryptoCompareProvider {
                 .views(389)
                 .build());
 
+        // Áp dụng FinBERT sentiment cho sample data (thay thế hardcoded labels)
+        // Điều này chứng minh tích hợp AI hoạt động ngay cả khi dùng dữ liệu mẫu
+        log.info("[SampleData] Applying FinBERT sentiment to {} sample articles...", samples.size());
+        samples.forEach(n -> n.setSentiment(sentimentAnalyzer.analyze(n.getTitle(), n.getSummary())));
+        log.info("[SampleData] FinBERT sentiment analysis complete.");
+
         return samples;
     }
 }

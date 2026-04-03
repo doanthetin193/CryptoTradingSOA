@@ -217,6 +217,30 @@ const academyProxy = createProxyMiddleware({
   timeout: 30000,
 });
 
+// Sentiment proxy: Python FastAPI dùng prefix "/sentiment" nên chỉ strip "/api"
+// /api/sentiment/analyze -> /sentiment/analyze
+const sentimentProxy = createProxyMiddleware({
+  target: 'http://localhost:3008',
+  changeOrigin: true,
+  pathRewrite: (path) => {
+    const newPath = path.replace('/api', '');
+    logger.debug(`🔄 [sentiment] Path rewrite: ${path} -> ${newPath}`);
+    return newPath;
+  },
+  logLevel: 'warn',
+  onError: (err, req, res) => {
+    logger.error(`❌ Proxy error for sentiment-service: ${err.message}`);
+    if (!res.headersSent) {
+      res.status(503).json({
+        success: false,
+        message: 'Sentiment service is currently unavailable',
+        error: err.message,
+      });
+    }
+  },
+  timeout: 30000,
+});
+
 // ===========================
 // Health Check Endpoint
 // ===========================
@@ -294,6 +318,9 @@ app.use('/api/news', newsProxy);
 
 // ACADEMY SERVICE - Public route (video học không cần xác thực)
 app.use('/api/academy', academyProxy);
+
+// SENTIMENT SERVICE - Internal/public route (phân tích sentiment)
+app.use('/api/sentiment', sentimentProxy);
 
 // ===========================
 // Error Handling

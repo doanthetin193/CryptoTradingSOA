@@ -47,6 +47,10 @@ cache:
 scheduler:
   news-fetch-interval-ms: 900000  # 15 minutes
 
+# Sentiment Service (Python FinBERT)
+sentiment:
+  service-url: ${SENTIMENT_SERVICE_URL:http://localhost:3008}
+
 # Logging
 logging:
   level:
