@@ -33,21 +33,6 @@ public class ApiResponse<T> {
                 .build();
     }
 
-    public static <T> ApiResponse<T> success(T data, String message) {
-        return ApiResponse.<T>builder()
-                .success(true)
-                .message(message)
-                .data(data)
-                .build();
-    }
-
-    public static <T> ApiResponse<T> error(String message) {
-        return ApiResponse.<T>builder()
-                .success(false)
-                .message(message)
-                .build();
-    }
-
     public static <T> ApiResponse<T> error(String message, String errorCode) {
         return ApiResponse.<T>builder()
                 .success(false)
