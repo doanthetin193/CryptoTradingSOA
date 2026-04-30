@@ -8,7 +8,8 @@ import {
   Settings,
   Shield,
   Newspaper,
-  GraduationCap
+  GraduationCap,
+  BrainCircuit
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
@@ -20,6 +21,7 @@ const menuItems = [
   { icon: Bell, label: 'Notifications', path: '/notifications' },
   { icon: Newspaper, label: 'Tin tức', path: '/news' },
   { icon: GraduationCap, label: 'Academy', path: '/academy' },
+  { icon: BrainCircuit, label: 'AI Suggestion', path: '/suggestion' },
   { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 

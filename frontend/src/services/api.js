@@ -171,4 +171,11 @@ export const academyAPI = {
   getHealth: () => api.get('/academy/health'),
 };
 
+// ===========================
+// SENTIMENT / AI APIs
+// ===========================
+export const sentimentAPI = {
+  getSuggestion: (symbol) => api.get('/sentiment/suggestion', { params: { symbol } }),
+};
+
 export default api;

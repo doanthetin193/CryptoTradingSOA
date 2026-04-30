@@ -13,6 +13,7 @@ import CoinDetail from './pages/CoinDetail';
 import Admin from './pages/Admin';
 import News from './pages/News';
 import Academy from './pages/Academy';
+import Suggestion from './pages/Suggestion';
 
 // Protected Route Component
 function ProtectedRoute({ children }) {
@@ -72,6 +73,7 @@ function AppRoutes() {
         <Route path="notifications" element={<Notifications />} />
         <Route path="news" element={<News />} />
         <Route path="academy" element={<Academy />} />
+        <Route path="suggestion" element={<Suggestion />} />
         <Route path="settings" element={<Settings />} />
         <Route path="admin" element={<Admin />} />
       </Route>
