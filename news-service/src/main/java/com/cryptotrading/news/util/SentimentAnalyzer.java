@@ -76,8 +76,8 @@ public class SentimentAnalyzer {
                 String label = (String) response.get("label");
                 double score = response.get("score") instanceof Number
                         ? ((Number) response.get("score")).doubleValue() : 0.0;
-                log.debug("[SentimentAnalyzer] FinBERT → {} ({:.0f}%) for: {}",
-                        label, score * 100, title);
+                log.debug("[SentimentAnalyzer] FinBERT -> {} ({}%) for: {}",
+                        label, Math.round(score * 100), title);
                 return label;
             }
         } catch (Exception e) {

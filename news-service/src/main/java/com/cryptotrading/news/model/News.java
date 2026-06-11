@@ -1,4 +1,4 @@
-package com.cryptotrading.news.model;
+﻿package com.cryptotrading.news.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Model đại diện cho một bài tin tức crypto
+ * Model Ä‘áº¡i diá»‡n cho má»™t bÃ i tin tá»©c crypto
  */
 @Data
 @Builder
@@ -18,42 +18,42 @@ import java.util.List;
 @AllArgsConstructor
 public class News {
 
-    /** ID duy nhất của bài báo */
+    /** ID duy nháº¥t cá»§a bÃ i bÃ¡o */
     private String id;
 
-    /** Tiêu đề bài báo */
+    /** TiÃªu Ä‘á» bÃ i bÃ¡o */
     private String title;
 
-    /** Tóm tắt nội dung */
+    /** TÃ³m táº¯t ná»™i dung */
     private String summary;
 
-    /** Nội dung đầy đủ (nếu có) */
+    /** Ná»™i dung Ä‘áº§y Ä‘á»§ (náº¿u cÃ³) */
     private String content;
 
-    /** Nguồn báo (CryptoPanic, CoinTelegraph, v.v.) */
+    /** Nguá»“n bÃ¡o (CryptoCompare, CoinTelegraph, v.v.) */
     private String source;
 
-    /** URL bài báo gốc */
+    /** URL bÃ i bÃ¡o gá»‘c */
     private String url;
 
-    /** URL ảnh thumbnail */
+    /** URL áº£nh thumbnail */
     private String imageUrl;
 
     /** Sentiment: positive | negative | neutral */
     private String sentiment;
 
-    /** Danh sách coins liên quan: ["BTC", "ETH"] */
+    /** Danh sÃ¡ch coins liÃªn quan: ["BTC", "ETH"] */
     private List<String> coins;
 
-    /** Thời điểm bài báo được xuất bản */
+    /** Thá»i Ä‘iá»ƒm bÃ i bÃ¡o Ä‘Æ°á»£c xuáº¥t báº£n */
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private LocalDateTime publishedAt;
 
-    /** Thời điểm chúng ta lấy bài báo về */
+    /** Thá»i Ä‘iá»ƒm chÃºng ta láº¥y bÃ i bÃ¡o vá» */
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private LocalDateTime fetchedAt;
 
-    /** Số lượt xem (optional) */
+    /** Sá»‘ lÆ°á»£t xem (optional) */
     @Builder.Default
     private Integer views = 0;
 }

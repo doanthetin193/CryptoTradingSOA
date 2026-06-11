@@ -1,416 +1,414 @@
-import { useState, useEffect, useCallback } from 'react';
-import { academyAPI } from '../services/api';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  BookOpen,
+  CheckCircle2,
+  Circle,
+  Clock,
+  ExternalLink,
+  Eye,
   GraduationCap,
   Play,
-  Clock,
-  Eye,
+  RotateCw,
   ThumbsUp,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
   X,
-  BookOpen,
 } from 'lucide-react';
+import { academyAPI } from '../services/api';
 
-// ─── Config ──────────────────────────────────────────────────────────────────
-
-const DIFFICULTY_CONFIG = {
-  BEGINNER: {
-    label: 'Cơ bản',
-    className: 'bg-green-500/20 text-green-400 border border-green-500/30',
-  },
-  INTERMEDIATE: {
-    label: 'Trung cấp',
-    className: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
-  },
-  ADVANCED: {
-    label: 'Nâng cao',
-    className: 'bg-red-500/20 text-red-400 border border-red-500/30',
-  },
+const DIFFICULTY = {
+  BEGINNER: { label: 'Cơ bản', className: 'border-emerald-500/30 bg-emerald-500/15 text-emerald-300' },
+  INTERMEDIATE: { label: 'Trung cấp', className: 'border-amber-500/30 bg-amber-500/15 text-amber-300' },
+  ADVANCED: { label: 'Nâng cao', className: 'border-rose-500/30 bg-rose-500/15 text-rose-300' },
 };
 
-const CATEGORIES = ['Tất cả', 'TRADING', 'BLOCKCHAIN', 'DEFI', 'ALTCOINS', 'SECURITY'];
-const DIFFICULTIES = ['Tất cả', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function formatViews(count) {
-  if (!count) return '—';
-  const n = parseInt(count, 10);
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return n.toLocaleString();
+function formatViews(value) {
+  const count = Number(value);
+  if (!count) return null;
+  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1)}M`;
+  if (count >= 1_000) return `${(count / 1_000).toFixed(1)}K`;
+  return count.toLocaleString('vi-VN');
 }
 
-function formatDate(iso) {
-  if (!iso) return '';
-  return new Date(iso).toLocaleDateString('vi-VN', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+function thumbnailFor(course) {
+  return course.thumbnailUrl || `https://i.ytimg.com/vi/${course.videoId}/hqdefault.jpg`;
 }
 
-// ─── Video Modal ─────────────────────────────────────────────────────────────
-
-function VideoModal({ course, onClose }) {
-  useEffect(() => {
-    const handler = (e) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
-
-  if (!course) return null;
-
-  const difficulty = DIFFICULTY_CONFIG[course.difficulty] || DIFFICULTY_CONFIG.BEGINNER;
-
+function Stat({ icon, children }) {
+  if (!children) return null;
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className="bg-crypto-secondary rounded-2xl w-full max-w-4xl overflow-hidden border border-crypto shadow-2xl">
-        {/* Video Player */}
-        <div className="relative bg-black" style={{ paddingTop: '56.25%' }}>
-          <iframe
-            className="absolute inset-0 w-full h-full"
-            src={`${course.embedUrl}?autoplay=1&rel=0`}
-            title={course.title}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </div>
+    <span className="inline-flex items-center gap-1.5 text-xs text-crypto-muted">
+      {icon}
+      {children}
+    </span>
+  );
+}
 
-        {/* Info */}
-        <div className="p-5">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-bold text-white leading-snug mb-2">
-                {course.title}
-              </h2>
-              <div className="flex flex-wrap items-center gap-2 text-sm text-crypto-muted">
-                {course.channelTitle && (
-                  <span className="font-medium text-blue-400">{course.channelTitle}</span>
-                )}
-                {course.publishedAt && (
-                  <span>· {formatDate(course.publishedAt)}</span>
-                )}
-                {course.viewCount && (
-                  <span className="flex items-center gap-1">
-                    · <Eye className="w-3.5 h-3.5" /> {formatViews(course.viewCount)} lượt xem
-                  </span>
-                )}
-                {course.likeCount && (
-                  <span className="flex items-center gap-1">
-                    · <ThumbsUp className="w-3.5 h-3.5" /> {formatViews(course.likeCount)}
-                  </span>
-                )}
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="flex-shrink-0 p-2 rounded-lg hover:bg-crypto-accent text-crypto-muted hover:text-white transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          <div className="flex flex-wrap gap-2 mt-3">
-            <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${difficulty.className}`}>
-              {difficulty.label}
-            </span>
-            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
-              {course.category}
-            </span>
-            {course.durationFormatted && (
-              <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-crypto-accent text-crypto-muted">
-                <Clock className="w-3 h-3" /> {course.durationFormatted}
-              </span>
-            )}
-          </div>
-
-          {course.description && (
-            <p className="mt-3 text-sm text-crypto-muted line-clamp-3 leading-relaxed">
-              {course.description}
-            </p>
-          )}
-        </div>
-      </div>
+function ProgressBar({ value }) {
+  return (
+    <div className="h-2 rounded-full bg-[#0b1020] overflow-hidden">
+      <div
+        className="h-full rounded-full bg-cyan-400 transition-all"
+        style={{ width: `${value}%` }}
+      />
     </div>
   );
 }
 
-// ─── Course Card ─────────────────────────────────────────────────────────────
+function PathButton({ path, active, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full rounded-lg border p-4 text-left transition-colors ${
+        active
+          ? 'border-cyan-400/70 bg-cyan-400/10'
+          : 'border-crypto bg-crypto-secondary hover:border-cyan-400/40'
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-semibold text-white">{path.title}</p>
+          <p className="mt-1 text-xs leading-relaxed text-crypto-muted">{path.description}</p>
+        </div>
+        <span className="shrink-0 rounded-md border border-crypto px-2 py-1 text-xs text-cyan-300">
+          {path.completedCourses}/{path.totalCourses}
+        </span>
+      </div>
+      <div className="mt-3">
+        <ProgressBar value={path.progressPercent || 0} />
+      </div>
+    </button>
+  );
+}
 
-function CourseCard({ course, onClick }) {
-  const difficulty = DIFFICULTY_CONFIG[course.difficulty] || DIFFICULTY_CONFIG.BEGINNER;
-  const thumbnail =
-    course.thumbnailUrl ||
-    `https://i.ytimg.com/vi/${course.videoId}/hqdefault.jpg`;
+function ProgressButton({ course, signedIn, savingId, onToggle }) {
+  const Icon = course.completed ? CheckCircle2 : Circle;
+  const label = course.completed ? 'Đã học' : signedIn ? 'Hoàn thành' : 'Đăng nhập để lưu';
 
   return (
-    <div
-      className="group bg-crypto-secondary rounded-xl border border-crypto overflow-hidden hover:border-blue-500/50 transition-all duration-200 cursor-pointer"
-      onClick={() => onClick(course)}
+    <button
+      type="button"
+      disabled={savingId === course.videoId || !signedIn}
+      onClick={(event) => {
+        event.stopPropagation();
+        onToggle(course);
+      }}
+      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border px-3 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+        course.completed
+          ? 'border-emerald-400/30 bg-emerald-500/15 text-emerald-300'
+          : 'border-crypto bg-[#12162a] text-cyan-200 hover:border-cyan-400/50'
+      }`}
     >
-      {/* Thumbnail */}
-      <div className="relative overflow-hidden bg-black">
+      <Icon className="h-4 w-4" />
+      {label}
+    </button>
+  );
+}
+
+function CourseCard({ course, signedIn, savingId, onOpen, onToggle }) {
+  const difficulty = DIFFICULTY[course.difficulty] || DIFFICULTY.BEGINNER;
+
+  return (
+    <article
+      onClick={() => onOpen(course)}
+      className="group cursor-pointer overflow-hidden rounded-lg border border-crypto bg-crypto-secondary transition-colors hover:border-cyan-400/50"
+    >
+      <div className="relative aspect-video bg-black">
         <img
-          src={thumbnail}
+          src={thumbnailFor(course)}
           alt={course.title}
-          className="w-full object-cover aspect-video group-hover:scale-105 transition-transform duration-300"
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
           loading="lazy"
-          onError={(e) => {
-            e.target.src = `https://i.ytimg.com/vi/${course.videoId}/hqdefault.jpg`;
+          onError={(event) => {
+            event.currentTarget.src = `https://i.ytimg.com/vi/${course.videoId}/hqdefault.jpg`;
           }}
         />
-        {/* Play overlay */}
-        <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <div className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center shadow-xl">
-            <Play className="w-6 h-6 text-white fill-white ml-1" />
-          </div>
+        <div className="absolute inset-0 flex items-center justify-center bg-black/35 opacity-0 transition-opacity group-hover:opacity-100">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-400 text-[#07111f]">
+            <Play className="ml-0.5 h-5 w-5 fill-current" />
+          </span>
         </div>
-        {/* Duration badge */}
         {course.durationFormatted && (
-          <span className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-medium px-1.5 py-0.5 rounded">
+          <span className="absolute bottom-2 right-2 rounded bg-black/80 px-2 py-1 text-xs font-semibold text-white">
             {course.durationFormatted}
           </span>
         )}
       </div>
 
-      {/* Content */}
-      <div className="p-4">
-        <h3 className="font-semibold text-white text-sm leading-snug line-clamp-2 mb-2 group-hover:text-blue-400 transition-colors">
-          {course.title}
-        </h3>
-
-        {course.channelTitle && (
-          <p className="text-xs text-crypto-muted mb-2">{course.channelTitle}</p>
-        )}
-
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${difficulty.className}`}>
+      <div className="space-y-3 p-4">
+        <div className="flex flex-wrap gap-2">
+          <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${difficulty.className}`}>
             {difficulty.label}
           </span>
-          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
+          <span className="rounded-full border border-cyan-400/25 bg-cyan-400/10 px-2.5 py-1 text-xs font-semibold text-cyan-300">
             {course.category}
           </span>
         </div>
 
-        <div className="flex items-center gap-3 text-xs text-crypto-muted">
-          {course.viewCount && (
-            <span className="flex items-center gap-1">
-              <Eye className="w-3 h-3" /> {formatViews(course.viewCount)}
-            </span>
-          )}
-          {course.likeCount && (
-            <span className="flex items-center gap-1">
-              <ThumbsUp className="w-3 h-3" /> {formatViews(course.likeCount)}
-            </span>
-          )}
+        <h3 className="line-clamp-2 min-h-12 text-base font-bold leading-snug text-white group-hover:text-cyan-300">
+          {course.title}
+        </h3>
+
+        <p className="line-clamp-2 min-h-10 text-sm leading-relaxed text-crypto-muted">
+          {course.description}
+        </p>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <Stat icon={<Eye className="h-3.5 w-3.5" />}>{formatViews(course.viewCount)}</Stat>
+          <Stat icon={<ThumbsUp className="h-3.5 w-3.5" />}>{formatViews(course.likeCount)}</Stat>
+          <Stat icon={<Clock className="h-3.5 w-3.5" />}>{course.durationFormatted}</Stat>
         </div>
+
+        <ProgressButton
+          course={course}
+          signedIn={signedIn}
+          savingId={savingId}
+          onToggle={onToggle}
+        />
       </div>
-    </div>
+    </article>
   );
 }
 
-// ─── Pagination ───────────────────────────────────────────────────────────────
-
-function Pagination({ page, totalPages, onPageChange }) {
-  if (totalPages <= 1) return null;
-  return (
-    <div className="flex items-center justify-center gap-2 mt-8">
-      <button
-        onClick={() => onPageChange(page - 1)}
-        disabled={page === 0}
-        className="p-2 rounded-lg bg-crypto-secondary border border-crypto text-crypto-muted hover:text-white hover:border-blue-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-      >
-        <ChevronLeft className="w-5 h-5" />
-      </button>
-      <span className="text-sm text-crypto-muted px-3">
-        Trang {page + 1} / {totalPages}
-      </span>
-      <button
-        onClick={() => onPageChange(page + 1)}
-        disabled={page >= totalPages - 1}
-        className="p-2 rounded-lg bg-crypto-secondary border border-crypto text-crypto-muted hover:text-white hover:border-blue-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-      >
-        <ChevronRight className="w-5 h-5" />
-      </button>
-    </div>
-  );
-}
-
-// ─── Main Page ────────────────────────────────────────────────────────────────
-
-export default function Academy() {
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedCourse, setSelectedCourse] = useState(null);
-
-  // Filters
-  const [category, setCategory] = useState('Tất cả');
-  const [difficulty, setDifficulty] = useState('Tất cả');
-  const [page, setPage] = useState(0);
-
-  // Pagination info
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalElements, setTotalElements] = useState(0);
-
-  const fetchCourses = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = {
-        page,
-        size: 12,
-        ...(category !== 'Tất cả' && { category }),
-        ...(difficulty !== 'Tất cả' && { difficulty }),
-      };
-      const res = await academyAPI.getCourses(params);
-      const data = res.data;
-      setCourses(data.content || []);
-      setTotalPages(data.totalPages || 1);
-      setTotalElements(data.totalElements || 0);
-    // eslint-disable-next-line no-unused-vars
-    } catch (err) {
-      setError('Không thể tải danh sách khóa học. Academy Service chưa khởi động?');
-      setCourses([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, category, difficulty]);
-
+function VideoModal({ course, signedIn, savingId, onClose, onToggle }) {
   useEffect(() => {
-    fetchCourses();
-  }, [fetchCourses]);
+    const closeOnEscape = (event) => event.key === 'Escape' && onClose();
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [onClose]);
 
-  // Reset page when filters change
-  useEffect(() => {
-    setPage(0);
-  }, [category, difficulty]);
+  if (!course) return null;
+
+  const difficulty = DIFFICULTY[course.difficulty] || DIFFICULTY.BEGINNER;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
-            <GraduationCap className="w-6 h-6 text-blue-400" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white">Crypto Academy</h1>
-            <p className="text-sm text-crypto-muted">
-              {totalElements > 0
-                ? `${totalElements} video học tập về crypto`
-                : 'Học crypto từ cơ bản đến nâng cao'}
-            </p>
-          </div>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+      onClick={(event) => event.target === event.currentTarget && onClose()}
+    >
+      <div className="relative flex max-h-[calc(100vh-2rem)] w-full max-w-4xl flex-col overflow-hidden rounded-lg border border-crypto bg-crypto-secondary shadow-2xl">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-lg bg-black/60 text-white backdrop-blur transition-colors hover:bg-black/80"
+        >
+          <X className="h-5 w-5" />
+        </button>
+
+        <div className="relative aspect-video max-h-[58vh] shrink-0 bg-black">
+          <iframe
+            className="absolute inset-0 h-full w-full"
+            src={`${course.embedUrl}?autoplay=1&rel=0`}
+            title={course.title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
         </div>
-      </div>
 
-      {/* Filters */}
-      <div className="bg-crypto-secondary rounded-xl border border-crypto p-4 mb-6">
-        <div className="flex flex-wrap gap-4 items-center">
-          <div className="flex items-center gap-2 text-crypto-muted">
-            <Filter className="w-4 h-4" />
-            <span className="text-sm font-medium">Lọc:</span>
-          </div>
-
-          {/* Category filter */}
-          <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                  category === cat
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-crypto-accent text-crypto-muted hover:text-white hover:bg-crypto-accent/80'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          <div className="w-px h-6 bg-crypto-border hidden sm:block" />
-
-          {/* Difficulty filter */}
-          <div className="flex flex-wrap gap-2">
-            {DIFFICULTIES.map((diff) => {
-              const cfg = DIFFICULTY_CONFIG[diff];
-              return (
-                <button
-                  key={diff}
-                  onClick={() => setDifficulty(diff)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                    difficulty === diff
-                      ? cfg
-                        ? cfg.className + ' !border-opacity-100'
-                        : 'bg-white/10 text-white'
-                      : 'bg-crypto-accent text-crypto-muted hover:text-white'
-                  }`}
-                >
-                  {cfg ? cfg.label : diff}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="bg-crypto-secondary rounded-xl border border-crypto overflow-hidden animate-pulse">
-              <div className="aspect-video bg-crypto-accent" />
-              <div className="p-4 space-y-2">
-                <div className="h-4 bg-crypto-accent rounded w-full" />
-                <div className="h-4 bg-crypto-accent rounded w-3/4" />
-                <div className="h-3 bg-crypto-accent rounded w-1/2" />
+        <div className="min-h-0 space-y-4 overflow-y-auto p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <h2 className="text-xl font-bold leading-snug text-white">{course.title}</h2>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${difficulty.className}`}>
+                  {difficulty.label}
+                </span>
+                <span className="rounded-full border border-cyan-400/25 bg-cyan-400/10 px-2.5 py-1 text-xs font-semibold text-cyan-300">
+                  {course.category}
+                </span>
               </div>
             </div>
-          ))}
+          </div>
+
+          <p className="text-sm leading-relaxed text-crypto-muted">{course.description}</p>
+          <div className="flex flex-wrap gap-3">
+            <ProgressButton course={course} signedIn={signedIn} savingId={savingId} onToggle={onToggle} />
+            <a
+              href={course.watchUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-crypto bg-[#12162a] px-3 text-sm font-semibold text-crypto-muted transition-colors hover:border-cyan-400/50 hover:text-white"
+            >
+              <ExternalLink className="h-4 w-4" />
+              Mở YouTube
+            </a>
+          </div>
         </div>
-      ) : error ? (
-        <div className="text-center py-20">
-          <BookOpen className="w-12 h-12 text-crypto-muted mx-auto mb-4" />
-          <p className="text-red-400 mb-2">{error}</p>
+      </div>
+    </div>
+  );
+}
+
+export default function Academy() {
+  const [paths, setPaths] = useState([]);
+  const [activePathId, setActivePathId] = useState(null);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [savingId, setSavingId] = useState(null);
+  const [error, setError] = useState('');
+
+  const signedIn = Boolean(localStorage.getItem('token'));
+
+  const loadPaths = useCallback(async (showLoading = true) => {
+    if (showLoading) setLoading(true);
+    setError('');
+    try {
+      const response = await academyAPI.getPaths();
+      const nextPaths = response.data || [];
+      setPaths(nextPaths);
+      setActivePathId((current) => current || nextPaths[0]?.id || null);
+    } catch (err) {
+      setError(err.message || 'Không thể tải Academy Service.');
+      setPaths([]);
+    } finally {
+      if (showLoading) setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadPaths();
+  }, [loadPaths]);
+
+  const activePath = useMemo(
+    () => paths.find((path) => path.id === activePathId) || paths[0],
+    [paths, activePathId]
+  );
+
+  const totals = useMemo(() => {
+    const total = paths.reduce((sum, path) => sum + path.totalCourses, 0);
+    const completed = paths.reduce((sum, path) => sum + path.completedCourses, 0);
+    return {
+      total,
+      completed,
+      percent: total === 0 ? 0 : Math.round((completed * 100) / total),
+    };
+  }, [paths]);
+
+  const toggleProgress = async (course) => {
+    if (!signedIn) return;
+
+    setSavingId(course.videoId);
+    setError('');
+    try {
+      const response = await academyAPI.updateProgress(course.videoId, !course.completed);
+      const updatedCourse = response.data;
+      await loadPaths(false);
+      setSelectedCourse((current) =>
+        current?.videoId === updatedCourse.videoId ? updatedCourse : current
+      );
+    } catch (err) {
+      setError(err.message || 'Không thể lưu tiến độ học.');
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  return (
+    <div className="mx-auto max-w-7xl p-6">
+      <header className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <div className="mb-2 flex items-center gap-2 text-cyan-300">
+            <GraduationCap className="h-5 w-5" />
+            <span className="text-sm font-semibold">Crypto Academy</span>
+          </div>
+          <h1 className="text-3xl font-bold text-white">Lộ trình học crypto</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-crypto-muted">
+            Học theo từng nhóm kiến thức, xem video YouTube đã seed sẵn và lưu tiến độ của tài khoản.
+          </p>
+        </div>
+
+        <div className="flex min-w-64 items-center gap-3 rounded-lg border border-crypto bg-crypto-secondary p-4">
+          <BookOpen className="h-5 w-5 text-cyan-300" />
+          <div className="min-w-0 flex-1">
+            <div className="flex justify-between text-sm">
+              <span className="font-semibold text-white">{totals.completed}/{totals.total} bài</span>
+              <span className="text-cyan-300">{totals.percent}%</span>
+            </div>
+            <div className="mt-2">
+              <ProgressBar value={totals.percent} />
+            </div>
+          </div>
           <button
-            onClick={fetchCourses}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            type="button"
+            onClick={() => loadPaths()}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-crypto text-crypto-muted transition-colors hover:border-cyan-400/50 hover:text-white"
           >
-            Thử lại
+            <RotateCw className="h-4 w-4" />
           </button>
         </div>
-      ) : courses.length === 0 ? (
-        <div className="text-center py-20">
-          <GraduationCap className="w-12 h-12 text-crypto-muted mx-auto mb-4" />
-          <p className="text-crypto-muted">Không tìm thấy khóa học phù hợp.</p>
+      </header>
+
+      {error && (
+        <div className="mb-4 rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          {error}
         </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {courses.map((course) => (
-              <CourseCard
-                key={course.videoId}
-                course={course}
-                onClick={setSelectedCourse}
-              />
-            ))}
-          </div>
-          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
-        </>
       )}
 
-      {/* Video Modal */}
+      {loading ? (
+        <div className="grid gap-5 lg:grid-cols-[280px_1fr]">
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="h-28 animate-pulse rounded-lg border border-crypto bg-crypto-secondary" />
+            ))}
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div key={index} className="h-80 animate-pulse rounded-lg border border-crypto bg-crypto-secondary" />
+            ))}
+          </div>
+        </div>
+      ) : paths.length === 0 ? (
+        <div className="rounded-lg border border-crypto bg-crypto-secondary p-10 text-center">
+          <GraduationCap className="mx-auto mb-3 h-10 w-10 text-crypto-muted" />
+          <p className="text-crypto-muted">Chưa có khóa học trong database.</p>
+        </div>
+      ) : (
+        <main className="grid gap-5 lg:grid-cols-[280px_1fr]">
+          <aside className="space-y-3">
+            {paths.map((path) => (
+              <PathButton
+                key={path.id}
+                path={path}
+                active={path.id === activePath?.id}
+                onClick={() => setActivePathId(path.id)}
+              />
+            ))}
+          </aside>
+
+          <section className="rounded-lg border border-crypto bg-[#0b0d16] p-4">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-white">{activePath?.title}</h2>
+                <p className="mt-1 text-sm text-crypto-muted">{activePath?.description}</p>
+              </div>
+              <span className="w-fit rounded-lg border border-crypto px-3 py-2 text-sm font-semibold text-cyan-300">
+                {activePath?.completedCourses}/{activePath?.totalCourses} hoàn thành
+              </span>
+            </div>
+
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              {activePath?.courses?.map((course) => (
+                <CourseCard
+                  key={course.videoId}
+                  course={course}
+                  signedIn={signedIn}
+                  savingId={savingId}
+                  onOpen={setSelectedCourse}
+                  onToggle={toggleProgress}
+                />
+              ))}
+            </div>
+          </section>
+        </main>
+      )}
+
       {selectedCourse && (
-        <VideoModal course={selectedCourse} onClose={() => setSelectedCourse(null)} />
+        <VideoModal
+          course={selectedCourse}
+          signedIn={signedIn}
+          savingId={savingId}
+          onClose={() => setSelectedCourse(null)}
+          onToggle={toggleProgress}
+        />
       )}
     </div>
   );

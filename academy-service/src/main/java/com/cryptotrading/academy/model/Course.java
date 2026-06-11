@@ -20,32 +20,25 @@ public class Course {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** YouTube video ID (e.g. "dQw4w9WgXcQ") */
     @Column(name = "video_id", nullable = false, unique = true, length = 50)
     private String videoId;
 
-    /** Display title — can be overridden from seed, otherwise fetched from YouTube */
     @Column(name = "title", nullable = false, length = 500)
     private String title;
 
-    /**
-     * Difficulty level: BEGINNER | INTERMEDIATE | ADVANCED
-     */
     @Enumerated(EnumType.STRING)
     @Column(name = "difficulty", nullable = false, length = 20)
     private Difficulty difficulty;
 
-    /**
-     * Topic category: BLOCKCHAIN | DEFI | TRADING | SECURITY | ALTCOINS | ...
-     */
     @Column(name = "category", nullable = false, length = 100)
     private String category;
 
-    /** Short description (seeded manually or pulled from YouTube description) */
+    @Column(name = "learning_path", length = 100)
+    private String learningPath;
+
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    /** Sort order within a playlist/category */
     @Column(name = "sort_order")
     private Integer sortOrder;
 

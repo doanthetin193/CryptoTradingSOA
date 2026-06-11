@@ -6,8 +6,9 @@ Write-Host "  NEWS SERVICE (Java Spring Boot) - Port 3006" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Set environment variables (optional: set your API key here)
-# $env:CRYPTOPANIC_API_KEY = "your-api-key-here"
+# Set environment variables (optional: keys increase rate limits / enable fallback)
+# $env:CRYPTOCOMPARE_API_KEY = "your-cryptocompare-key"
+# $env:NEWSAPI_KEY = "your-newsapi-key"
 
 $newsServiceDir = $PSScriptRoot
 $mvn = "C:\maven\apache-maven-3.9.6\bin\mvn.cmd"

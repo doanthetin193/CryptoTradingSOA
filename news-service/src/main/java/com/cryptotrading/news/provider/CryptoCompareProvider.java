@@ -12,12 +12,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Provider lấy tin tức crypto từ CryptoCompare (miễn phí).
@@ -49,7 +52,8 @@ public class CryptoCompareProvider {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    @Autowired
+    private RestTemplate restTemplate;
 
     /**
      * Lấy tin tức mới nhất.
@@ -127,7 +131,12 @@ public class CryptoCompareProvider {
                 String url = item.path("url").asText("");
                 String sourceName = item.path("source").asText("CryptoCompare");
                 String summary = item.path("body").asText(title);
+                String imageUrl = item.path("imageurl").asText("");
                 String publishedAtStr = item.path("published_on").asText(null);
+
+                if (title.isBlank() || url.isBlank()) {
+                    continue;
+                }
 
                 LocalDateTime publishedAt;
                 if (publishedAtStr != null && publishedAtStr.matches("^\\d+$")) {
@@ -142,12 +151,13 @@ public class CryptoCompareProvider {
                 String sentiment = sentimentAnalyzer.analyze(title, summary);
 
                 News news = News.builder()
-                        .id(UUID.randomUUID().toString())
+                        .id(stableId(url, title))
                         .title(title)
                         .summary(summary)
                         .content(summary)
                         .source(sourceName)
                         .url(url)
+                        .imageUrl(imageUrl)
                         .sentiment(sentiment)
                         .coins(coins)
                         .publishedAt(publishedAt)
@@ -186,7 +196,12 @@ public class CryptoCompareProvider {
                 String sourceName = item.path("source").path("name").asText("NewsAPI");
                 String summary = item.path("description").asText(title);
                 String content = item.path("content").asText(summary);
+                String imageUrl = item.path("urlToImage").asText("");
                 String publishedAtStr = item.path("publishedAt").asText(null);
+
+                if (title.isBlank() || url.isBlank()) {
+                    continue;
+                }
 
                 LocalDateTime publishedAt = publishedAtStr != null
                         ? LocalDateTime.parse(publishedAtStr, DateTimeFormatter.ISO_DATE_TIME)
@@ -198,12 +213,13 @@ public class CryptoCompareProvider {
                 String sentiment = sentimentAnalyzer.analyze(title, summary);
 
                 News news = News.builder()
-                        .id(UUID.randomUUID().toString())
+                        .id(stableId(url, title))
                         .title(title)
                         .summary(summary)
                         .content(content)
                         .source(sourceName)
                         .url(url)
+                        .imageUrl(imageUrl)
                         .sentiment(sentiment)
                         .coins(coins)
                         .publishedAt(publishedAt)
@@ -367,5 +383,16 @@ public class CryptoCompareProvider {
         log.info("[SampleData] FinBERT sentiment analysis complete.");
 
         return samples;
+    }
+
+    private String stableId(String url, String title) {
+        String source = (url == null || url.isBlank()) ? title : url;
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(source.getBytes(StandardCharsets.UTF_8));
+            return "news-" + HexFormat.of().formatHex(hash).substring(0, 16);
+        } catch (NoSuchAlgorithmException e) {
+            return "news-" + Math.abs(source.hashCode());
+        }
     }
 }

@@ -147,6 +147,13 @@ export const adminAPI = {
   updateUserBalance: (userId, amount, description) =>
     api.put(`/users/admin/users/${userId}/balance`, { amount, description }),
   deleteUser: (userId) => api.delete(`/users/admin/users/${userId}`),
+
+  // Academy course management
+  getAcademyCourses: (params) => api.get('/academy/courses', { params }),
+  previewAcademyCourse: (data) => api.post('/academy/admin/courses/preview', data),
+  createAcademyCourse: (data) => api.post('/academy/admin/courses', data),
+  updateAcademyCourse: (id, data) => api.put(`/academy/admin/courses/${id}`, data),
+  deleteAcademyCourse: (id) => api.delete(`/academy/admin/courses/${id}`),
 };
 
 // ===========================
@@ -168,6 +175,8 @@ export const newsAPI = {
 export const academyAPI = {
   getCourses: (params) => api.get('/academy/courses', { params }),
   getCourseById: (videoId) => api.get(`/academy/courses/${videoId}`),
+  getPaths: () => api.get('/academy/paths'),
+  updateProgress: (videoId, completed) => api.put(`/academy/progress/${videoId}`, { completed }),
   getHealth: () => api.get('/academy/health'),
 };
 

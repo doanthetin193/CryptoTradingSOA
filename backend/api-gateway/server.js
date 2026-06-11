@@ -199,6 +199,9 @@ const academyProxy = createProxyMiddleware({
   },
   logLevel: 'warn',
   onProxyReq: (proxyReq, req) => {
+    if (req.userId) {
+      proxyReq.setHeader('X-User-Id', req.userId);
+    }
     logger.info(`📤 Proxying to academy-service: ${req.method} ${req.url}`);
   },
   onProxyRes: (proxyRes, req) => {
@@ -316,8 +319,12 @@ app.use('/api/notifications', authMiddleware, notificationProxy);
 // NEWS SERVICE - Public route (tin tức không cần xác thực)
 app.use('/api/news', newsProxy);
 
-// ACADEMY SERVICE - Public route (video học không cần xác thực)
-app.use('/api/academy', academyProxy);
+// ACADEMY SERVICE - Admin course management must be protected before optional public routes.
+app.use('/api/academy/admin', authMiddleware, adminMiddleware, academyProxy);
+
+// ACADEMY SERVICE - Course catalog is public, progress belongs to logged-in users.
+app.use('/api/academy/progress', authMiddleware, academyProxy);
+app.use('/api/academy', optionalAuth, academyProxy);
 
 // SENTIMENT SERVICE - Internal/public route (phân tích sentiment)
 app.use('/api/sentiment', sentimentProxy);

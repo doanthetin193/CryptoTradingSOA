@@ -1,749 +1,914 @@
-# 🧠 Sentiment Service — Giải thích toàn diện
+﻿# Sentiment Service Explained
 
-> **Mục tiêu của tài liệu này:** Giúp bạn hiểu rõ *tại sao* và *như thế nào* Sentiment Service được xây dựng bằng Python FastAPI + FinBERT (AI/NLP), từ lý thuyết mô hình ngôn ngữ đến từng dòng code tích hợp với News Service Java.
+File nÃ y mÃ´ táº£ Ä‘Ãºng tráº¡ng thÃ¡i hiá»‡n táº¡i cá»§a `sentiment-service` sau khi Ä‘Ã£ tÃ¡ch file, clean code vÃ  hoÃ n thiá»‡n logic AI/suggestion cho Ä‘á»“ Ã¡n 2.
 
----
+## 1. Vai trÃ² cá»§a Sentiment Service
 
-## Mục lục
+`sentiment-service` lÃ  service AI/NLP cá»§a há»‡ thá»‘ng.
 
-1. [Tại sao cần AI cho sentiment? Tại sao không dùng rule/keyword?](#1-tại-sao-cần-ai-cho-sentiment-tại-sao-không-dùng-rulekeyword)
-2. [FinBERT là gì? Tại sao chọn nó?](#2-finbert-là-gì-tại-sao-chọn-nó)
-3. [Sơ đồ kiến trúc tổng thể](#3-sơ-đồ-kiến-trúc-tổng-thể)
-4. [Cấu trúc thư mục](#4-cấu-trúc-thư-mục)
-5. [Dependencies — requirements.txt](#5-dependencies--requirementstxt)
-6. [Lifespan & Model Loading — Tải AI một lần, dùng mãi](#6-lifespan--model-loading--tải-ai-một-lần-dùng-mãi)
-7. [Pydantic Models — Request & Response](#7-pydantic-models--request--response)
-8. [_run_finbert() — Trái tim AI inference](#8-_run_finbert--trái-tim-ai-inference)
-9. [Endpoints — Ba cổng giao tiếp](#9-endpoints--ba-cổng-giao-tiếp)
-10. [Tích hợp với News Service (Java)](#10-tích-hợp-với-news-service-java)
-11. [SentimentAnalyzer.java — Lớp cầu nối 2 tầng](#11-sentimentanalyzerjava--lớp-cầu-nối-2-tầng)
-12. [Tích hợp với API Gateway](#12-tích-hợp-với-api-gateway)
-13. [Luồng request đầy đủ end-to-end](#13-luồng-request-đầy-đủ-end-to-end)
-14. [So sánh kết quả: AI vs Keyword](#14-so-sánh-kết-quả-ai-vs-keyword)
-15. [Những vấn đề đã gặp và cách fix](#15-những-vấn-đề-đã-gặp-và-cách-fix)
-16. [Tóm tắt kiến trúc](#16-tóm-tắt-kiến-trúc)
+Nhiá»‡m vá»¥ chÃ­nh:
 
----
+- Nháº­n text vÃ  phÃ¢n loáº¡i sentiment: `positive`, `negative`, `neutral`.
+- DÃ¹ng model FinBERT Ä‘á»ƒ hiá»ƒu ngá»¯ cáº£nh tÃ i chÃ­nh tá»‘t hÆ¡n keyword thá»§ cÃ´ng.
+- Há»— trá»£ batch analyze nhiá»u text.
+- Cung cáº¥p endpoint suggestion cho má»™t coin, káº¿t há»£p:
+  - GiÃ¡ hiá»‡n táº¡i tá»« Market Service.
+  - Tin tá»©c gáº§n nháº¥t tá»« News Service.
+  - Sentiment tá»•ng há»£p tá»« cÃ¡c bÃ i viáº¿t.
+- Tráº£ tÃ­n hiá»‡u tham kháº£o: `BULLISH`, `BEARISH`, `CAUTION`, `NEUTRAL`.
 
-## 1. Tại sao cần AI cho sentiment? Tại sao không dùng rule/keyword?
+Service nÃ y viáº¿t báº±ng Python vÃ¬ há»‡ sinh thÃ¡i AI/ML cá»§a Python máº¡nh hÆ¡n Java/Node.js, Ä‘áº·c biá»‡t vá»›i HuggingFace Transformers vÃ  PyTorch.
 
-Trước khi có Sentiment Service, News Service dùng **keyword matching** để phân loại:
+## 2. CÃ´ng nghá»‡ sá»­ dá»¥ng
 
-```java
-// Cách cũ: keyword matching thủ công
-POSITIVE_KEYWORDS = ["surge", "rally", "bull", "gain", "rise", "record", ...]
-NEGATIVE_KEYWORDS = ["crash", "drop", "bear", "hack", "scam", "ban", ...]
-
-// Đếm số từ khớp → nhãn nào nhiều hơn thì thắng
-if (positiveCount > negativeCount) return "positive";
-if (negativeCount > positiveCount) return "negative";
-return "neutral";
+```text
+Language: Python
+Framework: FastAPI
+Server: Uvicorn
+Port: 3008
+AI model: ProsusAI/finbert
+ML library: HuggingFace Transformers + PyTorch CPU
+Validation: Pydantic
+HTTP client: httpx
 ```
 
-**Vấn đề của keyword matching:**
+## 3. FinBERT lÃ  gÃ¬?
 
-| Tiêu đề bài báo | Keyword nói | Thực tế |
-|----------------|-------------|---------|
-| *"SEC investigates major crypto exchange for compliance issues"* | `negative` (investigate, compliance) | `neutral` — đây là tin thông báo, không phải xấu |
-| *"Bitcoin falls below $30k but analysts say bull run incoming"* | `negative` (falls) | `positive` — context tổng thể là lạc quan |
-| *"Ethereum upgrade launches successfully with record low fees"* | Cả 2 từ khớp | Cần hiểu context mới phân loại đúng |
-| *"Ripple wins key lawsuit"* | Không từ nào khớp | `neutral` (sai!) — đây rõ ràng là `positive` |
+FinBERT lÃ  BERT Ä‘Æ°á»£c fine-tune cho ngÃ´n ngá»¯ tÃ i chÃ­nh.
 
-Keyword không hiểu **ngữ cảnh** (context), không hiểu **phủ định** ("not a loss"), không hiểu **ý nghĩa tổng thể** của câu. AI/NLP giải quyết đúng những vấn đề này.
+NÃ³ phÃ¹ há»£p hÆ¡n keyword matching vÃ¬ biáº¿t Ä‘á»c ngá»¯ cáº£nh.
 
----
+VÃ­ dá»¥:
 
-## 2. FinBERT là gì? Tại sao chọn nó?
-
-### BERT là gì?
-
-**BERT** (Bidirectional Encoder Representations from Transformers) là mô hình ngôn ngữ do Google phát triển năm 2018. Điểm đột phá: BERT đọc văn bản theo **hai chiều** (trái sang phải VÀ phải sang trái cùng lúc), cho phép hiểu ngữ cảnh đầy đủ của mỗi từ.
-
-```
-[CLS] Bitcoin falls but analysts say bull run incoming [SEP]
-                ↑
-       BERT hiểu "falls" ở đây KHÔNG phải là tiêu cực
-       vì nó đọc được cả phần "bull run incoming" phía sau
+```text
+"Bitcoin falls but analysts expect recovery"
 ```
 
-### FinBERT là gì?
+Keyword cÃ³ thá»ƒ tháº¥y `falls` vÃ  cho lÃ  negative. FinBERT Ä‘á»c cáº£ cÃ¢u vÃ  cÃ³ thá»ƒ Ä‘Ã¡nh giÃ¡ cÃ¢n báº±ng hÆ¡n vÃ¬ cÃ³ ngá»¯ cáº£nh `expect recovery`.
 
-**FinBERT** = BERT được **fine-tune** (tinh chỉnh thêm) trên dữ liệu tài chính. Được phát hành bởi Prosus AI.
+Trong project nÃ y, mÃ¬nh khÃ´ng train model láº¡i. Ta dÃ¹ng model pretrained `ProsusAI/finbert` tá»« HuggingFace. Service chá»‰ load model vÃ  cháº¡y inference.
 
-| | BERT gốc | FinBERT |
-|---|---|---|
-| **Dữ liệu train** | Wikipedia + BookCorpus (3.3 tỷ từ) | Wikipedia + BookCorpus + **10,000+ bài báo tài chính từ Financial PhraseBank** |
-| **Hiểu từ chuyên ngành** | Trung bình | Tốt: "bull/bear market", "ATH", "DeFi", "liquidation" |
-| **Độ chính xác (Finance NLP)** | ~70% | **~97%** trên Financial PhraseBank dataset |
-| **Kích thước model** | 440MB | 440MB |
+## 4. Cáº¥u trÃºc file hiá»‡n táº¡i
 
-```
-Model ID: ProsusAI/finbert
-HuggingFace: https://huggingface.co/ProsusAI/finbert
-Paper: "FinBERT: Financial Sentiment Analysis with Pre-trained Language Models" (2019)
-```
-
-### Tại sao dùng Python thay vì Java?
-
-| Tiêu chí | Python | Java |
-|----------|--------|------|
-| HuggingFace Transformers | Native support | Không có thư viện chính thức |
-| PyTorch / TensorFlow | Native | DeepLearning4J (kém hơn nhiều) |
-| Cộng đồng AI/ML | 95% dùng Python | Hiếm |
-| FastAPI | Async, nhanh, auto docs | — |
-| Demo SOA | ✅ 1 hệ thống, 3 ngôn ngữ (Node/Java/Python) | — |
-
-> **Đây là ví dụ hoàn hảo của SOA:** Python service chuyên làm AI, Java service chuyên làm business logic, Node.js chuyên làm gateway. Mỗi service dùng ngôn ngữ phù hợp nhất cho nhiệm vụ của nó.
-
----
-
-## 3. Sơ đồ kiến trúc tổng thể
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                           BROWSER                                   │
-│                    http://localhost:5173                             │
-└──────────────────────────┬──────────────────────────────────────────┘
-                           │ GET /api/news
-                           │
-┌──────────────────────────▼──────────────────────────────────────────┐
-│                     API GATEWAY :3000 (Node.js)                     │
-│                                                                     │
-│  newsProxy:      /api/news/*       → news-service     :3006         │
-│  sentimentProxy: /api/sentiment/*  → sentiment-service :3008        │
-└──────────┬───────────────────────────────────────┬──────────────────┘
-           │ /news/*                               │ /sentiment/*
-           │                                       │ (trực tiếp nếu frontend gọi)
-┌──────────▼──────────────────┐        ┌───────────▼──────────────────┐
-│   NEWS SERVICE :3006        │        │  SENTIMENT SERVICE :3008      │
-│   (Spring Boot / Java)      │        │  (FastAPI / Python)           │
-│                             │        │                               │
-│  CryptoCompareProvider      │  HTTP  │  FinBERT Model               │
-│  Lấy 50 bài báo → gọi ────────POST──▶  ProsusAI/finbert            │
-│  SentimentAnalyzer.java     │        │  (loaded vào RAM khi start)  │
-│                             │◀──────── {"label":"positive",         │
-│  (nếu Python down →         │        │   "score":0.92,              │
-│   fallback keyword          │        │   "scores":{...}}            │
-│   matching tự động)         │        │                               │
-└─────────────────────────────┘        └───────────────────────────────┘
-           │
-           │ Tin tức với nhãn sentiment
-           │ [{"title":"Bitcoin...", "sentiment":"positive"}, ...]
-           │
-┌──────────▼──────────────────┐
-│   BROWSER NHẬN ĐƯỢC         │
-│   News page hiển thị        │
-│   badge: 🟢 positive        │
-│          🔴 negative        │
-│          🟡 neutral         │
-└─────────────────────────────┘
-```
-
----
-
-## 4. Cấu trúc thư mục
-
-```
+```text
 sentiment-service/
-├── main.py             # ← Toàn bộ service: FastAPI app + FinBERT + endpoints
-├── requirements.txt    # ← Danh sách Python packages (trừ torch)
-└── start.ps1           # ← Script khởi động cho Windows PowerShell
+  main.py
+  config.py
+  models.py
+  finbert_service.py
+  suggestion_service.py
+  requirements.txt
+  start.ps1
 ```
 
-> **Tại sao chỉ có 1 file Python?** Sentiment Service có một nhiệm vụ duy nhất và rõ ràng: nhận text → trả sentiment. Không cần phân chia thành nhiều module. Đây là nguyên tắc "Keep It Simple" — chỉ tách file khi cần thiết, không tách vì thói quen.
+TrÆ°á»›c Ä‘Ã¢y service gom nhiá»u logic trong `main.py`. Hiá»‡n táº¡i Ä‘Ã£ tÃ¡ch ra Ä‘á»ƒ dá»… review:
 
----
+| File | Vai trÃ² |
+|---|---|
+| `main.py` | FastAPI app, lifespan, routes |
+| `config.py` | Cáº¥u hÃ¬nh env, model name, port, supported coins |
+| `models.py` | Pydantic request/response models |
+| `finbert_service.py` | Load model vÃ  analyze text |
+| `suggestion_service.py` | Logic gá»£i Ã½ coin dá»±a trÃªn giÃ¡ vÃ  news sentiment |
+| `requirements.txt` | Python dependencies |
+| `start.ps1` | Script start service trÃªn Windows |
 
-## 5. Dependencies — requirements.txt
+## 5. `config.py`
 
-```
-fastapi>=0.111.0       # Web framework async cho Python
-uvicorn>=0.30.0        # ASGI server chạy FastAPI
-transformers>=4.41.0   # HuggingFace Transformers: load FinBERT, chạy inference
-pydantic>=2.0.0        # Validation dữ liệu request/response (dùng BaseModel)
-# torch được install riêng với CPU-only wheel
-# để tránh download bản GPU ~2GB không cần thiết
-```
-
-### Tại sao `torch` được install riêng?
-
-`transformers` cần PyTorch để chạy model. Tuy nhiên PyTorch có hai bản:
-- **GPU version** (`pip install torch`): ~2GB, cần NVIDIA GPU + CUDA driver
-- **CPU version** (`--index-url https://download.pytorch.org/whl/cpu`): ~250MB, chạy trên mọi máy
-
-Script `start.ps1` install CPU-only:
-```powershell
-pip install torch --index-url https://download.pytorch.org/whl/cpu --quiet
-```
-
-Trên máy dev không có GPU, CPU version là lựa chọn đúng. Tốc độ inference cho 1 câu (~100ms) hoàn toàn chấp nhận được.
-
----
-
-## 6. Lifespan & Model Loading — Tải AI một lần, dùng mãi
+Chá»©a cáº¥u hÃ¬nh runtime:
 
 ```python
-analyzer = None   # ← Biến global, chia sẻ giữa các request
-MODEL_NAME = "ProsusAI/finbert"
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Load FinBERT khi service khởi động, unload khi shutdown."""
-    global analyzer
-    try:
-        from transformers import pipeline
-        analyzer = pipeline(
-            "text-classification",
-            model=MODEL_NAME,
-            top_k=None,   # ← Trả về cả 3 nhãn với score, không chỉ cái tốt nhất
-            device=-1     # ← -1 = CPU. 0 = GPU đầu tiên (nếu có)
-        )
-        logger.info("FinBERT loaded successfully. Ready to serve!")
-    except Exception as e:
-        logger.error(f"Failed to load FinBERT: {e}")
-        # Service vẫn start, nhưng /sentiment/analyze sẽ trả 503
-
-    yield   # ← Service chạy ở đây, xử lý request
-
-    logger.info("Shutting down.")
-    # analyzer tự được garbage collected
-
-app = FastAPI(lifespan=lifespan)
+MODEL_NAME = os.getenv("SENTIMENT_MODEL", "ProsusAI/finbert")
+GATEWAY_URL = os.getenv("API_GATEWAY_URL", "http://localhost:3000").rstrip("/")
+INTERNAL_KEY = os.getenv("INTERNAL_SERVICE_KEY", "cryptotrading-internal-svc-key-2026")
+MAX_TEXT_CHARS = int(os.getenv("MAX_TEXT_CHARS", "512"))
+HTTP_TIMEOUT_SECONDS = float(os.getenv("HTTP_TIMEOUT_SECONDS", "10"))
+PORT = int(os.getenv("PORT", "3008"))
 ```
 
-**Tại sao phải dùng `lifespan` thay vì load model trong hàm xử lý request?**
+`SUPPORTED_COINS` map symbol frontend sang coinId cá»§a Market Service:
 
-| Nếu load trong request handler | Với lifespan |
-|--------------------------------|--------------|
-| Lần đầu tiên gọi → đợi 30-40 giây | Load 1 lần khi start (~40s) |
-| Mỗi worker process load riêng | 1 instance chia sẻ cho toàn service |
-| RAM tăng tỉ lệ với số request | RAM ổn định ~1GB suốt vòng đời |
-
-**`top_k=None` vs `return_all_scores=True`:**
-
-`return_all_scores=True` đã bị **deprecated** trong transformers ≥ 4.30. Nếu dùng sẽ chỉ trả về 1 kết quả tốt nhất thay vì tất cả 3, gây lỗi khi build `scores_dict`. Phải dùng `top_k=None`.
-
-**Lần đầu khởi động:**
+```python
+SUPPORTED_COINS = {
+    "BTC": "bitcoin",
+    "ETH": "ethereum",
+    "BNB": "binancecoin",
+    "SOL": "solana",
+    "XRP": "ripple",
+    "ADA": "cardano",
+    "DOGE": "dogecoin",
+    "DOT": "polkadot",
+}
 ```
-[SentimentService] First run will download ~440MB (cached after that)
-Downloading model.safetensors: 100%|████| 440M/440M [01:23]
-```
-Từ lần thứ 2 trở đi: model được cache tại `~/.cache/huggingface/hub/` → load trong ~5 giây.
 
----
+VÃ­ dá»¥ frontend chá»n `BTC`, suggestion service sáº½ gá»i Market API vá»›i `bitcoin`.
 
-## 7. Pydantic Models — Request & Response
+## 6. `models.py`
 
-Pydantic tự động **validate** dữ liệu đầu vào và **serialize** đầu ra thành JSON.
+Chá»©a Pydantic models.
+
+Request:
 
 ```python
 class AnalyzeRequest(BaseModel):
-    text: str   # ← FastAPI tự parse JSON body, validate kiểu dữ liệu
-                # Nếu thiếu field "text" → 422 Unprocessable Entity tự động
+    text: str
 
 class BatchAnalyzeRequest(BaseModel):
-    texts: List[str]   # ← Danh sách nhiều text cùng lúc
-
-class SentimentResult(BaseModel):
-    label: str    # "positive" | "negative" | "neutral"
-    score: float  # Confidence của nhãn được chọn: 0.0 → 1.0
-    scores: dict  # {"positive": 0.92, "negative": 0.05, "neutral": 0.03}
+    texts: List[str]
 ```
 
-**Ví dụ response thực tế:**
+Response sentiment:
+
+```python
+class SentimentResult(BaseModel):
+    label: str
+    score: float
+    scores: Dict[str, float]
+```
+
+VÃ­ dá»¥ response:
 
 ```json
 {
   "label": "positive",
-  "score": 0.9188,
+  "score": 0.9342,
   "scores": {
-    "positive": 0.9188,
-    "neutral": 0.0537,
-    "negative": 0.0274
+    "positive": 0.9342,
+    "negative": 0.0123,
+    "neutral": 0.0535
   }
 }
 ```
 
-`score` là confidence của nhãn được chọn. `scores` là phân phối xác suất đầy đủ — tổng ba giá trị luôn bằng 1.0 (đây là output của Softmax layer).
-
----
-
-## 8. _run_finbert() — Trái tim AI inference
+Response suggestion:
 
 ```python
-def _run_finbert(text: str) -> SentimentResult:
-    if analyzer is None:
-        raise HTTPException(status_code=503, detail="FinBERT model not loaded yet")
+class SuggestionResponse(BaseModel):
+    symbol: str
+    coinId: str
+    price: PriceInfo
+    sentiment: Dict[str, Any]
+    suggestion: SuggestionSignal
+    disclaimer: str
+    timestamp: str
+```
 
-    # FinBERT có giới hạn 512 tokens — truncate nếu text quá dài
-    # 512 ký tự ≈ 128-170 tokens (1 từ ≈ 3-4 ký tự tiếng Anh)
-    truncated = text[:512]
+## 7. `finbert_service.py`
 
-    # analyzer() trả về: [[{"label": "positive", "score": 0.9188},
-    #                       {"label": "neutral",  "score": 0.0537},
-    #                       {"label": "negative", "score": 0.0274}]]
-    raw_results = analyzer(truncated)
-    all_scores = raw_results[0]   # Bỏ lớp ngoài cùng (batchsize=1)
+ÄÃ¢y lÃ  pháº§n AI core.
 
-    # Biến list thành dict để dễ dùng
-    scores_dict = {r["label"]: round(r["score"], 4) for r in all_scores}
-    # → {"positive": 0.9188, "neutral": 0.0537, "negative": 0.0274}
+### Load model
 
-    # Tìm nhãn có score cao nhất
-    best = max(all_scores, key=lambda x: x["score"])
+```python
+def load_model() -> bool:
+    from transformers import pipeline
 
-    return SentimentResult(
-        label=best["label"],           # "positive"
-        score=round(best["score"], 4), # 0.9188
-        scores=scores_dict             # full distribution
+    analyzer = pipeline(
+        "text-classification",
+        model=MODEL_NAME,
+        top_k=None,
+        device=-1,
     )
 ```
 
-**Pipeline hoạt động bên trong như thế nào?**
+Ã nghÄ©a:
 
-```
-Input text (string)
-    ↓ Tokenizer
-[CLS] bitcoin surges to new all - time high [SEP]
-  101   7936   9819  ...                        102
-    ↓ BERT Encoder (12 transformer layers)
-Hidden states (contextual embeddings)
-    ↓ Classification head (Linear layer)
-Logits: [positive=2.4, negative=-1.8, neutral=0.1]
-    ↓ Softmax
-Probabilities: [positive=0.9188, negative=0.0274, neutral=0.0537]
-    ↓ argmax
-Label: "positive", Score: 0.9188
-```
+- `MODEL_NAME`: máº·c Ä‘á»‹nh `ProsusAI/finbert`.
+- `top_k=None`: láº¥y Ä‘á»§ Ä‘iá»ƒm cá»§a cáº£ 3 nhÃ£n.
+- `device=-1`: cháº¡y CPU, khÃ´ng cáº§n GPU.
 
----
+Model Ä‘Æ°á»£c load má»™t láº§n khi FastAPI start, khÃ´ng load láº¡i má»—i request.
 
-## 9. Endpoints — Ba cổng giao tiếp
-
-### 9.1. GET /sentiment/health
+### Analyze text
 
 ```python
-@app.get("/sentiment/health")
-async def health():
-    return {
-        "status": "UP",
-        "service": "sentiment-service",
-        "model": "ProsusAI/finbert",
-        "modelLoaded": analyzer is not None,   # ← False nếu load thất bại
-        "version": "1.0.0"
-    }
+def analyze_text(text: str) -> SentimentResult:
+    clean_text = normalize_text(text)
+    if not clean_text:
+        return neutral_result()
+
+    if analyzer is None:
+        raise HTTPException(status_code=503, detail="FinBERT model not loaded yet")
+
+    raw_results = analyzer(clean_text[:MAX_TEXT_CHARS])
 ```
 
-**Response:**
+Äiá»ƒm quan trá»ng:
+
+- Text rá»—ng tráº£ `neutral`.
+- Náº¿u model chÆ°a load, tráº£ HTTP 503.
+- Text bá»‹ cáº¯t á»Ÿ `MAX_TEXT_CHARS`, máº·c Ä‘á»‹nh 512 kÃ½ tá»± Ä‘á»ƒ trÃ¡nh input quÃ¡ dÃ i.
+- Láº¥y nhÃ£n cÃ³ score cao nháº¥t lÃ m `label`.
+- Váº«n tráº£ full `scores` Ä‘á»ƒ frontend/debug hiá»ƒu model tá»± tin bao nhiÃªu.
+
+## 8. `suggestion_service.py`
+
+ÄÃ¢y lÃ  logic gá»£i Ã½ xu hÆ°á»›ng coin.
+
+Luá»“ng chÃ­nh:
+
+```text
+build_suggestion(symbol)
+  -> map symbol sang coinId
+  -> fetch_market_price()
+  -> fetch_news_sentiments()
+  -> aggregate_sentiments()
+  -> build_signal()
+  -> tráº£ SuggestionResponse
+```
+
+### `fetch_market_price()`
+
+Gá»i Market Service qua Gateway:
+
+```text
+GET {GATEWAY_URL}/api/market/price/{coinId}
+Header: X-Internal-Service-Key
+```
+
+Káº¿t quáº£ láº¥y:
+
+- `current`: giÃ¡ hiá»‡n táº¡i.
+- `change24h`: biáº¿n Ä‘á»™ng 24h.
+
+### `fetch_news_sentiments()`
+
+Gá»i News Service qua Gateway:
+
+```text
+GET {GATEWAY_URL}/api/news/coins/{symbol}?limit=5&page=1
+Header: X-Internal-Service-Key
+```
+
+Service láº¥y tá»‘i Ä‘a 5 bÃ i gáº§n nháº¥t liÃªn quan coin Ä‘Ã³.
+
+Náº¿u bÃ i Ä‘Ã£ cÃ³ `sentiment`, dÃ¹ng luÃ´n.
+
+Náº¿u bÃ i chÆ°a cÃ³ `sentiment` nhÆ°ng cÃ³ title, gá»i `analyze_text(title)` Ä‘á»ƒ phÃ¢n tÃ­ch.
+
+Náº¿u News Service lá»—i, suggestion váº«n cháº¡y vá»›i sentiment rá»—ng vÃ  coi lÃ  neutral.
+
+### `aggregate_sentiments()`
+
+Äáº¿m sá»‘ bÃ i:
+
+```text
+positive / negative / neutral
+```
+
+Sau Ä‘Ã³ chá»n nhÃ£n xuáº¥t hiá»‡n nhiá»u nháº¥t lÃ m sentiment tá»•ng.
+
+VÃ­ dá»¥:
+
 ```json
 {
-  "status": "UP",
-  "service": "sentiment-service",
-  "model": "ProsusAI/finbert",
-  "modelLoaded": true,
-  "version": "1.0.0"
+  "label": "positive",
+  "score": 0.6,
+  "articleCount": 5,
+  "distribution": {
+    "positive": 3,
+    "negative": 1,
+    "neutral": 1
+  }
 }
 ```
 
-Consul gọi endpoint này mỗi 10 giây để kiểm tra service còn sống không. Nếu `modelLoaded: false` → service đang khởi động hoặc bị lỗi load model.
+### `build_signal()`
 
----
+Káº¿t há»£p sentiment vÃ  `change24h` Ä‘á»ƒ táº¡o tÃ­n hiá»‡u.
 
-### 9.2. POST /sentiment/analyze
+Quy táº¯c hiá»‡n táº¡i:
+
+- Sentiment positive + giÃ¡ tÄƒng máº¡nh: `BULLISH`.
+- Sentiment negative + giÃ¡ giáº£m máº¡nh: `BEARISH`.
+- Sentiment vÃ  giÃ¡ ngÆ°á»£c nhau: `CAUTION`.
+- Sentiment neutral hoáº·c giÃ¡ Ä‘i ngang: `NEUTRAL`.
+
+ÄÃ¢y lÃ  rule-based suggestion, khÃ´ng pháº£i model trading tá»± train.
+
+Response luÃ´n cÃ³ disclaimer:
+
+```text
+ÄÃ¢y lÃ  thÃ´ng tin tá»•ng há»£p tá»± Ä‘á»™ng, khÃ´ng pháº£i lá»i khuyÃªn Ä‘áº§u tÆ°.
+```
+
+## 9. `main.py`
+
+ÄÃ¢y lÃ  entrypoint FastAPI.
+
+### Lifespan
 
 ```python
-@app.post("/sentiment/analyze", response_model=SentimentResult)
-async def analyze(req: AnalyzeRequest):
-    # Trường hợp text rỗng → trả neutral ngay không cần gọi FinBERT
-    if not req.text or not req.text.strip():
-        return SentimentResult(
-            label="neutral", score=1.0,
-            scores={"positive": 0.0, "negative": 0.0, "neutral": 1.0}
-        )
-
-    result = _run_finbert(req.text.strip())
-    return result
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    finbert_service.load_model()
+    yield
 ```
 
-**Test thực tế:**
+Khi service start, FinBERT Ä‘Æ°á»£c load vÃ o RAM.
 
-```bash
-# Positive
-POST /sentiment/analyze
-{"text": "Bitcoin surges to new all-time high amid massive institutional buying"}
-→ {"label": "positive", "score": 0.9188, "scores": {...}}
+### Endpoints
 
-# Negative
-POST /sentiment/analyze
-{"text": "Crypto market crashes as regulators crack down, billions wiped"}
-→ {"label": "negative", "score": 0.8757, "scores": {...}}
+| Method | Path | Ã nghÄ©a |
+|---|---|---|
+| GET | `/sentiment/health` | Health check, cÃ³ `modelLoaded` |
+| POST | `/sentiment/analyze` | Analyze má»™t text |
+| POST | `/sentiment/analyze-batch` | Analyze nhiá»u text |
+| GET | `/sentiment/suggestion?symbol=BTC` | Gá»£i Ã½ xu hÆ°á»›ng coin |
 
-# Neutral (AI nhận ra đây là tin thông tin, không có cảm xúc)
-POST /sentiment/analyze
-{"text": "SEC investigates major crypto exchange for compliance issues"}
-→ {"label": "neutral", "score": 0.7, "scores": {...}}
+## 10. TÃ­ch há»£p vá»›i News Service
+
+News Service Java gá»i Sentiment Service trong:
+
+```text
+news-service/src/main/java/com/cryptotrading/news/util/SentimentAnalyzer.java
 ```
 
----
+Luá»“ng:
 
-### 9.3. POST /sentiment/analyze-batch
+```text
+CryptoCompareProvider parse bÃ i viáº¿t
+  -> SentimentAnalyzer.analyze(title, summary)
+  -> POST /sentiment/analyze
+  -> nháº­n label
+  -> set vÃ o News.sentiment
+```
+
+Náº¿u Python service down:
+
+```text
+SentimentAnalyzer fallback keyword matching
+```
+
+VÃ¬ váº­y News Service khÃ´ng bá»‹ cháº¿t theo Sentiment Service.
+
+## 11. TÃ­ch há»£p vá»›i API Gateway
+
+Trong Gateway:
+
+```text
+/api/sentiment/* -> /sentiment/*
+target: http://localhost:3008
+```
+
+Gateway chá»‰ strip `/api`.
+
+VÃ­ dá»¥:
+
+```text
+Frontend gá»i: /api/sentiment/suggestion?symbol=BTC
+Gateway gá»­i:  /sentiment/suggestion?symbol=BTC
+```
+
+Sentiment Service hiá»‡n khÃ´ng dÃ¹ng Consul router trong Gateway, target máº·c Ä‘á»‹nh lÃ  `localhost:3008`.
+
+## 12. Frontend liÃªn quan
+
+File API helper:
+
+```text
+frontend/src/services/api.js
+```
+
+Hiá»‡n Ä‘ang cÃ³:
+
+```javascript
+export const sentimentAPI = {
+  getSuggestion: (symbol) => api.get('/sentiment/suggestion', { params: { symbol } }),
+};
+```
+
+Frontend dÃ¹ng endpoint nÃ y á»Ÿ pháº§n AI Suggestion Ä‘á»ƒ há»i xu hÆ°á»›ng coin.
+
+## 13. Nhá»¯ng Ä‘iá»ƒm Ä‘Ã£ clean/cáº£i thiá»‡n
+
+- TÃ¡ch service tá»« má»™t file lá»›n thÃ nh module nhá»:
+  - config
+  - models
+  - finbert_service
+  - suggestion_service
+  - main
+- `main.py` chá»‰ cÃ²n route vÃ  app setup.
+- FinBERT logic náº±m riÃªng trong `finbert_service.py`.
+- Suggestion logic náº±m riÃªng trong `suggestion_service.py`.
+- Cáº¥u hÃ¬nh Ä‘á»c tá»« env trong `config.py`.
+- Batch analyze dÃ¹ng láº¡i `analyze_text()`, khÃ´ng duplicate logic.
+- Suggestion cÃ³ xá»­ lÃ½ lá»—i Market/News rÃµ rÃ ng.
+
+## 14. Thá»© tá»± Ä‘á»c code Ä‘á» xuáº¥t
+
+Náº¿u báº¡n muá»‘n hiá»ƒu Sentiment Service Ä‘á»ƒ trÃ¬nh bÃ y:
+
+1. `models.py` - hiá»ƒu request/response service tráº£ vá».
+2. `config.py` - hiá»ƒu model, port, coin mapping, internal key.
+3. `finbert_service.py` - hiá»ƒu FinBERT load vÃ  inference.
+4. `main.py` - hiá»ƒu endpoint FastAPI expose ra ngoÃ i.
+5. `suggestion_service.py` - hiá»ƒu logic gá»£i Ã½ coin.
+6. `news-service/.../SentimentAnalyzer.java` - hiá»ƒu News Service gá»i AI nhÆ° tháº¿ nÃ o.
+7. `backend/api-gateway/server.js` - xem route `/api/sentiment`.
+8. `frontend/src/services/api.js` vÃ  trang AI Suggestion - xem frontend gá»i API.
+
+## 15. CÃ¢u nÃ³i ngáº¯n Ä‘á»ƒ trÃ¬nh bÃ y
+
+Sentiment Service lÃ  má»™t Python FastAPI service chuyÃªn xá»­ lÃ½ AI/NLP trong há»‡ thá»‘ng SOA. Service load model FinBERT pretrained má»™t láº§n khi khá»Ÿi Ä‘á»™ng, cung cáº¥p API phÃ¢n tÃ­ch sentiment cho text/news, Ä‘á»“ng thá»i cÃ³ endpoint suggestion káº¿t há»£p sentiment tin tá»©c vÃ  biáº¿n Ä‘á»™ng giÃ¡ thá»‹ trÆ°á»ng Ä‘á»ƒ tráº£ tÃ­n hiá»‡u tham kháº£o cho tá»«ng coin.
+
+## 16. Kiáº¿n Thá»©c Ná»n TrÆ°á»›c Khi Äá»c Sentiment Service
+
+Sentiment Service cÃ³ 2 nhÃ³m chá»©c nÄƒng:
+
+```text
+1. Analyze sentiment:
+   text -> FinBERT -> positive/negative/neutral
+
+2. Suggestion:
+   symbol -> láº¥y giÃ¡ + láº¥y tin -> tá»•ng há»£p sentiment -> tÃ­n hiá»‡u tham kháº£o
+```
+
+Náº¿u má»›i há»c, hÃ£y tÃ¡ch hai pháº§n nÃ y ra. Äá»«ng Ä‘á»c `suggestion_service.py` trÆ°á»›c, vÃ¬ nÃ³ phá»¥ thuá»™c vÃ o viá»‡c báº¡n hiá»ƒu `analyze_text()` rá»“i.
+
+## 17. FastAPI LÃ  GÃ¬?
+
+FastAPI lÃ  web framework Python dÃ¹ng Ä‘á»ƒ viáº¿t REST API.
+
+Trong service nÃ y:
 
 ```python
-@app.post("/sentiment/analyze-batch", response_model=List[SentimentResult])
-async def analyze_batch(req: BatchAnalyzeRequest):
-    results = []
-    for text in req.texts:
-        if not text or not text.strip():
-            results.append(SentimentResult(label="neutral", score=1.0, ...))
-        else:
-            results.append(_run_finbert(text.strip()))
-    return results
+app = FastAPI(...)
 ```
 
-**Request:**
+táº¡o má»™t web app.
+
+CÃ¡c decorator nhÆ°:
+
+```python
+@app.get("/sentiment/health")
+@app.post("/sentiment/analyze")
+```
+
+Ä‘á»‹nh nghÄ©a endpoint.
+
+So sÃ¡nh vá»›i Spring Boot:
+
+```text
+FastAPI @app.get       ~ Spring @GetMapping
+FastAPI @app.post      ~ Spring @PostMapping
+Pydantic BaseModel     ~ Java DTO
+uvicorn                ~ embedded server/Tomcat tÆ°Æ¡ng tá»± vai trÃ² cháº¡y app
+```
+
+## 18. Pydantic LÃ  GÃ¬?
+
+Pydantic validate dá»¯ liá»‡u request/response.
+
+VÃ­ dá»¥:
+
+```python
+class AnalyzeRequest(BaseModel):
+    text: str
+```
+
+NghÄ©a lÃ  endpoint `/sentiment/analyze` báº¯t buá»™c nháº­n JSON cÃ³ field `text`.
+
+Náº¿u client gá»­i sai:
+
+```json
+{
+  "message": "hello"
+}
+```
+
+FastAPI/Pydantic tá»± tráº£ lá»—i 422 vÃ¬ thiáº¿u `text`.
+
+`response_model=SentimentResult` nghÄ©a lÃ  FastAPI sáº½ chuáº©n hÃ³a response theo model `SentimentResult`.
+
+## 19. Lifespan LÃ  GÃ¬?
+
+Trong `main.py`:
+
+```python
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    finbert_service.load_model()
+    yield
+    logger.info("Sentiment service shutting down")
+```
+
+Lifespan lÃ  lifecycle cá»§a app:
+
+```text
+Service start
+  -> load_model()
+  -> app báº¯t Ä‘áº§u nháº­n request
+Service shutdown
+  -> cháº¡y pháº§n sau yield
+```
+
+VÃ¬ sao khÃ´ng load model trong tá»«ng request?
+
+VÃ¬ FinBERT náº·ng. Náº¿u má»—i request load láº¡i model thÃ¬ request sáº½ ráº¥t cháº­m vÃ  tá»‘n RAM.
+
+Thiáº¿t káº¿ Ä‘Ãºng:
+
+```text
+Load model má»™t láº§n khi service start.
+Sau Ä‘Ã³ má»i request dÃ¹ng láº¡i model trong RAM.
+```
+
+## 20. FinBERT Inference Äi Qua Nhá»¯ng BÆ°á»›c NÃ o?
+
+Luá»“ng trong `finbert_service.analyze_text()`:
+
+```text
+1. Nháº­n text.
+2. Trim text.
+3. Náº¿u text rá»—ng -> tráº£ neutral.
+4. Náº¿u model chÆ°a load -> HTTP 503.
+5. Cáº¯t text tá»‘i Ä‘a MAX_TEXT_CHARS.
+6. ÄÆ°a text vÃ o HuggingFace pipeline.
+7. Nháº­n score cho 3 nhÃ£n.
+8. Chá»n nhÃ£n cÃ³ score cao nháº¥t.
+9. Tráº£ SentimentResult.
+```
+
+VÃ­ dá»¥ input:
+
+```json
+{
+  "text": "Bitcoin rallies as ETF inflows surge"
+}
+```
+
+Response:
+
+```json
+{
+  "label": "positive",
+  "score": 0.91,
+  "scores": {
+    "positive": 0.91,
+    "negative": 0.02,
+    "neutral": 0.07
+  }
+}
+```
+
+`score` lÃ  Ä‘á»™ tá»± tin cá»§a nhÃ£n Ä‘Æ°á»£c chá»n.
+
+## 21. VÃ¬ Sao KhÃ´ng Train Model?
+
+Project nÃ y khÃ´ng train láº¡i model.
+
+LÃ½ do:
+
+- Training cáº§n dataset lá»›n.
+- Training tá»‘n GPU/thá»i gian.
+- Má»¥c tiÃªu Ä‘á»“ Ã¡n lÃ  tÃ­ch há»£p AI service vÃ o SOA, khÃ´ng pháº£i nghiÃªn cá»©u model má»›i.
+
+Ta dÃ¹ng pretrained model:
+
+```text
+ProsusAI/finbert
+```
+
+Service chá»‰ lÃ m inference:
+
+```text
+text -> model cÃ³ sáºµn -> label
+```
+
+ÄÃ¢y lÃ  hÆ°á»›ng há»£p lÃ½ cho Ä‘á»“ Ã¡n á»©ng dá»¥ng.
+
+## 22. `config.py` Äá»c NhÆ° Tháº¿ NÃ o?
+
+`config.py` gom toÃ n bá»™ cáº¥u hÃ¬nh.
+
+Äiá»ƒm quan trá»ng:
+
+```python
+MODEL_NAME = os.getenv("SENTIMENT_MODEL", "ProsusAI/finbert")
+PORT = int(os.getenv("PORT", "3008"))
+MAX_TEXT_CHARS = int(os.getenv("MAX_TEXT_CHARS", "512"))
+GATEWAY_URL = os.getenv("API_GATEWAY_URL", "http://localhost:3000").rstrip("/")
+```
+
+Náº¿u khÃ´ng set env, service dÃ¹ng default.
+
+VÃ­ dá»¥:
+
+```text
+KhÃ´ng set PORT -> cháº¡y 3008
+KhÃ´ng set SENTIMENT_MODEL -> dÃ¹ng ProsusAI/finbert
+KhÃ´ng set API_GATEWAY_URL -> gá»i gateway localhost:3000
+```
+
+`SUPPORTED_COINS` lÃ  mapping:
+
+```text
+BTC -> bitcoin
+ETH -> ethereum
+SOL -> solana
+```
+
+Mapping nÃ y cáº§n cho suggestion vÃ¬ frontend dÃ¹ng symbol, cÃ²n Market Service dÃ¹ng coinId.
+
+## 23. `suggestion_service.py` SÃ¢u HÆ¡n
+
+Suggestion khÃ´ng pháº£i AI model trading.
+
+NÃ³ lÃ  rule-based decision dá»±a trÃªn:
+
+```text
+Market price 24h change
+News sentiment distribution
+```
+
+Luá»“ng:
+
+```text
+build_suggestion("BTC")
+  -> BTC -> bitcoin
+  -> fetch_market_price("bitcoin")
+  -> fetch_news_sentiments("BTC")
+  -> aggregate_sentiments()
+  -> build_signal()
+```
+
+### `aggregate_sentiments()`
+
+Náº¿u 5 bÃ i gáº§n nháº¥t cÃ³:
+
+```text
+positive, positive, neutral, negative, positive
+```
+
+ThÃ¬ distribution:
+
+```json
+{
+  "positive": 3,
+  "negative": 1,
+  "neutral": 1
+}
+```
+
+Label tá»•ng lÃ  `positive`, score lÃ  `3/5 = 0.6`.
+
+### `build_signal()`
+
+Káº¿t há»£p sentiment vÃ  giÃ¡.
+
+VÃ­ dá»¥:
+
+```text
+sentiment = positive
+change24h = +3.2
+-> BULLISH
+```
+
+VÃ­ dá»¥ khÃ¡c:
+
+```text
+sentiment = positive
+change24h = -2.5
+-> CAUTION
+```
+
+VÃ¬ tin tá»‘t nhÆ°ng giÃ¡ Ä‘ang giáº£m, há»‡ thá»‘ng tháº­n trá»ng.
+
+## 24. API Response Máº«u
+
+### `POST /api/sentiment/analyze`
+
+Request:
+
+```json
+{
+  "text": "Ethereum upgrade reduces fees"
+}
+```
+
+Response:
+
+```json
+{
+  "label": "positive",
+  "score": 0.88,
+  "scores": {
+    "positive": 0.88,
+    "negative": 0.03,
+    "neutral": 0.09
+  }
+}
+```
+
+### `POST /api/sentiment/analyze-batch`
+
+Request:
+
 ```json
 {
   "texts": [
-    "Bitcoin hits record high",
-    "Market crashes 30%",
-    "Ethereum stays flat"
+    "Bitcoin rallies strongly",
+    "Exchange hacked, users lose funds"
   ]
 }
 ```
 
-**Response:**
+Response:
+
 ```json
 [
-  {"label": "positive", "score": 0.6282, "scores": {...}},
-  {"label": "neutral",  "score": 0.8576, "scores": {...}},
-  {"label": "neutral",  "score": 0.8693, "scores": {...}}
+  {
+    "label": "positive",
+    "score": 0.9,
+    "scores": {}
+  },
+  {
+    "label": "negative",
+    "score": 0.92,
+    "scores": {}
+  }
 ]
 ```
 
-Dùng khi News Service cần phân tích cảm xúc cho 50 bài báo khi refresh cache — hiệu quả hơn là gọi single endpoint 50 lần.
+Thá»±c táº¿ `scores` sáº½ cÃ³ Ä‘á»§ 3 nhÃ£n.
 
----
+### `GET /api/sentiment/suggestion?symbol=BTC`
 
-## 10. Tích hợp với News Service (Java)
+Response:
 
-News Service (Java Spring Boot) tích hợp với Sentiment Service qua HTTP. Luồng xảy ra bên trong `CryptoCompareProvider.java` khi parse từng bài báo:
-
-```java
-// Trong CryptoCompareProvider.java — parse từng bài báo từ API:
-String title = item.path("title").asText("");
-String summary = item.path("body").asText(title);
-
-// Gọi SentimentAnalyzer để lấy nhãn (thử FinBERT → fallback keyword)
-String sentiment = sentimentAnalyzer.analyze(title, summary);
-
-News news = News.builder()
-        .title(title)
-        .summary(summary)
-        .sentiment(sentiment)   // ← nhãn từ FinBERT
-        ...
-        .build();
-```
-
-Và trong `buildSampleNews()` — kể cả dữ liệu mẫu cũng được qua FinBERT:
-```java
-// Áp dụng FinBERT sentiment cho sample data (chứng minh tích hợp hoạt động)
-samples.forEach(n -> n.setSentiment(sentimentAnalyzer.analyze(n.getTitle(), n.getSummary())));
-```
-
----
-
-## 11. SentimentAnalyzer.java — Lớp cầu nối 2 tầng
-
-Đây là class trong News Service chịu trách nhiệm gọi Python service và xử lý fallback:
-
-```java
-@Component
-public class SentimentAnalyzer {
-
-    @Value("${sentiment.service-url:http://localhost:3008}")
-    private String sentimentServiceUrl;   // ← Cấu hình từ application.yml
-
-    @Autowired
-    private RestTemplate restTemplate;    // ← Spring HTTP client
-
-    public String analyze(String title, String summary) {
-        if (title == null) return "neutral";
-
-        // ── Tầng 1: Python FinBERT (AI thực sự) ──────────────────────────
-        try {
-            String summarySnippet = (summary != null && summary.length() > 200)
-                    ? summary.substring(0, 200) : (summary != null ? summary : "");
-            String text = title + ". " + summarySnippet;
-
-            Map<String, String> request = Map.of("text", text);
-            Map<String, Object> response = restTemplate.postForObject(
-                    sentimentServiceUrl + "/sentiment/analyze",
-                    request,
-                    Map.class
-            );
-
-            if (response != null && response.containsKey("label")) {
-                return (String) response.get("label");   // "positive"/"negative"/"neutral"
-            }
-        } catch (Exception e) {
-            // Log ở mức DEBUG (không phải ERROR) vì đây là "expected fallback"
-            log.debug("[SentimentAnalyzer] FinBERT unavailable ({}), using keyword fallback",
-                    e.getClass().getSimpleName());
-        }
-
-        // ── Tầng 2: Keyword matching (fallback) ──────────────────────────
-        return analyzeByKeywords(title, summary);
+```json
+{
+  "symbol": "BTC",
+  "coinId": "bitcoin",
+  "price": {
+    "current": 68000,
+    "change24h": 2.5
+  },
+  "sentiment": {
+    "label": "positive",
+    "score": 0.6,
+    "articleCount": 5,
+    "distribution": {
+      "positive": 3,
+      "negative": 1,
+      "neutral": 1
     }
-
-    private String analyzeByKeywords(String title, String summary) {
-        String combined = (title + " " + summary).toLowerCase();
-        long pos = POSITIVE_KEYWORDS.stream().filter(combined::contains).count();
-        long neg = NEGATIVE_KEYWORDS.stream().filter(combined::contains).count();
-        if (pos > neg) return "positive";
-        if (neg > pos) return "negative";
-        return "neutral";
-    }
+  },
+  "suggestion": {
+    "signal": "BULLISH",
+    "title": "BTC dang co momentum tang manh",
+    "reason": "Tam ly thi truong tich cuc...",
+    "detail": "..."
+  },
+  "disclaimer": "Day la thong tin tong hop tu dong...",
+  "timestamp": "2026-06-11T10:00:00Z"
 }
 ```
 
-**Tại sao thiết kế 2 tầng này quan trọng?**
+LÆ°u Ã½: má»™t sá»‘ text trong suggestion hiá»‡n lÃ  ASCII khÃ´ng dáº¥u Ä‘á»ƒ trÃ¡nh lá»—i encoding runtime.
 
-Trong hệ thống phân tán, service có thể down bất cứ lúc nào. Nếu bạn không có fallback:
-- Sentiment Service restart → News Service bị lỗi → toàn bộ tính năng news bị gián đoạn
+## 25. TÃ­ch Há»£p Service-To-Service
 
-Với 2 tầng:
-- Sentiment Service down → News vẫn hoạt động với keyword fallback (Graceful Degradation)
-- Sentiment Service UP → Tự động dùng AI mà không cần can thiệp
+Sentiment Service gá»i cÃ¡c service khÃ¡c qua Gateway:
 
-Đây gọi là **Circuit Breaker pattern** ở mức đơn giản nhất.
-
-**Tại sao dùng `log.debug()` thay vì `log.error()` khi fallback?**
-
-Nếu Sentiment Service chưa khởi động (bình thường khi hệ thống vừa start), việc News Service fallback về keyword là **hành vi đúng**, không phải lỗi. Dùng `log.error()` sẽ gây "alert noise" — các lỗi thật bị chìm trong hàng nghìn dòng log giả.
-
----
-
-## 12. Tích hợp với API Gateway
-
-```javascript
-// api-gateway/server.js
-
-const sentimentProxy = createProxyMiddleware({
-  target: 'http://localhost:3008',   // ← Python service
-  changeOrigin: true,
-  pathRewrite: (path) => {
-    // /api/sentiment/analyze → /sentiment/analyze
-    return path.replace('/api', '');
-  },
-  onError: (err, req, res) => {
-    // Trả lỗi có cấu trúc nếu Python service down
-    res.status(503).json({
-      success: false,
-      message: 'Sentiment service is currently unavailable',
-    });
-  },
-});
-
-app.use('/api/sentiment', sentimentProxy);
+```text
+Sentiment -> Gateway -> Market Service
+Sentiment -> Gateway -> News Service
 ```
 
-**Tại sao Gateway cần proxy đến Sentiment Service?**
+NÃ³ gá»­i header:
 
-Về mặt lý thuyết, News Service đã gọi Sentiment Service nâng nội bộ (server-to-server). Nhưng việc expose `/api/sentiment` qua Gateway cho phép:
-- Frontend test trực tiếp FinBERT mà không cần qua News Service
-- Admin tool gọi phân tích sentiment cho bất kỳ text nào
-- Dễ dàng monitor traffic qua Gateway logs
-
-```
-Frontend → Gateway :3000/api/sentiment/health → Python :3008/sentiment/health
+```text
+X-Internal-Service-Key: ...
 ```
 
----
+Ã nghÄ©a:
 
-## 13. Luồng request đầy đủ end-to-end
-
-**Kịch bản:** User mở trang News trên Frontend.
-
-```
-1. Browser gọi:
-   GET http://localhost:5173/news
-
-2. React frontend gọi:
-   GET http://localhost:3000/api/news
-
-3. API Gateway (Node.js):
-   Strip "/api" → Forward:
-   GET http://localhost:3006/news
-
-4. News Service (Java) — NewsController nhận request:
-   → NewsService.getNews()
-   → Kiểm tra Guava Cache (TTL 24h)
-
-5a. Cache HIT → Trả về ngay (bài đã có sentiment từ lần fetch trước)
-
-5b. Cache MISS → CryptoCompareProvider.fetchLatestNews():
-   → Gọi CryptoCompare API lấy 50 bài báo
-   → Với mỗi bài: sentimentAnalyzer.analyze(title, summary)
-   
-6. SentimentAnalyzer.analyze() — Tầng 1:
-   → POST http://localhost:3008/sentiment/analyze
-   → {"text": "Bitcoin breaks new ATH as institutions accumulate..."}
-
-7. Sentiment Service (Python/FastAPI):
-   → _run_finbert(text)
-   → FinBERT tokenize → 12 transformer layers → Softmax
-   → {"label": "positive", "score": 0.9188, "scores": {...}}
-
-8. Java nhận response:
-   → news.setSentiment("positive")
-   → Lưu vào cache
-
-9. News Service trả về:
-   [{"title": "Bitcoin breaks new ATH...", "sentiment": "positive", ...}, ...]
-
-10. Gateway forward về Frontend:
-    → React render badge "🟢 positive" bên cạnh tiêu đề
-
-Thời gian tổng: ~100ms (cache hit) hoặc ~5-10s (cache miss, 50 bài × ~100ms FinBERT)
+```text
+ÄÃ¢y lÃ  request ná»™i bá»™ giá»¯a service vá»›i service.
+KhÃ´ng pháº£i request trá»±c tiáº¿p tá»« user.
 ```
 
----
+Vá»›i suggestion:
 
-## 14. So sánh kết quả: AI vs Keyword
-
-Đây là kết quả thực tế khi chạy cả hai phương pháp trên cùng dữ liệu:
-
-| Tiêu đề bài báo | Keyword | FinBERT | Đúng? |
-|----------------|---------|---------|-------|
-| *"Bitcoin breaks new all-time high as institutional demand surges"* | positive | **positive** (0.92) | ✅ Giống nhau |
-| *"Crypto market faces correction as Fed signals rate hikes"* | negative | **negative** (0.88) | ✅ Giống nhau |
-| *"SEC investigates major crypto exchange for compliance issues"* | **negative** | **neutral** (0.70) | ✅ AI chính xác hơn |
-| *"Ripple wins key lawsuit, XRP deemed not a security"* | neutral (không từ nào khớp) | **positive** (0.85) | ✅ AI chính xác hơn |
-| *"Ethereum stays flat, no significant movement"* | neutral | **neutral** (0.87) | ✅ Giống nhau |
-
-> **Nhận xét:** FinBERT **đặc biệt vượt trội** ở những bài báo có từ khóa mơ hồ (investigate, compliance) hoặc không có từ khóa rõ ràng (Ripple wins lawsuit). Trong các trường hợp "rõ ràng" (surge, crash), kết quả giống nhau — AI không làm tệ hơn keyword, chỉ làm tốt hơn hoặc bằng.
-
----
-
-## 15. Những vấn đề đã gặp và cách fix
-
-### Vấn đề 1: `return_all_scores=True` bị deprecated → HTTP 500
-
-**Triệu chứng:** `POST /sentiment/analyze` trả về 500 Internal Server Error. Health endpoint vẫn UP và `modelLoaded: true`.
-
-**Nguyên nhân:**
-
-Từ `transformers >= 4.30`, tham số `return_all_scores=True` bị deprecated và thay đổi behavior — chỉ trả về 1 kết quả (nhãn tốt nhất) thay vì tất cả 3.
-
-```python
-# Code cũ (sai):
-analyzer = pipeline("text-classification", model=MODEL_NAME,
-                    return_all_scores=True, device=-1)
-# → raw_results = [{"label": "positive", "score": 0.92}]
-#                   Chỉ có 1 phần tử!
-
-# Trong _run_finbert():
-scores_dict = {r["label"]: round(r["score"], 4) for r in raw_results[0]}
-# → raw_results[0] phải là List nhưng lại là Dict → TypeError → 500
+```text
+Market Service cung cáº¥p giÃ¡.
+News Service cung cáº¥p tin tá»©c/sentiment.
+Sentiment Service tá»•ng há»£p thÃ nh tÃ­n hiá»‡u.
 ```
 
-**Fix:**
+## 26. VÃ¬ Sao Sentiment Service KhÃ´ng DÃ¹ng Database?
 
-```python
-# Code mới (đúng):
-analyzer = pipeline("text-classification", model=MODEL_NAME,
-                    top_k=None, device=-1)
-# → raw_results = [[{"label": "positive", "score": 0.92},
-#                   {"label": "neutral",  "score": 0.05},
-#                   {"label": "negative", "score": 0.03}]]
-#                   Đúng cấu trúc List[Dict]
+VÃ¬ nÃ³ khÃ´ng cáº§n lÆ°u state lÃ¢u dÃ i.
+
+NÃ³ nháº­n input vÃ  tráº£ output:
+
+```text
+text -> sentiment
+symbol -> suggestion
 ```
 
-**Bài học:** Đọc migration guide khi upgrade version library. `return_all_scores` vẫn hoạt động một phần (không crash khi load) nhưng thay đổi output format âm thầm → lỗi chỉ xảy ra lúc inference.
+Model náº±m trong RAM, khÃ´ng pháº£i dá»¯ liá»‡u business cáº§n lÆ°u vÃ o database.
 
----
+Náº¿u cáº§n audit lá»‹ch sá»­ suggestion vá» sau thÃ¬ má»›i thÃªm DB. Vá»›i Ä‘á»“ Ã¡n hiá»‡n táº¡i, khÃ´ng cáº§n.
 
-### Vấn đề 2: Duplicate method → News Service không start
+## 27. CÃ¢u Há»i Giáº£ng ViÃªn CÃ³ Thá»ƒ Há»i
 
-**Triệu chứng:** `java.lang.UnsatisfiedDependencyException: Error creating bean 'sentimentAnalyzer': Constructor threw exception`
+### FinBERT cÃ³ pháº£i do mÃ¬nh tá»± train khÃ´ng?
 
-**Nguyên nhân:**
+KhÃ´ng. MÃ¬nh dÃ¹ng pretrained model `ProsusAI/finbert` vÃ  tÃ­ch há»£p vÃ o service Ä‘á»ƒ cháº¡y inference.
 
-Khi chỉnh sửa `SentimentAnalyzer.java`, method `analyzeByKeywords()` bị khai báo **2 lần** trong cùng 1 class (do copy-paste khi thêm Javadoc). Java không compile được class có duplicate method → Spring Boot không thể tạo Bean → toàn bộ service crash khi start.
+### VÃ¬ sao dÃ¹ng Python?
 
-```java
-// SAI — trùng lặp:
-private String analyzeByKeywords(String title, String summary) {
+VÃ¬ Python cÃ³ há»‡ sinh thÃ¡i AI máº¡nh, HuggingFace Transformers há»— trá»£ trá»±c tiáº¿p FinBERT.
 
-    /**
-     * Keyword-based sentiment...
-     */
-    private String analyzeByKeywords(String title, String summary) {
-        // code thực
-    }
-}
-```
+### Náº¿u model load lá»—i thÃ¬ sao?
 
-**Fix:** Xóa phần khai báo đầu tiên (thiếu body), giữ lại cái có code đầy đủ.
+Health endpoint váº«n bÃ¡o service UP nhÆ°ng `modelLoaded=false`. Analyze endpoint sáº½ tráº£ 503.
 
-**Bài học:** Trước khi restart service, luôn chạy `mvn compile` để bắt lỗi cú pháp. Đừng chỉ rebuild JAR (`mvn package`) rồi chờ 30s mới phát hiện lỗi.
+### Suggestion cÃ³ pháº£i lá»i khuyÃªn Ä‘áº§u tÆ° khÃ´ng?
 
----
+KhÃ´ng. NÃ³ lÃ  tÃ­n hiá»‡u tham kháº£o tá»± Ä‘á»™ng tá»« sentiment tin tá»©c vÃ  biáº¿n Ä‘á»™ng giÃ¡. Response cÃ³ disclaimer.
 
-### Vấn đề 3: JAR bị lock khi rebuild
+### VÃ¬ sao News Service cÅ©ng cÃ³ fallback keyword?
 
-**Triệu chứng:** `Unable to rename 'news-service-1.0.0.jar' to 'news-service-1.0.0.jar.original'`
+Äá»ƒ News khÃ´ng bá»‹ cháº¿t khi Sentiment Service chÆ°a cháº¡y hoáº·c model chÆ°a load.
 
-**Nguyên nhân:** Java process đang chạy từ file JAR → Windows lock file → Maven không thể ghi đè.
+## 28. CÃ¡ch Tá»± Test
 
-**Fix:**
+Health:
+
 ```powershell
-# Dừng Java process trước khi rebuild
-Get-Process java | Stop-Process -Force
-Start-Sleep -Seconds 2
-mvn package -DskipTests
+Invoke-RestMethod http://localhost:3008/sentiment/health
 ```
 
----
+Analyze:
 
-## 16. Tóm tắt kiến trúc
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    SENTIMENT SERVICE — TECH STACK                   │
-├──────────────────┬──────────────────────────────────────────────────┤
-│ Language         │ Python 3.10+                                     │
-│ Framework        │ FastAPI (async ASGI)                             │
-│ Server           │ Uvicorn                                          │
-│ AI Model         │ ProsusAI/finbert (FinBERT)                       │
-│ ML Library       │ HuggingFace Transformers                         │
-│ Deep Learning    │ PyTorch (CPU-only)                               │
-│ Data Validation  │ Pydantic v2                                      │
-│ Port             │ 3008                                             │
-│ Model size       │ ~440MB (cached locally sau lần đầu)              │
-│ Inference time   │ ~80-120ms/text trên CPU                          │
-├──────────────────┼──────────────────────────────────────────────────┤
-│ Endpoints        │ GET  /sentiment/health                           │
-│                  │ POST /sentiment/analyze       (single text)      │
-│                  │ POST /sentiment/analyze-batch (multiple texts)   │
-├──────────────────┼──────────────────────────────────────────────────┤
-│ Integration      │ News Service (Java) gọi qua RestTemplate         │
-│                  │ Fallback: keyword matching nếu service down      │
-│                  │ API Gateway proxy: /api/sentiment → :3008        │
-├──────────────────┼──────────────────────────────────────────────────┤
-│ Output labels    │ positive / negative / neutral                    │
-│ Output format    │ {label, score (confidence), scores (full dist.)} │
-└──────────────────┴──────────────────────────────────────────────────┘
+```powershell
+Invoke-RestMethod `
+  -Method Post `
+  -Uri http://localhost:3008/sentiment/analyze `
+  -ContentType "application/json" `
+  -Body '{"text":"Bitcoin rallies as ETF demand grows"}'
 ```
 
-**Vị trí trong hệ thống SOA:**
+Suggestion:
 
+```powershell
+Invoke-RestMethod "http://localhost:3008/sentiment/suggestion?symbol=BTC"
 ```
-Node.js Services (3001-3005)   → CRUD operations, realtime, WebSocket
-Java Spring Boot  (3006, 3007) → Business logic phức tạp, scheduling, database
-Python FastAPI    (3008)        → AI/ML inference, NLP, số học nặng
 
-→ Mỗi ngôn ngữ đảm nhận đúng thế mạnh của nó.
-→ Giao tiếp qua HTTP REST API chuẩn — ai cũng hiểu ai.
-→ Mỗi service độc lập deploy, scale, update riêng.
+Qua Gateway:
+
+```powershell
+Invoke-RestMethod "http://localhost:3000/api/sentiment/suggestion?symbol=BTC"
 ```
+
+## 29. CÃ¡ch Nhá»› Nhanh
+
+```text
+config.py = báº£ng cáº¥u hÃ¬nh
+models.py = há»£p Ä‘á»“ng request/response
+finbert_service.py = bá»™ nÃ£o phÃ¢n tÃ­ch sentiment
+suggestion_service.py = ngÆ°á»i tá»•ng há»£p giÃ¡ + tin Ä‘á»ƒ gá»£i Ã½
+main.py = cá»•ng API FastAPI
+```
+
+## Trạng Thái Sau Khi Rà Soát Mới Nhất
+
+Mình đã đối chiếu lại tài liệu này với code hiện tại của `sentiment-service`. Trạng thái chuẩn hiện tại là:
+
+```text
+Source chính:
+- main.py
+- config.py
+- models.py
+- finbert_service.py
+- suggestion_service.py
+- requirements.txt
+- start.ps1
+```
+
+Những điểm đã chốt theo source:
+
+```text
+- Không có database riêng trong Sentiment Service.
+- Không train model mới; service dùng pretrained model ProsusAI/finbert.
+- Model được load một lần trong FastAPI lifespan khi service start.
+- Nếu model load thất bại, health vẫn trả service UP nhưng modelLoaded=false; endpoint analyze sẽ trả 503.
+- analyze_text() cắt input theo MAX_TEXT_CHARS, mặc định 512 ký tự.
+- suggestion_service gọi Market Service và News Service qua API Gateway.
+- request nội bộ dùng header X-Internal-Service-Key lấy từ INTERNAL_SERVICE_KEY.
+- Nếu News Service lỗi, suggestion vẫn chạy với sentiment rỗng và aggregate về neutral.
+- Nếu Market Service lỗi, suggestion trả HTTP 503 vì không có dữ liệu giá để ra tín hiệu.
+```
+
+Đã dọn phần rác tự sinh:
+
+```text
+- Đã xóa sentiment-service/__pycache__.
+- Các file .pyc không phải source code, không cần đưa vào tài liệu hoặc review với giảng viên.
+```
+
+Khi review code, chỉ cần đọc các file `.py` chính ở trên. Không cần quan tâm `__pycache__` vì Python sẽ tự sinh lại nếu chạy service.

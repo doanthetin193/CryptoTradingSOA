@@ -1,6 +1,6 @@
-# News Service (Java Spring Boot)
+﻿# News Service (Java Spring Boot)
 
-Microservice cung cấp tin tức crypto, chứng minh kiến trúc **SOA language-agnostic**.
+Microservice cung cáº¥p tin tá»©c crypto, chá»©ng minh kiáº¿n trÃºc **SOA language-agnostic**.
 
 ## Tech Stack
 
@@ -10,57 +10,58 @@ Microservice cung cấp tin tức crypto, chứng minh kiến trúc **SOA langua
 - **Port**: 3006
 - **Build**: Maven 3.9.6
 
-## Khởi động
+## Khá»Ÿi Ä‘á»™ng
 
 ```powershell
-# Chạy script start
+# Cháº¡y script start
 .\start.ps1
 
-# Hoặc trực tiếp (sau khi đã build)
+# Hoáº·c trá»±c tiáº¿p (sau khi Ä‘Ã£ build)
 java -jar target\news-service-1.0.0.jar
 ```
 
 ## Build
 
 ```powershell
-# Maven cài tại C:\maven\apache-maven-3.9.6
+# Maven cÃ i táº¡i C:\maven\apache-maven-3.9.6
 & "C:\maven\apache-maven-3.9.6\bin\mvn.cmd" clean package -DskipTests
 ```
 
 ## API Endpoints
 
-| Method | Path | Mô tả |
+| Method | Path | MÃ´ táº£ |
 |--------|------|-------|
-| GET | `/news` | Danh sách tin (hỗ trợ filter + paginate) |
-| GET | `/news/{id}` | Chi tiết bài báo |
+| GET | `/news` | Danh sÃ¡ch tin (há»— trá»£ filter + paginate) |
+| GET | `/news/{id}` | Chi tiáº¿t bÃ i bÃ¡o |
 | GET | `/news/trending` | Top tin trending |
 | GET | `/news/coins/{coin}` | Tin theo coin |
 | GET | `/health` | Health check |
 
 ### Query Params cho GET /news
 
-| Param | Mặc định | Mô tả |
+| Param | Máº·c Ä‘á»‹nh | MÃ´ táº£ |
 |-------|---------|-------|
 | page | 1 | Trang (1-based) |
 | limit | 10 | Tin/trang (max 50) |
-| coin | - | Lọc theo coin (BTC, ETH,...) |
+| coin | - | Lá»c theo coin (BTC, ETH,...) |
 | sentiment | - | positive / negative / neutral |
-| search | - | Tìm kiếm trong tiêu đề |
+| search | - | TÃ¬m kiáº¿m trong tiÃªu Ä‘á» |
 
-## Cấu hình CryptoPanic API (tùy chọn)
+## Cáº¥u hÃ¬nh CryptoCompare API (tÃ¹y chá»n)
 
-1. Đăng ký tại https://cryptopanic.com/developers/
-2. Lấy API key
+1. ÄÄƒng kÃ½ táº¡i https://www.cryptocompare.com/cryptopian/api-keys
+2. Láº¥y API key
 3. Set environment variable:
 
 ```powershell
-$env:CRYPTOPANIC_API_KEY = "your-api-key"
+$env:CRYPTOCOMPARE_API_KEY = "your-cryptocompare-key"
+$env:NEWSAPI_KEY = "your-newsapi-key"
 ```
 
-Khi không có API key, service tự động dùng **10 bài tin mẫu** để demo.
+CryptoCompare co the chay free tier khi khong co key. Neu API ngoai loi hoac khong co du lieu, service se dung 10 bai tin mau de demo.
 
-## Tích hợp
+## TÃ­ch há»£p
 
-- **API Gateway**: `GET /api/news/*` proxy tới service này
-- **Consul**: Tự động đăng ký khi Consul đang chạy (fail-safe nếu không có)
-- **Frontend**: Trang `/news` và widget trên Dashboard
+- **API Gateway**: `GET /api/news/*` proxy tá»›i service nÃ y
+- **Consul**: Tá»± Ä‘á»™ng Ä‘Äƒng kÃ½ khi Consul Ä‘ang cháº¡y (fail-safe náº¿u khÃ´ng cÃ³)
+- **Frontend**: Trang `/news` vÃ  widget trÃªn Dashboard

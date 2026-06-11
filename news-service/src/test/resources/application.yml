@@ -1,13 +1,18 @@
 spring:
+  application:
+    name: news-service
   cloud:
+    discovery:
+      enabled: false
+    service-registry:
+      auto-registration:
+        enabled: false
     consul:
+      enabled: false
       discovery:
         enabled: false
       config:
         enabled: false
-
-cryptopanic:
-  api-key: ""
 
 logging:
   level:

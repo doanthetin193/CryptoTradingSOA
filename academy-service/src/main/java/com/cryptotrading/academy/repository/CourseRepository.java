@@ -14,12 +14,9 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
     Optional<Course> findByVideoId(String videoId);
 
-    /** Filter by category only */
     Page<Course> findByCategory(String category, Pageable pageable);
 
-    /** Filter by difficulty only */
     Page<Course> findByDifficulty(Difficulty difficulty, Pageable pageable);
 
-    /** Filter by both */
     Page<Course> findByCategoryAndDifficulty(String category, Difficulty difficulty, Pageable pageable);
 }

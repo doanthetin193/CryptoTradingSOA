@@ -1,19 +1,72 @@
-# Script khởi động tất cả Backend Services
-# Chạy script này trong PowerShell: .\start-all-services.ps1
+# Start all backend services for CryptoTrading SOA.
+# Run from PowerShell:
+#   cd D:\CryptoTradingSOA\backend
+#   .\start-all-services.ps1
 
 Write-Host "Starting CryptoTrading SOA Backend Services..." -ForegroundColor Cyan
 Write-Host ""
 
-$backendPath = "D:\CryptoTradingSOA\backend"
+$backendPath = $PSScriptRoot
+$projectRoot = Split-Path -Parent $backendPath
 
-# Kiểm tra node_modules
+function Stop-PortIfListening {
+    param([int]$Port)
+
+    $existingPid = netstat -ano 2>$null |
+        Select-String ":$Port\s.*LISTENING" |
+        ForEach-Object { ($_ -split '\s+')[-1] } |
+        Select-Object -First 1
+
+    if ($existingPid) {
+        Write-Host "  - Port $Port is already in use. Stopping PID $existingPid..." -ForegroundColor Yellow
+        Stop-Process -Id $existingPid -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 1
+    }
+}
+
+function Read-EnvFile {
+    param([string]$Path)
+
+    $map = @{}
+    if (-not (Test-Path $Path)) {
+        return $map
+    }
+
+    Get-Content $Path | ForEach-Object {
+        $line = $_.Trim()
+        if ($line -and -not $line.StartsWith("#") -and $line.Contains("=")) {
+            $parts = $line -split "=", 2
+            $key = $parts[0].Trim()
+            $value = $parts[1].Trim().Trim('"').Trim("'")
+            $map[$key] = $value
+        }
+    }
+
+    return $map
+}
+
+function Get-EnvValue {
+    param(
+        [hashtable]$Map,
+        [string]$Key,
+        [string]$Default = ""
+    )
+
+    if ($Map.ContainsKey($Key) -and $Map[$Key]) {
+        return $Map[$Key]
+    }
+    if ([Environment]::GetEnvironmentVariable($Key)) {
+        return [Environment]::GetEnvironmentVariable($Key)
+    }
+    return $Default
+}
+
 if (-not (Test-Path "$backendPath\node_modules")) {
-    Write-Host "node_modules not found. Installing dependencies..." -ForegroundColor Red
+    Write-Host "node_modules not found. Installing backend dependencies..." -ForegroundColor Yellow
     Set-Location $backendPath
     npm install
 }
 
-# Array các services cần start
 $services = @(
     @{Name="API Gateway"; Path="api-gateway/server.js"; Port=3000},
     @{Name="User Service"; Path="services/user-service/server.js"; Port=3001},
@@ -27,9 +80,11 @@ Write-Host "Services to start:" -ForegroundColor Yellow
 foreach ($service in $services) {
     Write-Host "  - $($service.Name) (Port: $($service.Port))" -ForegroundColor Gray
 }
+Write-Host "  - News Service (Port: 3006)" -ForegroundColor Gray
+Write-Host "  - Academy Service (Port: 3007)" -ForegroundColor Gray
+Write-Host "  - Sentiment Service (Port: 3008)" -ForegroundColor Gray
 Write-Host ""
 
-# Hỏi xác nhận
 $confirm = Read-Host "Do you want to start all services? (Y/N)"
 if ($confirm -ne "Y" -and $confirm -ne "y") {
     Write-Host "Cancelled" -ForegroundColor Red
@@ -37,91 +92,84 @@ if ($confirm -ne "Y" -and $confirm -ne "y") {
 }
 
 Write-Host ""
-Write-Host "Starting services in new windows..." -ForegroundColor Green
+Write-Host "Starting Node.js services in new windows..." -ForegroundColor Green
 Write-Host ""
 
-# Start từng service trong window mới
 foreach ($service in $services) {
+    Stop-PortIfListening -Port $service.Port
+
     $title = $service.Name
-    $command = "node $($service.Path)"
-    
+    $command = "Set-Location '$backendPath'; `$host.UI.RawUI.WindowTitle='$title'; Write-Host 'Starting $title on port $($service.Port)...'; node $($service.Path)"
+
     Write-Host "  - Starting: $title" -ForegroundColor Green
-    
-    # Mở PowerShell window mới với title
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$backendPath'; `$host.UI.RawUI.WindowTitle='$title'; Write-Host 'Starting $title on port $($service.Port)...'; $command"
-    
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", $command
     Start-Sleep -Seconds 2
 }
 
-Write-Host ""
-Write-Host "All services started successfully!" -ForegroundColor Green
-Write-Host ""
-
-# Load .env để lấy CRYPTOCOMPARE_API_KEY cho Java
 $envFile = "$backendPath\.env"
-$cryptoCompareKey = ""
-if (Test-Path $envFile) {
-    $envLines = Get-Content $envFile | Where-Object { $_ -match "^CRYPTOCOMPARE_API_KEY=" }
-    if ($envLines) {
-        $cryptoCompareKey = ($envLines -split "=", 2)[1].Trim()
-    }
-}
+$envMap = Read-EnvFile -Path $envFile
 
-# Start News Service (Java)
-$newsJar = "D:\CryptoTradingSOA\news-service\target\news-service-1.0.0.jar"
-if (Test-Path $newsJar) {
-    Write-Host "  - Starting: News Service (Java) on port 3006" -ForegroundColor Green
-    # Kill existing Java process on port 3006 if any
-    $existingPid = netstat -ano 2>$null | Select-String ":3006\s.*LISTENING" | ForEach-Object { ($_ -split '\s+')[-1] } | Select-Object -First 1
-    if ($existingPid) {
-        Stop-Process -Id $existingPid -Force -ErrorAction SilentlyContinue
-        Start-Sleep -Seconds 1
-    }
-    $javaCmd = "`$env:CRYPTOCOMPARE_API_KEY='$cryptoCompareKey'; `$host.UI.RawUI.WindowTitle='News Service (Java) :3006'; Write-Host 'Starting News Service on port 3006...'; java -jar '$newsJar'"
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", $javaCmd
+Write-Host ""
+Write-Host "Starting Do An 2 services in new windows..." -ForegroundColor Green
+Write-Host ""
+
+$newsDir = Join-Path $projectRoot "news-service"
+if (Test-Path (Join-Path $newsDir "mvnw.cmd")) {
+    Stop-PortIfListening -Port 3006
+
+    $cryptoCompareKey = Get-EnvValue -Map $envMap -Key "CRYPTOCOMPARE_API_KEY"
+    $newsApiKey = Get-EnvValue -Map $envMap -Key "NEWSAPI_KEY"
+    $sentimentUrl = Get-EnvValue -Map $envMap -Key "SENTIMENT_SERVICE_URL" -Default "http://localhost:3008"
+
+    Write-Host "  - Starting: News Service (Java Spring Boot) on port 3006" -ForegroundColor Green
+    $newsCmd = "Set-Location '$newsDir'; `$host.UI.RawUI.WindowTitle='News Service (Java) :3006'; `$env:CRYPTOCOMPARE_API_KEY='$cryptoCompareKey'; `$env:NEWSAPI_KEY='$newsApiKey'; `$env:SENTIMENT_SERVICE_URL='$sentimentUrl'; Write-Host 'Starting News Service on port 3006...'; .\mvnw.cmd spring-boot:run"
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", $newsCmd
     Start-Sleep -Seconds 2
 } else {
-    Write-Host "  - News Service JAR not found; build first: cd D:\CryptoTradingSOA\news-service && mvn package -DskipTests" -ForegroundColor Yellow
+    Write-Host "  - News Service not found at $newsDir" -ForegroundColor Yellow
 }
 
-# Start Academy Service (Java)
-$academyJar = "D:\CryptoTradingSOA\academy-service\target\academy-service-1.0.0.jar"
-if (Test-Path $academyJar) {
-    Write-Host "  - Starting: Academy Service (Java) on port 3007" -ForegroundColor Green
-    $existingPid = netstat -ano 2>$null | Select-String ":3007\s.*LISTENING" | ForEach-Object { ($_ -split '\s+')[-1] } | Select-Object -First 1
-    if ($existingPid) {
-        Stop-Process -Id $existingPid -Force -ErrorAction SilentlyContinue
-        Start-Sleep -Seconds 1
-    }
-    $academyCmd = "`$host.UI.RawUI.WindowTitle='Academy Service (Java) :3007'; Write-Host 'Starting Academy Service on port 3007...'; java '-Dspring.datasource.password=123456' '-Dspring.datasource.url=jdbc:mysql://localhost:3306/crypto_academy?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8' -jar '$academyJar'"
+$academyDir = Join-Path $projectRoot "academy-service"
+if (Test-Path (Join-Path $academyDir "mvnw.cmd")) {
+    Stop-PortIfListening -Port 3007
+
+    $dbUsername = Get-EnvValue -Map $envMap -Key "DB_USERNAME" -Default "root"
+    $dbPassword = Get-EnvValue -Map $envMap -Key "DB_PASSWORD"
+    $youtubeApiKey = Get-EnvValue -Map $envMap -Key "YOUTUBE_API_KEY"
+
+    Write-Host "  - Starting: Academy Service (Java Spring Boot) on port 3007" -ForegroundColor Green
+    $academyCmd = "Set-Location '$academyDir'; `$host.UI.RawUI.WindowTitle='Academy Service (Java) :3007'; `$env:DB_USERNAME='$dbUsername'; `$env:DB_PASSWORD='$dbPassword'; `$env:YOUTUBE_API_KEY='$youtubeApiKey'; Write-Host 'Starting Academy Service on port 3007...'; .\mvnw.cmd spring-boot:run"
     Start-Process powershell -ArgumentList "-NoExit", "-Command", $academyCmd
     Start-Sleep -Seconds 2
 } else {
-    Write-Host "  - Academy Service JAR not found; build first: cd D:\CryptoTradingSOA\academy-service && mvn package -DskipTests" -ForegroundColor Yellow
+    Write-Host "  - Academy Service not found at $academyDir" -ForegroundColor Yellow
 }
 
-# Start Sentiment Service (Python FinBERT)
-$sentimentScript = "D:\CryptoTradingSOA\sentiment-service\main.py"
-if (Test-Path $sentimentScript) {
+$sentimentDir = Join-Path $projectRoot "sentiment-service"
+$sentimentStartScript = Join-Path $sentimentDir "start.ps1"
+if (Test-Path $sentimentStartScript) {
+    Stop-PortIfListening -Port 3008
+
     Write-Host "  - Starting: Sentiment Service (Python FinBERT) on port 3008" -ForegroundColor Green
-    $existingPid = netstat -ano 2>$null | Select-String ":3008\s.*LISTENING" | ForEach-Object { ($_ -split '\s+')[-1] } | Select-Object -First 1
-    if ($existingPid) {
-        Stop-Process -Id $existingPid -Force -ErrorAction SilentlyContinue
-        Start-Sleep -Seconds 1
-    }
-    $sentimentCmd = "`$host.UI.RawUI.WindowTitle='Sentiment Service (Python FinBERT) :3008'; Set-Location 'D:\CryptoTradingSOA\sentiment-service'; Write-Host 'Starting Sentiment Service (FinBERT will download on first run)...'; python main.py"
+    $sentimentCmd = "Set-Location '$sentimentDir'; `$host.UI.RawUI.WindowTitle='Sentiment Service (Python FinBERT) :3008'; Write-Host 'Starting Sentiment Service with start.ps1...'; .\start.ps1"
     Start-Process powershell -ArgumentList "-NoExit", "-Command", $sentimentCmd
     Start-Sleep -Seconds 2
 } else {
-    Write-Host "  - Sentiment Service not found at D:\CryptoTradingSOA\sentiment-service\main.py" -ForegroundColor Yellow
+    Write-Host "  - Sentiment Service start script not found at $sentimentStartScript" -ForegroundColor Yellow
 }
 
 Write-Host ""
+Write-Host "All service windows were opened." -ForegroundColor Green
+Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Yellow
-Write-Host "  1. Wait for all services to be ready (check each window)"
-Write-Host "  2. Open new terminal and run: cd D:\CryptoTradingSOA\frontend && npm run dev"
+Write-Host "  1. Wait for all service windows to finish starting."
+Write-Host "  2. Open a new VS Code terminal and run:"
+Write-Host "       cd $projectRoot\frontend"
+Write-Host "       npm run dev"
 Write-Host "  3. Open browser: http://localhost:5173"
 Write-Host ""
-Write-Host "🛑 To stop all services:" -ForegroundColor Red
+Write-Host "To stop services quickly:" -ForegroundColor Red
 Write-Host "   taskkill /F /IM node.exe"
+Write-Host "   taskkill /F /IM java.exe"
+Write-Host "   taskkill /F /IM python.exe"
 Write-Host ""

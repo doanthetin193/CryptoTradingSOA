@@ -27,7 +27,7 @@ public class AppConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/academy/**")
                         .allowedOrigins("*")
-                        .allowedMethods("GET")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*");
             }
         };

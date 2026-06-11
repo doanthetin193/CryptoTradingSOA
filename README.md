@@ -1,551 +1,335 @@
-# 🪙 CryptoTrading SOA
+# CryptoTrading SOA
 
-> **Hệ thống Giao dịch Crypto Ảo** - Nền tảng mô phỏng giao dịch tiền điện tử xây dựng theo kiến trúc hướng dịch vụ (SOA)
+He thong giao dich crypto ao duoc xay dung theo kien truc SOA. Project ban dau gom cac service cot loi cho dang ky, giao dich, danh muc, thi truong va thong bao. Do an 2 bo sung them 3 service moi: News Service, Sentiment Service va Academy Service.
 
-![Node.js](https://img.shields.io/badge/Node.js-v18+-green.svg)
-![React](https://img.shields.io/badge/React-v19-blue.svg)
-![MongoDB](https://img.shields.io/badge/MongoDB-v6+-green.svg)
-![License](https://img.shields.io/badge/License-ISC-yellow.svg)
+## Tong Quan
 
-## 📋 Mục lục
+Nguoi dung co the:
 
-- [Giới thiệu](#-giới-thiệu)
-- [Tính năng](#-tính-năng)
-- [Kiến trúc hệ thống](#-kiến-trúc-hệ-thống)
-- [Công nghệ sử dụng](#-công-nghệ-sử-dụng)
-- [Cài đặt](#-cài-đặt)
-- [Cấu hình](#-cấu-hình)
-- [Khởi chạy](#-khởi-chạy)
-- [API Documentation](#-api-documentation)
-- [Cấu trúc thư mục](#-cấu-trúc-thư-mục)
-- [Tác giả](#-tác-giả)
+- Dang ky, dang nhap va nhan so du USDT ao.
+- Xem gia crypto, bieu do, mua ban coin va xem lich su giao dich.
+- Theo doi portfolio va loi/lo.
+- Doc tin tuc crypto kem nhan sentiment.
+- Xem goi y xu huong coin bang AI sentiment.
+- Hoc crypto qua Academy, xem video YouTube va tu danh dau hoan thanh.
+- Admin co the quan ly user va quan ly khoa hoc Academy.
 
-## 🎯 Giới thiệu
+He thong hien tai co 8 service doc lap:
 
-**CryptoTrading SOA** là một nền tảng giao dịch tiền điện tử ảo cho phép người dùng:
-- Học cách giao dịch crypto **không rủi ro** tài chính
-- Nhận **1000 USDT ảo** để bắt đầu giao dịch
-- Theo dõi giá **real-time** từ thị trường thực
-- Quản lý danh mục đầu tư và xem lãi/lỗ
+- Node.js/Express: API Gateway va 5 service nghiep vu cua do an 1.
+- Java Spring Boot: News Service va Academy Service.
+- Python FastAPI: Sentiment Service.
+- React/Vite: frontend.
 
-Hệ thống được xây dựng theo **kiến trúc SOA (Service-Oriented Architecture)** với 5 services độc lập, đảm bảo khả năng mở rộng và bảo trì dễ dàng.
+## Kien Truc
 
-## ✨ Tính năng
+Luon truy cap tu frontend di qua API Gateway:
 
-### 👤 Người dùng (User)
-- ✅ Đăng ký / Đăng nhập / Đăng xuất
-- ✅ Xem giá 8 loại coin phổ biến (BTC, ETH, BNB, SOL, XRP, ADA, DOGE, DOT)
-- ✅ Xem biểu đồ giá (7/14/30 ngày)
-- ✅ Mua/Bán coin với phí 0.1%
-- ✅ Xem lịch sử giao dịch và thống kê
-- ✅ Quản lý danh mục đầu tư (Portfolio)
-- ✅ Tạo cảnh báo giá (Price Alerts)
-- ✅ Nhận thông báo real-time qua WebSocket
-
-### 👑 Quản trị viên (Admin)
-- ✅ Xem danh sách tất cả người dùng
-- ✅ Khóa/Mở khóa tài khoản
-- ✅ Cập nhật số dư user (điều chỉnh + hoặc -)
-
-### 🛡️ Hệ thống
-- ✅ Service Discovery với Consul
-- ✅ Circuit Breaker Pattern (Opossum)
-- ✅ Rate Limiting
-- ✅ JWT Authentication
-- ✅ Real-time notifications (Socket.IO)
-- ✅ Automatic Price Alert checking (Cron Job)
-
-## 🏗 Kiến trúc hệ thống
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                                  CLIENT                                      │
-│                         React + Vite + TailwindCSS                          │
-└───────────────────────────────────┬─────────────────────────────────────────┘
-                                    │ HTTP / WebSocket
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                            API GATEWAY (:3000)                               │
-│              JWT Auth │ Rate Limit │ Trade Orchestration                    │
-│                       │ WebSocket Server                                    │
-└───────────────────────────────────┬─────────────────────────────────────────┘
-                                    │
-        ┌───────────────────────────┼───────────────────────────┐
-        │                           │                           │
-        ▼                           ▼                           ▼
-┌───────────────┐           ┌───────────────┐           ┌───────────────┐
-│    CONSUL     │◄──────────│  (1) Register │───────────│   Services    │
-│   (:8500)     │           │     service   │           │  register to  │
-│   Service     │           └───────────────┘           │    Consul     │
-│   Discovery   │                                       └───────────────┘
-└───────────────┘
-        │
-        │ (2) Gateway queries Consul for service addresses
-        ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              SOA SERVICES                                    │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-│  │    User     │ │   Market    │ │  Portfolio  │ │    Trade    │ │Notification │
-│  │   Service   │ │   Service   │ │   Service   │ │   Service   │ │   Service   │
-│  │   (:3001)   │ │   (:3002)   │ │   (:3003)   │ │   (:3004)   │ │   (:3005)   │
-│  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ └──────┬──────┘
-└─────────┼───────────────┼───────────────┼───────────────┼───────────────┼───────┘
-          │               │               │               │               │
-          ▼               ▼               ▼               ▼               ▼
-┌─────────────────┐ ┌───────────┐ ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
-│  crypto_users   │ │ CoinGecko │ │crypto_portfolios│ │  crypto_trades  │ │crypto_notifications│
-│   (MongoDB)     │ │    API    │ │    (MongoDB)    │ │    (MongoDB)    │ │    (MongoDB)    │
-└─────────────────┘ └───────────┘ └─────────────────┘ └─────────────────┘ └─────────────────┘
+```text
+Frontend React (:5173)
+        |
+        v
+API Gateway (:3000)
+        |
+        +-- User Service (:3001)          -> MongoDB
+        +-- Market Service (:3002)        -> CoinGecko/CoinPaprika
+        +-- Portfolio Service (:3003)     -> MongoDB
+        +-- Trade Service (:3004)         -> MongoDB
+        +-- Notification Service (:3005)  -> MongoDB + WebSocket
+        +-- News Service (:3006)          -> CryptoCompare/NewsAPI + Sentiment Service
+        +-- Academy Service (:3007)       -> MySQL crypto_academy
+        +-- Sentiment Service (:3008)     -> FinBERT pretrained model
 ```
 
-### 🔄 Luồng Service Discovery
+Consul duoc dung cho service discovery. Neu chay local ma Consul bi tat, mot so service van co co che fallback/static config tuy tung service, nhung de demo day du nen bat Consul truoc.
 
-```
-┌──────────────┐     (1) Register          ┌──────────────┐
-│              │ ─────────────────────────►│              │
-│  Services    │     {name, host, port}    │    CONSUL    │
-│  (3001-3005) │                           │    (:8500)   │
-│              │◄───────────────────────── │              │
-└──────────────┘     Health Check (10s)    └──────────────┘
-                                                  ▲
-                                                  │ (2) Query
-                                                  │ "Where is user-service?"
-                                                  │
-                                           ┌──────┴───────┐
-                                           │ API GATEWAY  │
-                                           │   (:3000)    │
-                                           └──────────────┘
-                                                  │
-                                                  │ (3) Response
-                                                  │ "localhost:3001"
-                                                  ▼
-                                           ┌──────────────┐
-                                           │ Call Service │
-                                           │   Directly   │
-                                           └──────────────┘
-```
+## Bang Service
 
-### 📦 Services
+| Service | Port | Cong nghe | Vai tro |
+|---|---:|---|---|
+| API Gateway | 3000 | Node.js, Express | Diem vao duy nhat, JWT, rate limit, proxy/orchestration |
+| User Service | 3001 | Node.js, MongoDB | Dang ky, dang nhap, user/admin, wallet ao |
+| Market Service | 3002 | Node.js | Lay gia coin, chart data, cache |
+| Portfolio Service | 3003 | Node.js, MongoDB | Quan ly holdings, tinh portfolio |
+| Trade Service | 3004 | Node.js, MongoDB | Luu lenh mua/ban va lich su giao dich |
+| Notification Service | 3005 | Node.js, MongoDB, Socket.IO | Thong bao, price alert, cron job |
+| News Service | 3006 | Java Spring Boot | Tin tuc crypto, cache, scheduler, sentiment badge |
+| Academy Service | 3007 | Java Spring Boot, MySQL | Learning path, course video, progress, admin CRUD |
+| Sentiment Service | 3008 | Python FastAPI, FinBERT | Phan tich sentiment va goi y xu huong coin |
 
-| Service | Port | Mô tả |
-|---------|------|-------|
-| **API Gateway** | 3000 | Điểm vào duy nhất, xác thực JWT, rate limiting, orchestration |
-| **User Service** | 3001 | Đăng ký, đăng nhập, quản lý ví USDT, admin functions |
-| **Market Service** | 3002 | Lấy giá coin real-time, chart data, cache 2 phút |
-| **Portfolio Service** | 3003 | Quản lý holdings, tính lãi/lỗ |
-| **Trade Service** | 3004 | Lưu lịch sử giao dịch, thống kê |
-| **Notification Service** | 3005 | Thông báo, price alerts, cron job |
+## Diem Moi Cua Do An 2
 
-## 🛠 Công nghệ sử dụng
+### News Service
 
-### Backend
-| Công nghệ | Mô tả |
-|-----------|-------|
-| **Node.js** | Runtime JavaScript |
-| **Express.js** | Web framework |
-| **MongoDB** | NoSQL Database |
-| **Mongoose** | ODM cho MongoDB |
-| **JWT** | Xác thực stateless |
-| **bcryptjs** | Hash password |
-| **Socket.IO** | WebSocket real-time |
-| **Consul** | Service Discovery |
-| **Opossum** | Circuit Breaker |
-| **node-cron** | Scheduled tasks |
-| **Axios** | HTTP client |
-| **Winston** | Logging |
+News Service lay tin tuc crypto tu API ngoai:
 
-### Frontend
-| Công nghệ | Mô tả |
-|-----------|-------|
-| **React 19** | UI Library |
-| **Vite** | Build tool |
-| **TailwindCSS** | CSS Framework |
-| **React Router 7** | Routing |
-| **Recharts** | Charts library |
-| **Lucide React** | Icons |
-| **Socket.IO Client** | WebSocket client |
-| **Axios** | HTTP client |
+- Primary: CryptoCompare.
+- Fallback: NewsAPI neu co `NEWSAPI_KEY`.
+- Fallback cuoi: sample data de demo khi API ngoai loi hoac het quota.
 
-### External APIs
-| API | Mô tả |
-|-----|-------|
-| **CoinGecko** | Primary - Giá crypto real-time |
-| **CoinPaprika** | Fallback - Backup API |
+Backend xu ly:
 
-## 📥 Cài đặt
+- Chuan hoa du lieu tin tuc ve model `News`.
+- Gan sentiment cho moi bai tin bang Sentiment Service.
+- Neu Sentiment Service khong san sang, dung keyword fallback.
+- Cache tin tuc bang Guava Cache.
+- Co scheduler that su dung `@EnableScheduling` va `NewsFetchScheduler` de refresh dinh ky.
 
-### Yêu cầu hệ thống
-- **Node.js** >= 18.x
-- **MongoDB** >= 6.x
-- **Consul** >= 1.15 (optional, có fallback)
-- **Git**
+Tai lieu chi tiet:
 
-### 1. Clone repository
+- [docs/NEWS_SERVICE_EXPLAINED.md](docs/NEWS_SERVICE_EXPLAINED.md)
+- [docs/details/NEWS_SERVICE.md](docs/details/NEWS_SERVICE.md)
 
-```bash
-git clone https://github.com/doanthetin193/CryptoTradingSOA.git
-cd CryptoTradingSOA
-```
+### Sentiment Service
 
-### 2. Cài đặt dependencies
+Sentiment Service la FastAPI service dung model pretrained `ProsusAI/finbert`. Service nay khong train du lieu trong project.
 
-```bash
-# Backend
-cd backend
-npm install
+Backend xu ly:
 
-# Frontend
-cd ../frontend
-npm install
-```
+- `POST /sentiment/analyze`: phan tich mot doan text.
+- `POST /sentiment/analyze-batch`: phan tich nhieu doan text.
+- `GET /sentiment/suggestion?symbol=BTC`: goi Market/News, tong hop sentiment va rule de tra ve xu huong.
+- Tach code thanh `main.py`, `config.py`, `models.py`, `finbert_service.py`, `suggestion_service.py` de de review.
 
-### 3. Cài đặt Consul (Optional)
+Tai lieu chi tiet:
 
-**Windows (Chocolatey):**
-```powershell
-choco install consul
-```
+- [docs/SENTIMENT_SERVICE_EXPLAINED.md](docs/SENTIMENT_SERVICE_EXPLAINED.md)
+- [docs/details/SENTIMENT_SERVICE.md](docs/details/SENTIMENT_SERVICE.md)
 
-**MacOS (Homebrew):**
-```bash
-brew install consul
-```
+### Academy Service
 
-**Linux:**
-```bash
-# Download từ https://developer.hashicorp.com/consul/downloads
-```
+Academy Service hien tai quan ly khoa hoc/video truc tiep trong MySQL. Khong con chuc nang import playlist YouTube.
 
-## ⚙️ Cấu hình
+Backend xu ly:
 
-### 1. Tạo file `.env` trong thư mục `backend/`
+- Bang `courses`: luu videoId, title, description, category, difficulty, learningPath, sortOrder.
+- Bang `course_progress`: luu tien do hoan thanh theo `userId` va `videoId`.
+- User xem learning path, danh sach khoa hoc, chi tiet khoa hoc va tu danh dau hoan thanh.
+- Admin them, sua, xoa khoa hoc bang link YouTube hoac videoId.
+- YouTube API v3 chi la phan phu de lay metadata cho mot video khi co `YOUTUBE_API_KEY`.
+- Neu khong co YouTube API key, service van hoat dong bang du lieu admin nhap va seed trong MySQL.
 
-```bash
-cp .env.example .env
-# Sau đó chỉnh sửa các giá trị phù hợp
-```
+Tai lieu chi tiet:
+
+- [docs/ACADEMY_SERVICE_EXPLAINED.md](docs/ACADEMY_SERVICE_EXPLAINED.md)
+- [docs/details/ACADEMY_SERVICE.md](docs/details/ACADEMY_SERVICE.md)
+
+## Database
+
+Do an nay van dung database theo bien gioi service:
+
+- Cac service Node.js cua do an 1 dung MongoDB.
+- Academy Service dung rieng MySQL database `crypto_academy`.
+- News Service khong co database rieng, du lieu lay tu API ngoai va cache trong RAM.
+- Sentiment Service khong co database, chi chay inference bang FinBERT va goi API noi bo khi can.
+
+Trong MySQL `crypto_academy` co 2 bang la hop ly:
+
+- `courses`: noi dung khoa hoc/video.
+- `course_progress`: tien do hoc cua user.
+
+Day khong vi pham SOA, vi 2 bang nay cung thuoc mot service va nam trong database rieng cua Academy Service.
+
+## Cau Hinh Moi Truong
+
+Tao/cap nhat file `.env` cho backend Node.js theo cau hinh hien co cua project. Cac bien quan trong cho 3 service do an 2:
 
 ```env
-# Database - Separate DB per Service (SOA Architecture)
-USER_DB_URI=mongodb://localhost:27017/crypto_users
-PORTFOLIO_DB_URI=mongodb://localhost:27017/crypto_portfolios
-TRADE_DB_URI=mongodb://localhost:27017/crypto_trades
-NOTIFICATION_DB_URI=mongodb://localhost:27017/crypto_notifications
+# News Service
+CRYPTOCOMPARE_API_KEY=
+NEWSAPI_KEY=
+SENTIMENT_SERVICE_URL=http://localhost:3008
 
-# JWT
-JWT_SECRET=your_super_secret_jwt_key_here
-JWT_EXPIRES_IN=7d
+# Academy Service
+DB_USERNAME=root
+DB_PASSWORD=
+YOUTUBE_API_KEY=
 
-# Service Ports
-API_GATEWAY_PORT=3000
-USER_SERVICE_PORT=3001
-MARKET_SERVICE_PORT=3002
-PORTFOLIO_SERVICE_PORT=3003
-TRADE_SERVICE_PORT=3004
-NOTIFICATION_SERVICE_PORT=3005
-
-# Consul
-CONSUL_HOST=localhost
-CONSUL_PORT=8500
-
-# External APIs
-COINGECKO_API_URL=https://api.coingecko.com/api/v3
-
-# Trading Configuration
-TRADING_FEE_PERCENTAGE=0.1
-INITIAL_BALANCE=1000
-
-# Environment
-NODE_ENV=development
+# Internal
+INTERNAL_SERVICE_KEY=your-internal-key
+JWT_SECRET=your-jwt-secret
 ```
 
-### 2. Khởi động MongoDB
+Ghi chu:
 
-```bash
-# Windows
-mongod
+- `CRYPTOCOMPARE_API_KEY` co the de trong khi demo free tier, tuy nhien co key se on dinh hon.
+- `NEWSAPI_KEY` chi la fallback.
+- `YOUTUBE_API_KEY` la optional. Khong co key thi preview metadata co the khong day du, nhung them/sua/xoa course van dung neu admin nhap title/description.
 
-# MacOS/Linux
-sudo systemctl start mongod
-```
+## Cach Chay Local
 
-### 3. Khởi động Consul (Optional)
+Yeu cau:
 
-```bash
-consul agent -dev
-```
+- Node.js 18+
+- Java 21+
+- Python 3.10+
+- MongoDB Atlas hoac MongoDB local tuy cau hinh project
+- MySQL/XAMPP voi database `crypto_academy`
+- Consul local tai `localhost:8500`
 
-## 🚀 Khởi chạy
-
-### Cách 1: Sử dụng PowerShell Script (Windows - Recommended)
+Chay cac service Node.js:
 
 ```powershell
 cd backend
+npm install
 .\start-all-services.ps1
 ```
 
-### Cách 2: Khởi động từng service
+Chay News Service:
 
-```bash
-# Terminal 1 - API Gateway
-cd backend
-npm run start:gateway
-
-# Terminal 2 - User Service
-npm run start:user
-
-# Terminal 3 - Market Service
-npm run start:market
-
-# Terminal 4 - Portfolio Service
-npm run start:portfolio
-
-# Terminal 5 - Trade Service
-npm run start:trade
-
-# Terminal 6 - Notification Service
-npm run start:notification
+```powershell
+cd news-service
+.\mvnw.cmd spring-boot:run
 ```
 
-### Khởi động Frontend
+Chay Academy Service:
 
-```bash
+```powershell
+cd academy-service
+.\mvnw.cmd spring-boot:run
+```
+
+Chay Sentiment Service:
+
+```powershell
+cd sentiment-service
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+.\start.ps1
+```
+
+Chay frontend:
+
+```powershell
 cd frontend
+npm install
 npm run dev
 ```
 
-### Truy cập ứng dụng
+Frontend mac dinh: <http://localhost:5173>
 
-- **Frontend**: http://localhost:5173
-- **API Gateway**: http://localhost:3000
-- **Consul UI**: http://localhost:8500 (nếu đã cài)
+## API Chinh
 
-## 📚 API Documentation
+### News
 
-### Authentication
+| Method | Endpoint qua Gateway | Mo ta |
+|---|---|---|
+| GET | `/api/news` | Lay tin tuc co phan trang va sentiment |
+| GET | `/api/news?symbol=BTC` | Loc tin theo coin |
+| GET | `/api/news/trending` | Lay tin trending |
+| GET | `/api/news/health` | Health check |
 
-| Method | Endpoint | Mô tả | Auth |
-|--------|----------|-------|------|
-| POST | `/api/users/register` | Đăng ký tài khoản | ❌ |
-| POST | `/api/users/login` | Đăng nhập | ❌ |
+### Sentiment
 
-### User
+| Method | Endpoint qua Gateway | Mo ta |
+|---|---|---|
+| GET | `/api/sentiment/health` | Health check va trang thai model |
+| POST | `/api/sentiment/analyze` | Phan tich sentiment mot text |
+| POST | `/api/sentiment/analyze-batch` | Phan tich sentiment nhieu text |
+| GET | `/api/sentiment/suggestion?symbol=BTC` | Goi y xu huong coin |
 
-| Method | Endpoint | Mô tả | Auth |
-|--------|----------|-------|------|
-| GET | `/api/users/profile` | Lấy thông tin profile | ✅ |
-| PUT | `/api/users/profile` | Cập nhật profile | ✅ |
-| GET | `/api/users/balance` | Lấy số dư | ✅ |
+### Academy
 
-### Market
+| Method | Endpoint qua Gateway | Mo ta |
+|---|---|---|
+| GET | `/api/academy/health` | Health check |
+| GET | `/api/academy/paths` | Lay learning path va tien do user |
+| GET | `/api/academy/courses` | Lay danh sach course co phan trang/loc |
+| GET | `/api/academy/courses/{videoId}` | Lay chi tiet course |
+| PUT | `/api/academy/progress/{videoId}` | Tu danh dau hoan thanh/chua hoan thanh |
+| POST | `/api/academy/admin/courses/preview` | Admin preview video metadata |
+| POST | `/api/academy/admin/courses` | Admin them course |
+| PUT | `/api/academy/admin/courses/{id}` | Admin sua course |
+| DELETE | `/api/academy/admin/courses/{id}` | Admin xoa course |
 
-| Method | Endpoint | Mô tả | Auth |
-|--------|----------|-------|------|
-| GET | `/api/market/prices` | Lấy giá tất cả coins | ✅ |
-| GET | `/api/market/price/:coinId` | Lấy giá 1 coin | ✅ |
-| GET | `/api/market/chart/:coinId` | Lấy chart data | ✅ |
+## Cau Truc Thu Muc Quan Trong
 
-### Trade
-
-| Method | Endpoint | Mô tả | Auth |
-|--------|----------|-------|------|
-| POST | `/api/trade/buy` | Mua coin | ✅ |
-| POST | `/api/trade/sell` | Bán coin | ✅ |
-| GET | `/api/trade/history` | Lịch sử giao dịch | ✅ |
-
-### Portfolio
-
-| Method | Endpoint | Mô tả | Auth |
-|--------|----------|-------|------|
-| GET | `/api/portfolio` | Lấy danh mục | ✅ |
-
-### Notification
-
-| Method | Endpoint | Mô tả | Auth |
-|--------|----------|-------|------|
-| GET | `/api/notifications` | Lấy danh sách thông báo | ✅ |
-| PUT | `/api/notifications/:id/read` | Đánh dấu đã đọc | ✅ |
-| PUT | `/api/notifications/read-all` | Đánh dấu tất cả đã đọc | ✅ |
-| POST | `/api/notifications/alert` | Tạo price alert | ✅ |
-| GET | `/api/notifications/alerts` | Lấy danh sách alerts | ✅ |
-| DELETE | `/api/notifications/alert/:id` | Xóa alert | ✅ |
-
-### Admin
-
-| Method | Endpoint | Mô tả | Auth |
-|--------|----------|-------|------|
-| GET | `/api/users/admin/users` | Lấy danh sách users | ✅ Admin |
-| PUT | `/api/users/admin/users/:id/toggle` | Khóa/Mở khóa user | ✅ Admin |
-| PUT | `/api/users/admin/users/:id/balance` | Cập nhật số dư | ✅ Admin |
-
-## 📁 Cấu trúc thư mục
-
-```
+```text
 CryptoTradingSOA/
-├── backend/
-│   ├── api-gateway/
-│   │   ├── server.js                 # API Gateway main file
-│   │   └── orchestration/
-│   │       ├── tradeOrchestration.js # Buy/Sell orchestration
-│   │       └── portfolioOrchestration.js
-│   │
-│   ├── services/
-│   │   ├── user-service/
-│   │   │   ├── server.js
-│   │   │   ├── controllers/
-│   │   │   ├── models/
-│   │   │   ├── routes/
-│   │   │   └── utils/
-│   │   │
-│   │   ├── market-service/
-│   │   │   ├── server.js
-│   │   │   ├── controllers/
-│   │   │   ├── providers/            # CoinGecko, CoinPaprika
-│   │   │   ├── routes/
-│   │   │   └── utils/
-│   │   │
-│   │   ├── portfolio-service/
-│   │   ├── trade-service/
-│   │   └── notification-service/
-│   │
-│   ├── shared/
-│   │   ├── config/
-│   │   │   ├── db.js                 # MongoDB connection
-│   │   │   └── services.js           # Service config/fallback
-│   │   ├── middleware/
-│   │   │   ├── auth.js               # JWT middleware
-│   │   │   └── errorHandler.js
-│   │   └── utils/
-│   │       ├── circuitBreaker.js     # Circuit Breaker
-│   │       ├── serviceDiscovery.js   # Consul integration
-│   │       ├── websocket.js          # Socket.IO
-│   │       └── logger.js             # Winston logger
-│   │
-│   ├── scripts/
-│   │   ├── seedAdmin.js              # Tạo admin account
-│   │   └── seedUsers.js              # Tạo sample users
-│   │
-│   ├── package.json
-│   ├── start-all-services.ps1        # PowerShell startup script
-│   └── CIRCUIT_BREAKER_GUIDE.md
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Layout.jsx
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── Sidebar.jsx
-│   │   │   └── Toast.jsx
-│   │   │
-│   │   ├── pages/
-│   │   │   ├── Auth.jsx              # Login/Register
-│   │   │   ├── Dashboard.jsx
-│   │   │   ├── Trade.jsx
-│   │   │   ├── Portfolio.jsx
-│   │   │   ├── History.jsx
-│   │   │   ├── Notifications.jsx
-│   │   │   ├── Settings.jsx
-│   │   │   ├── CoinDetail.jsx
-│   │   │   └── Admin.jsx
-│   │   │
-│   │   ├── context/
-│   │   │   └── AuthContext.jsx
-│   │   ├── hooks/
-│   │   │   └── useAuth.js
-│   │   ├── services/
-│   │   │   ├── api.js                # Axios instance
-│   │   │   └── websocket.js          # Socket.IO client
-│   │   │
-│   │   ├── App.jsx
-│   │   ├── App.css
-│   │   ├── main.jsx
-│   │   └── index.css
-│   │
-│   ├── package.json
-│   ├── vite.config.js
-│   ├── tailwind.config.js
-│   └── index.html
-│
-├── .gitignore
-└── README.md
++-- backend/
+|   +-- api-gateway/
+|   +-- services/
+|       +-- user-service/
+|       +-- market-service/
+|       +-- portfolio-service/
+|       +-- trade-service/
+|       +-- notification-service/
++-- news-service/
+|   +-- src/main/java/com/cryptotrading/news/
++-- academy-service/
+|   +-- src/main/java/com/cryptotrading/academy/
++-- sentiment-service/
+|   +-- main.py
+|   +-- config.py
+|   +-- models.py
+|   +-- finbert_service.py
+|   +-- suggestion_service.py
++-- frontend/
+|   +-- src/
++-- docs/
+|   +-- NEWS_SERVICE_EXPLAINED.md
+|   +-- SENTIMENT_SERVICE_EXPLAINED.md
+|   +-- ACADEMY_SERVICE_EXPLAINED.md
+|   +-- details/
++-- springboot_docs/
+    +-- SPRING_BOOT_COMPLETE_GUIDE.md
 ```
 
-## 🔐 Tạo tài khoản Admin
+## Kiem Tra Nhanh
 
-```bash
-cd backend
-node scripts/seedAdmin.js
+```powershell
+# Java services
+cd news-service
+.\mvnw.cmd test
+
+cd ..\academy-service
+.\mvnw.cmd test
+
+# Python service
+cd ..\sentiment-service
+python -m compileall -q .
+
+# Frontend
+cd ..\frontend
+npm run build
 ```
 
-Hoặc đăng ký tài khoản thường và cập nhật role trong MongoDB:
+Health check khi da chay day du:
 
-```javascript
-db.users.updateOne(
-  { email: "your_email@example.com" },
-  { $set: { role: "admin" } }
-)
+```powershell
+Invoke-WebRequest http://localhost:3006/news/health
+Invoke-WebRequest http://localhost:3007/academy/health
+Invoke-WebRequest http://localhost:3008/sentiment/health
 ```
 
-## 🧪 Testing
+## Thu Tu Nen Hoc 3 Service Moi
 
-### Test Health Check
+De de review va trinh bay voi giang vien, nen hoc theo thu tu:
 
-```bash
-curl http://localhost:3000/health
-```
+1. Sentiment Service: nam FinBERT, analyze text va suggestion logic.
+2. News Service: hieu cach lay tin, cache, scheduler va goi Sentiment Service.
+3. Academy Service: hieu MySQL, JPA, course CRUD, progress va admin flow.
 
-### Test Login
+Thu tu doc code goi y:
 
-```bash
-curl -X POST http://localhost:3000/api/users/login \
-  -H "Content-Type: application/json" \
-  -d '{"email": "test@example.com", "password": "123456"}'
-```
+1. Doc file explained trong `docs/`.
+2. Doc file detail trong `docs/details/`.
+3. Doc controller de nam endpoint.
+4. Doc service de nam nghiep vu.
+5. Doc model/repository/provider.
+6. Doc frontend page tuong ung.
 
-## 📊 Coins được hỗ trợ
+## Tai Lieu Bo Sung
 
-| Symbol | Tên | CoinGecko ID |
-|--------|-----|--------------|
-| BTC | Bitcoin | bitcoin |
-| ETH | Ethereum | ethereum |
-| BNB | BNB | binancecoin |
-| SOL | Solana | solana |
-| XRP | XRP | ripple |
-| ADA | Cardano | cardano |
-| DOGE | Dogecoin | dogecoin |
-| DOT | Polkadot | polkadot |
+- [docs/NEWS_SERVICE_EXPLAINED.md](docs/NEWS_SERVICE_EXPLAINED.md)
+- [docs/SENTIMENT_SERVICE_EXPLAINED.md](docs/SENTIMENT_SERVICE_EXPLAINED.md)
+- [docs/ACADEMY_SERVICE_EXPLAINED.md](docs/ACADEMY_SERVICE_EXPLAINED.md)
+- [docs/details/NEWS_SERVICE.md](docs/details/NEWS_SERVICE.md)
+- [docs/details/SENTIMENT_SERVICE.md](docs/details/SENTIMENT_SERVICE.md)
+- [docs/details/ACADEMY_SERVICE.md](docs/details/ACADEMY_SERVICE.md)
+- [springboot_docs/SPRING_BOOT_COMPLETE_GUIDE.md](springboot_docs/SPRING_BOOT_COMPLETE_GUIDE.md)
 
-## 🐛 Troubleshooting
+## Tac Gia
 
-### MongoDB Connection Failed
-```bash
-# Kiểm tra MongoDB đang chạy
-mongod --version
-sudo systemctl status mongod
-```
-
-### Consul Connection Failed
-- Hệ thống sẽ tự động fallback về static config
-- Kiểm tra Consul: http://localhost:8500
-
-### Circuit Breaker Open
-- Service đang down hoặc quá tải
-- Chờ 30s để circuit thử recovery
-- Xem logs để debug
-
-### Rate Limit Exceeded
-- Đợi 1 phút (login) hoặc 1 giờ (register)
-- Hoặc restart server để reset
-
-## 📝 License
-
-ISC License - xem file [LICENSE](LICENSE)
-
-## 👨‍💻 Tác giả
-
-**Đoàn Thế Tín**
-- GitHub: [@doanthetin193](https://github.com/doanthetin193)
-
----
-
-⭐ **Nếu project này hữu ích, hãy cho một star!** ⭐
+Doan The Tin

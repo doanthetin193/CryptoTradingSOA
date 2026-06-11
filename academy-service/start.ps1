@@ -17,10 +17,7 @@ Write-Host "☕ $javaVersion" -ForegroundColor Green
 
 # Require environment variables
 if (-not $env:YOUTUBE_API_KEY) {
-    Write-Host "⚠️  YOUTUBE_API_KEY not set — YouTube data will be skipped (DB metadata only)." -ForegroundColor Yellow
-}
-if (-not $env:YOUTUBE_PLAYLIST_ID) {
-    Write-Host "⚠️  YOUTUBE_PLAYLIST_ID not set — YouTube data will be skipped." -ForegroundColor Yellow
+    Write-Host "⚠️  YOUTUBE_API_KEY not set — optional YouTube metadata preview will be skipped." -ForegroundColor Yellow
 }
 if (-not $env:DB_PASSWORD) {
     Write-Host "ℹ️  DB_PASSWORD not set — using empty password (root default)." -ForegroundColor Gray

@@ -108,7 +108,7 @@ public class NewsService {
      * Lấy danh sách tin trending (nhiều views nhất)
      */
     public List<News> getTrending(int limit) {
-        if (limit < 1 || limit > 50) limit = 10;
+        limit = normalizeLimit(limit);
         try {
             List<News> trending = trendingCache.get(CACHE_KEY_TRENDING);
             return trending.stream().limit(limit).collect(Collectors.toList());
@@ -174,21 +174,27 @@ public class NewsService {
     }
 
     private List<News> applyFilters(List<News> all, String coin, String sentiment, String search) {
+        String normalizedCoin = normalize(coin).toUpperCase();
+        String normalizedSentiment = normalize(sentiment).toLowerCase();
+        String normalizedSearch = normalize(search).toLowerCase();
+
         return all.stream()
                 .filter(n -> {
-                    if (coin == null || coin.isBlank()) return true;
-                    return n.getCoins() != null && n.getCoins().contains(coin.toUpperCase());
+                    if (normalizedCoin.isBlank()) return true;
+                    return n.getCoins() != null && n.getCoins().contains(normalizedCoin);
                 })
                 .filter(n -> {
-                    if (sentiment == null || sentiment.isBlank()) return true;
-                    return sentiment.equalsIgnoreCase(n.getSentiment());
+                    if (normalizedSentiment.isBlank()) return true;
+                    return normalizedSentiment.equalsIgnoreCase(n.getSentiment());
                 })
                 .filter(n -> {
-                    if (search == null || search.isBlank()) return true;
-                    String q = search.toLowerCase();
-                    return (n.getTitle() != null && n.getTitle().toLowerCase().contains(q))
-                            || (n.getSummary() != null && n.getSummary().toLowerCase().contains(q));
+                    if (normalizedSearch.isBlank()) return true;
+                    return containsIgnoreCase(n.getTitle(), normalizedSearch)
+                            || containsIgnoreCase(n.getSummary(), normalizedSearch)
+                            || containsIgnoreCase(n.getSource(), normalizedSearch);
                 })
+                .sorted(Comparator.comparing(News::getPublishedAt,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
     }
 
@@ -222,6 +228,19 @@ public class NewsService {
     private void validatePaginationParams(int page, int limit) {
         if (page < 1) throw new IllegalArgumentException("Page must be >= 1");
         if (limit < 1 || limit > 50) throw new IllegalArgumentException("Limit must be between 1 and 50");
+    }
+
+    private int normalizeLimit(int limit) {
+        if (limit < 1) return 5;
+        return Math.min(limit, 50);
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private boolean containsIgnoreCase(String value, String query) {
+        return value != null && value.toLowerCase().contains(query);
     }
 
     /**

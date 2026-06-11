@@ -1,150 +1,248 @@
-# 🎓 Academy Service — Giải thích toàn diện
+﻿# Academy Service Explained
 
-> **Mục tiêu của tài liệu này:** Giúp bạn hiểu rõ *tại sao* và *như thế nào* Academy Service được xây dựng bằng Spring Boot + MySQL + YouTube Data API v3, từ kiến trúc tổng thể đến từng dòng code nghiệp vụ.
+File nÃ y lÃ  tÃ i liá»‡u há»c `academy-service` theo Ä‘Ãºng code hiá»‡n táº¡i. Má»¥c tiÃªu lÃ  giÃºp báº¡n hiá»ƒu tá»« ná»n táº£ng Ä‘áº¿n luá»“ng khÃ³ hÆ¡n: database, JPA, seeder, learning path, progress, Gateway vÃ  frontend.
 
----
+## 1. Há»c Service NÃ y Theo CÃ¡ch NÃ o?
 
-## Mục lục
+Náº¿u nhÃ¬n tháº³ng vÃ o code Spring Boot, service nÃ y dá»… bá»‹ rá»‘i vÃ¬ cÃ³ nhiá»u lá»›p:
 
-1. [Tổng quan chức năng](#1-tổng-quan-chức-năng)
-2. [Sơ đồ kiến trúc tổng thể](#2-sơ-đồ-kiến-trúc-tổng-thể)
-3. [Cấu trúc thư mục](#3-cấu-trúc-thư-mục)
-4. [Điểm khởi đầu — AcademyServiceApplication.java](#4-điểm-khởi-đầu--academyserviceapplicationjava)
-5. [Cấu hình — application.yml](#5-cấu-hình--applicationyml)
-6. [Dependency — pom.xml](#6-dependency--pomxml)
-7. [Model — Dữ liệu được tổ chức như thế nào?](#7-model--dữ-liệu-được-tổ-chức-như-thế-nào)
-8. [Repository — Giao tiếp với MySQL](#8-repository--giao-tiếp-với-mysql)
-9. [YouTubeProvider — Lấy metadata từ YouTube API v3](#9-youtubeprovider--lấy-metadata-từ-youtube-api-v3)
-10. [AcademyService — Trái tim xử lý nghiệp vụ](#10-academyservice--trái-tim-xử-lý-nghiệp-vụ)
-11. [AcademyController — Cổng giao tiếp HTTP](#11-academycontroller--cổng-giao-tiếp-http)
-12. [AppConfig — Cấu hình Bean chung](#12-appconfig--cấu-hình-bean-chung)
-13. [Exception Handling — Xử lý lỗi thống nhất](#13-exception-handling--xử-lý-lỗi-thống-nhất)
-14. [Luồng request đầy đủ](#14-luồng-request-đầy-đủ)
-15. [Tích hợp với hệ thống SOA](#15-tích-hợp-với-hệ-thống-soa)
-16. [Frontend — Academy.jsx](#16-frontend--academyjsx)
-17. [Những vấn đề đã gặp và cách fix](#17-những-vấn-đề-đã-gặp-và-cách-fix)
-18. [Tóm tắt kiến trúc](#18-tóm-tắt-kiến-trúc)
-
----
-
-## 1. Tổng quan chức năng
-
-Academy Service cung cấp tính năng **học tập crypto** cho người dùng CryptoTrading SOA. Thay vì chỉ xây một trang danh sách video đơn giản, service này được thiết kế theo mô hình **hybrid data** — kết hợp hai nguồn dữ liệu:
-
-| Nguồn | Dữ liệu | Lý do |
-|-------|---------|-------|
-| **MySQL (DB)** | videoId, category, difficulty, sort_order | Admin kiểm soát: quyết định video nào xuất hiện, thuộc chủ đề nào, độ khó nào |
-| **YouTube Data API v3** | title, thumbnail, duration, viewCount, likeCount, channelTitle | Metadata live: luôn mới nhất, không cần cập nhật thủ công |
-
-**Ý tưởng cốt lõi:** Admin chỉ cần thêm một hàng vào DB (`videoId`, `category`, `difficulty`) — service tự động gọi YouTube API để lấy thumbnail, duration, tên kênh, số lượt xem. Admin không bao giờ phải copy-paste tiêu đề hay tải ảnh lên.
-
-**Tính năng:**
-- Xem danh sách video học tập với thumbnail, duration badge, số lượt xem
-- Lọc theo **category**: TRADING, BLOCKCHAIN, DEFI, ALTCOINS, SECURITY
-- Lọc theo **difficulty**: BEGINNER (Cơ bản), INTERMEDIATE (Trung cấp), ADVANCED (Nâng cao)
-- Phân trang (pagination)
-- Xem video trong modal iframe nhúng trực tiếp (autoplay)
-- Cache 24 giờ — không gọi YouTube API liên tục
-
----
-
-## 2. Sơ đồ kiến trúc tổng thể
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                         BROWSER                                  │
-│                   http://localhost:5173/academy                  │
-└──────────────────────────┬───────────────────────────────────────┘
-                           │ GET /api/academy/courses?category=TRADING
-                           │
-┌──────────────────────────▼───────────────────────────────────────┐
-│                     API GATEWAY :3000                            │
-│                                                                  │
-│  academyProxy: strip "/api" → forward to academy-service        │
-│  /api/academy/courses → /academy/courses                        │
-│  (Consul Service Discovery tìm địa chỉ academy-service)         │
-└──────────────────────────┬───────────────────────────────────────┘
-                           │ GET /academy/courses?category=TRADING
-                           │
-┌──────────────────────────▼───────────────────────────────────────┐
-│            ACADEMY SERVICE :3007 (Spring Boot)                   │
-│                                                                  │
-│  ┌──────────────────┐   ┌──────────────────┐                    │
-│  │ AcademyController│──▶│  AcademyService  │                    │
-│  │ /academy/*       │   │ (Business Logic) │                    │
-│  └──────────────────┘   └────────┬─────────┘                    │
-│                                  │                               │
-│                    ┌─────────────┴──────────────┐               │
-│                    │                            │               │
-│           ┌────────▼────────┐        ┌──────────▼────────┐     │
-│           │ CourseRepository│        │  YouTubeProvider  │     │
-│           │ (Spring Data JPA│        │  (Guava Cache     │     │
-│           │  → MySQL)       │        │   TTL 24h)        │     │
-│           └────────┬────────┘        └──────────┬────────┘     │
-│                    │                            │               │
-└────────────────────┼────────────────────────────┼───────────────┘
-                     │                            │
-         ┌───────────▼──────────┐    ┌────────────▼─────────────┐
-         │   MySQL :3306        │    │  YouTube Data API v3      │
-         │   crypto_academy     │    │  googleapis.com/youtube   │
-         │   table: courses     │    │  /playlistItems + /videos │
-         └──────────────────────┘    └──────────────────────────┘
+```text
+Controller -> Service -> Repository -> Database
+                     -> Provider -> YouTube API
+                     -> Progress -> User context tá»« Gateway
 ```
 
-**Luồng merge dữ liệu:**
-```
-MySQL row: { videoId: "EoFWcSKRMyg", category: "TRADING", difficulty: "BEGINNER" }
-                    +
-YouTube API: { title: "Kiến Thức Crypto Bài 1", thumbnail: "...", duration: "PT7M25S", viewCount: "25700" }
-                    ↓
-CourseDto: { videoId, category, difficulty, title, thumbnail, durationFormatted: "7:25", viewCount: "25.7K", embedUrl, ... }
+CÃ¡ch há»c dá»… nháº¥t lÃ  Ä‘á»«ng Ä‘á»c tá»« trÃªn xuá»‘ng má»i file. HÃ£y hiá»ƒu theo 5 cÃ¢u há»i:
+
+1. Service nÃ y phá»¥c vá»¥ mÃ n hÃ¬nh nÃ o?
+2. Service nÃ y lÆ°u dá»¯ liá»‡u gÃ¬?
+3. Frontend gá»i API nÃ o?
+4. Backend xá»­ lÃ½ API Ä‘Ã³ theo luá»“ng nÃ o?
+5. Database thay Ä‘á»•i á»Ÿ Ä‘Ã¢u?
+
+Vá»›i Academy, cÃ¢u tráº£ lá»i ngáº¯n lÃ :
+
+```text
+Academy Service phá»¥c vá»¥ trang há»c crypto.
+NÃ³ lÆ°u danh sÃ¡ch video trong courses.
+NÃ³ lÆ°u tiáº¿n Ä‘á»™ há»c theo user trong course_progress.
+Frontend chá»§ yáº¿u gá»i /academy/paths Ä‘á»ƒ láº¥y lá»™ trÃ¬nh há»c.
+Khi user tick hoÃ n thÃ nh, frontend gá»i /academy/progress/{videoId}.
 ```
 
----
+## 2. Vai TrÃ² Cá»§a Academy Service
 
-## 3. Cấu trúc thư mục
+`academy-service` lÃ  service há»c táº­p crypto trong há»‡ thá»‘ng CryptoTrading SOA.
 
+Nhiá»‡m vá»¥ chÃ­nh:
+
+- Quáº£n lÃ½ danh sÃ¡ch video/khÃ³a há»c crypto.
+- Seed sáºµn dá»¯ liá»‡u khÃ³a há»c máº«u vÃ o MySQL.
+- Gom khÃ³a há»c thÃ nh cÃ¡c learning path.
+- LÆ°u tiáº¿n Ä‘á»™ há»c cá»§a tá»«ng user.
+- Láº¥y thÃªm metadata tá»« YouTube náº¿u cÃ³ API key.
+- Expose REST API cho frontend thÃ´ng qua API Gateway.
+
+Service nÃ y khÃ´ng xá»­ lÃ½ giao dá»‹ch, portfolio, giÃ¡ coin hay Ä‘Äƒng nháº­p. NÃ³ chá»‰ xá»­ lÃ½ nghiá»‡p vá»¥ há»c táº­p.
+
+## 3. CÃ´ng Nghá»‡ Sá»­ Dá»¥ng
+
+```text
+Language: Java 21
+Framework: Spring Boot 3.2.4
+Service port: 3007
+Database: MySQL
+Database name: crypto_academy
+ORM: Spring Data JPA / Hibernate
+External API: YouTube Data API v3
+Cache: Guava Cache trong YouTubeProvider
+Service discovery: Consul
+Frontend page: frontend/src/pages/Academy.jsx
 ```
+
+## 4. VÃ¬ Sao CÃ³ 2 Báº£ng Trong 1 Database?
+
+Database riÃªng cá»§a Academy Service lÃ :
+
+```text
+crypto_academy
+```
+
+Trong Ä‘Ã³ cÃ³ 2 báº£ng:
+
+```text
+courses
+course_progress
+```
+
+Äiá»u nÃ y khÃ´ng vi pháº¡m SOA.
+
+NguyÃªn táº¯c SOA khÃ´ng pháº£i lÃ  "má»—i service chá»‰ Ä‘Æ°á»£c cÃ³ má»™t báº£ng". NguyÃªn táº¯c Ä‘Ãºng lÃ :
+
+```text
+Má»—i service sá»Ÿ há»¯u database riÃªng cá»§a nÃ³.
+Service khÃ¡c khÃ´ng truy cáº­p trá»±c tiáº¿p database Ä‘Ã³.
+Muá»‘n láº¥y dá»¯ liá»‡u thÃ¬ pháº£i gá»i API cá»§a service.
+```
+
+á»ž Ä‘Ã¢y:
+
+- `courses` lÆ°u dá»¯ liá»‡u khÃ³a há»c.
+- `course_progress` lÆ°u tiáº¿n Ä‘á»™ há»c khÃ³a há»c.
+
+Cáº£ hai Ä‘á»u lÃ  nghiá»‡p vá»¥ Academy nÃªn cÃ¹ng náº±m trong database `crypto_academy` lÃ  Ä‘Ãºng.
+
+Náº¿u tÃ¡ch `course_progress` sang database khÃ¡c thÃ¬ láº¡i lÃ m há»‡ thá»‘ng phá»©c táº¡p khÃ´ng cáº§n thiáº¿t, vÃ¬ progress phá»¥ thuá»™c trá»±c tiáº¿p vÃ o course.
+
+## 5. Bá»©c Tranh Tá»•ng Thá»ƒ
+
+```text
+Frontend Academy page
+  |
+  | GET /api/academy/paths
+  v
+API Gateway
+  |
+  | strip /api, optional auth, set X-User-Id náº¿u cÃ³ token
+  v
+AcademyController
+  |
+  v
+AcademyService
+  |
+  v
+CourseRepository / CourseProgressRepository
+  |
+  v
+MySQL crypto_academy
+```
+
+Pháº§n cáº§n nhá»›:
+
+- Controller nháº­n request.
+- Service xá»­ lÃ½ nghiá»‡p vá»¥.
+- Repository nÃ³i chuyá»‡n vá»›i MySQL.
+- Provider nÃ³i chuyá»‡n vá»›i API ngoÃ i.
+- DTO lÃ  dá»¯ liá»‡u Ä‘Ã£ chuáº©n bá»‹ Ä‘á»ƒ tráº£ vá» frontend.
+Lưu ý theo code hiện tại: `/academy/paths` và `/academy/courses` không gọi YouTube API nữa để trang học mở nhanh và ổn định. `YouTubeProvider` chỉ được gọi ở các luồng cần metadata một video như xem chi tiết course, preview link trong Admin, tạo/sửa course.
+
+## 6. Cáº¥u TrÃºc ThÆ° Má»¥c
+
+```text
 academy-service/
-├── pom.xml                              # Maven build (Java 21, Spring Boot 3.2.4)
-├── src/main/
-│   ├── java/com/cryptotrading/academy/
-│   │   ├── AcademyServiceApplication.java   # ← Điểm khởi động Spring Boot
-│   │   ├── config/
-│   │   │   └── AppConfig.java               # ← ObjectMapper, CORS config
-│   │   ├── controller/
-│   │   │   └── AcademyController.java       # ← HTTP endpoints
-│   │   ├── exception/
-│   │   │   ├── GlobalExceptionHandler.java  # ← Bắt lỗi toàn cục
-│   │   │   └── ResourceNotFoundException.java
-│   │   ├── model/
-│   │   │   ├── Course.java                  # ← JPA Entity (ánh xạ bảng courses)
-│   │   │   ├── CourseDto.java               # ← DTO trả về frontend (merged data)
-│   │   │   ├── YouTubeResponse.java         # ← Ánh xạ JSON từ YouTube API
-│   │   │   ├── ApiResponse.java             # ← Format response chuẩn
-│   │   │   └── PageResponse.java            # ← Response có phân trang
-│   │   ├── provider/
-│   │   │   └── YouTubeProvider.java         # ← Gọi YouTube API, quản lý cache
-│   │   ├── repository/
-│   │   │   └── CourseRepository.java        # ← Spring Data JPA queries
-│   │   └── service/
-│   │       └── AcademyService.java          # ← Business logic, merge DB + YouTube
-│   └── resources/
-│       └── application.yml                  # ← Cấu hình port, DB, YouTube keys
-└── target/
-    └── academy-service-1.0.0.jar            # ← File chạy được sau mvn package
+  src/main/java/com/cryptotrading/academy/
+    AcademyServiceApplication.java
+    config/
+      AcademySeeder.java
+      AppConfig.java
+    controller/
+      AcademyController.java
+    exception/
+      GlobalExceptionHandler.java
+      ResourceNotFoundException.java
+    model/
+      ApiResponse.java
+      Course.java
+      CourseDto.java
+      CourseProgress.java
+      CourseRequest.java
+      LearningPathDto.java
+      PageResponse.java
+      ProgressRequest.java
+      YouTubeResponse.java
+    provider/
+      YouTubeProvider.java
+    repository/
+      CourseRepository.java
+      CourseProgressRepository.java
+    service/
+      AcademyService.java
+  src/main/resources/
+    application.yml
 ```
 
-> **Quy tắc vàng Spring Boot:** Mỗi class có đúng một trách nhiệm. Controller nhận request, Service xử lý logic, Repository nói chuyện với DB, Provider nói chuyện với API ngoài. Không ai làm hết mọi thứ.
+## 7. Nhá»¯ng KhÃ¡i Niá»‡m CÆ¡ Báº£n TrÆ°á»›c Khi Äá»c Code
 
----
+### Entity lÃ  gÃ¬?
 
-## 4. Điểm khởi đầu — AcademyServiceApplication.java
+Entity lÃ  class Java Ä‘áº¡i diá»‡n cho báº£ng trong database.
+
+VÃ­ dá»¥:
+
+```text
+Course.java -> báº£ng courses
+CourseProgress.java -> báº£ng course_progress
+```
+
+Khi báº¡n tháº¥y:
 
 ```java
-@SpringBootApplication    // ← Tổ hợp 3 annotations: @Configuration + @EnableAutoConfiguration + @ComponentScan
-@EnableDiscoveryClient    // ← Đăng ký service với Consul (Service Discovery)
-@EnableScheduling         // ← Bật tính năng chạy tác vụ định kỳ (không dùng ở đây nhưng sẵn sàng)
+@Entity
+@Table(name = "courses")
+```
+
+NghÄ©a lÃ  class nÃ y Ä‘Æ°á»£c Hibernate map thÃ nh báº£ng `courses`.
+
+### DTO lÃ  gÃ¬?
+
+DTO lÃ  object dÃ¹ng Ä‘á»ƒ tráº£ dá»¯ liá»‡u ra API. DTO khÃ´ng nháº¥t thiáº¿t giá»‘ng y há»‡t database.
+
+VÃ­ dá»¥ `CourseDto` khÃ´ng chá»‰ cÃ³ dá»¯ liá»‡u trong báº£ng `courses`, mÃ  cÃ²n cÃ³:
+
+- thumbnail tá»« YouTube
+- duration tá»« YouTube
+- watchUrl tá»± build
+- completed tá»« `course_progress`
+
+VÃ¬ váº­y:
+
+```text
+Entity = dá»¯ liá»‡u trong DB
+DTO = dá»¯ liá»‡u Ä‘Ã£ chuáº©n bá»‹ Ä‘á»ƒ gá»­i cho frontend
+```
+
+### Repository lÃ  gÃ¬?
+
+Repository lÃ  lá»›p giÃºp query database.
+
+Vá»›i Spring Data JPA, mÃ¬nh khÃ´ng cáº§n tá»± viáº¿t SQL cho cÃ¡c query Ä‘Æ¡n giáº£n. Chá»‰ cáº§n Ä‘áº·t tÃªn method:
+
+```java
+Optional<Course> findByVideoId(String videoId);
+```
+
+Spring hiá»ƒu vÃ  tá»± táº¡o SQL tÆ°Æ¡ng Ä‘Æ°Æ¡ng:
+
+```sql
+SELECT * FROM courses WHERE video_id = ?
+```
+
+### Service lÃ  gÃ¬?
+
+Service lÃ  nÆ¡i chá»©a business logic.
+
+Controller khÃ´ng nÃªn tá»± xá»­ lÃ½ nhiá»u. Controller chá»‰ nháº­n request rá»“i gá»i Service.
+
+Trong project nÃ y:
+
+```text
+AcademyController -> nháº­n HTTP
+AcademyService -> xá»­ lÃ½ logic tháº­t
+```
+
+## 8. `AcademyServiceApplication.java`
+
+File:
+
+```text
+academy-service/src/main/java/com/cryptotrading/academy/AcademyServiceApplication.java
+```
+
+Code hiá»‡n táº¡i:
+
+```java
+@SpringBootApplication
+@EnableDiscoveryClient
 public class AcademyServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(AcademyServiceApplication.class, args);
@@ -152,1135 +250,1770 @@ public class AcademyServiceApplication {
 }
 ```
 
-**`@SpringBootApplication` làm gì?**
+Ã nghÄ©a:
 
-Spring Boot scan toàn bộ package `com.cryptotrading.academy`, tìm mọi class có `@Component`, `@Service`, `@Controller`, `@Repository` và tự động:
-- Tạo object (Bean) từ các class đó
-- Inject chúng vào nhau theo `@Autowired` / constructor injection
-- Cấu hình Tomcat embedded (web server tích hợp sẵn, không cần cài Tomcat riêng)
-- Cấu hình Spring Data JPA (kết nối MySQL)
+- `@SpringBootApplication`: start Spring Boot, scan component, auto config.
+- `@EnableDiscoveryClient`: Ä‘Äƒng kÃ½ service vá»›i Consul.
 
-**`@EnableDiscoveryClient`** — Khi service start, nó tự đăng ký với Consul:
+Service nÃ y khÃ´ng dÃ¹ng scheduler. Seeder cháº¡y báº±ng `CommandLineRunner`, khÃ´ng cáº§n `@EnableScheduling`.
+
+## 9. `application.yml`
+
+File:
+
+```text
+academy-service/src/main/resources/application.yml
 ```
-"Xin chào Consul, tôi là academy-service, đang chạy tại 192.168.1.85:3007.
-Health check của tôi là GET /academy/health mỗi 10 giây."
-```
-API Gateway hỏi Consul để biết academy-service đang ở đâu — không cần hardcode IP.
 
----
-
-## 5. Cấu hình — application.yml
+Cáº¥u hÃ¬nh quan trá»ng:
 
 ```yaml
 server:
-  port: 3007           # ← Academy Service chạy ở cổng này
+  port: 3007
 
 spring:
   application:
-    name: academy-service   # ← Tên đăng ký với Consul
+    name: academy-service
 
   datasource:
-    # Kết nối MySQL với đầy đủ charset UTF-8 (quan trọng cho tiếng Việt!)
-    url: jdbc:mysql://localhost:3306/crypto_academy?useSSL=false
-         &serverTimezone=UTC
-         &allowPublicKeyRetrieval=true
-         &useUnicode=true        # ← Bật Unicode
-         &characterEncoding=UTF-8  # ← Mã hóa UTF-8
-    username: ${DB_USERNAME:root}   # ← Đọc từ env, mặc định "root"
-    password: ${DB_PASSWORD:}       # ← Đọc từ env, mặc định rỗng
+    url: jdbc:mysql://localhost:3306/crypto_academy?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
 
   jpa:
     hibernate:
-      ddl-auto: update   # ← Tự tạo/cập nhật bảng khi start (không xóa data)
-
-  cloud:
-    consul:
-      discovery:
-        health-check-path: /academy/health   # ← Consul gọi đây để kiểm tra sức khỏe
-        health-check-interval: 10s
-        fail-fast: false   # ← Không crash nếu Consul chưa sẵn sàng khi start
-      config:
-        enabled: false     # ← Không dùng Consul Config (dùng application.yml thay thế)
+      ddl-auto: update
 
 youtube:
-  api-key: ${YOUTUBE_API_KEY:your-youtube-api-key-here}
-  playlist-id: ${YOUTUBE_PLAYLIST_ID:your-playlist-id-here}
+  api-key: ${YOUTUBE_API_KEY:}
   base-url: https://www.googleapis.com/youtube/v3
-  cache-ttl-hours: 24    # ← Cache YouTube data 24 giờ
+  cache-ttl-hours: 24
 ```
 
-**Tại sao `ddl-auto: update` thay vì `create`?**
+Giáº£i thÃ­ch:
 
-- `create` → Mỗi lần restart xóa sạch toàn bộ bảng và tạo lại → **MẤT DATA**
-- `validate` → Chỉ kiểm tra schema, không thay đổi → bảng phải tồn tại trước
-- `update` → Tạo bảng nếu chưa có, thêm cột nếu model thay đổi, **không xóa data cũ** ✅
+- `server.port: 3007`: Academy cháº¡y á»Ÿ port 3007.
+- `spring.application.name`: tÃªn Ä‘Äƒng kÃ½ vá»›i Consul.
+- `datasource.url`: káº¿t ná»‘i MySQL database `crypto_academy`.
+- `DB_USERNAME`, `DB_PASSWORD`: Ä‘á»c tá»« biáº¿n mÃ´i trÆ°á»ng, máº·c Ä‘á»‹nh root vÃ  password rá»—ng.
+- `ddl-auto: update`: tá»± táº¡o/cáº­p nháº­t báº£ng theo Entity, khÃ´ng xÃ³a data.
+- `youtube.api-key`: nếu có key thì lấy metadata cho một video khi cần preview/detail; nếu không có thì vẫn chạy bằng dữ liệu trong MySQL.
 
-**Tại sao API key hardcode làm default?**
+Vá»›i XAMPP MySQL hiá»‡n táº¡i, password root thÆ°á»ng rá»—ng nÃªn config nÃ y phÃ¹ há»£p.
 
-Đây là trade-off trong môi trường dev. Cú pháp `${YOUTUBE_API_KEY:your-key-here}` có nghĩa:
-- Nếu biến môi trường `YOUTUBE_API_KEY` tồn tại → dùng giá trị đó (production)
-- Nếu không → dùng giá trị sau dấu `:` (dev, mặc định)
+## 10. Báº£ng `courses` VÃ  `Course.java`
 
-Khi deploy production, chỉ cần set biến môi trường, không cần sửa code.
+File:
 
----
+```text
+academy-service/src/main/java/com/cryptotrading/academy/model/Course.java
+```
 
-## 6. Dependency — pom.xml
+`Course` map vá»›i báº£ng `courses`.
 
-Các dependency quan trọng trong `pom.xml`:
-
-| Dependency | Tác dụng |
-|-----------|---------|
-| `spring-boot-starter-web` | Nhúng Tomcat, tạo REST API với `@RestController` |
-| `spring-boot-starter-data-jpa` | ORM: ánh xạ Java class → MySQL table, tự tạo SQL |
-| `spring-boot-starter-actuator` | Endpoint `/actuator/health`, `/actuator/metrics` (Consul dùng) |
-| `mysql-connector-j` | JDBC driver kết nối MySQL |
-| `spring-cloud-starter-consul-discovery` | Đăng ký/khám phá service qua Consul |
-| `guava` (Google) | `CacheBuilder` — cache in-memory mạnh mẽ |
-| `lombok` | Generate boilerplate: getter, setter, builder, constructor |
-| `jackson-datatype-jsr310` | Serialize `LocalDateTime` sang JSON dạng ISO string |
-
-**Tại sao cần Guava Cache thay vì tự viết?**
-
-Tự viết cache đơn giản (`HashMap`) không có:
-- TTL (time-to-live) tự động expire
-- Thread-safe cho môi trường concurrent
-- Giới hạn kích thước
-- Thống kê hit/miss rate
-
-Guava Cache giải quyết tất cả với 5 dòng code.
-
----
-
-## 7. Model — Dữ liệu được tổ chức như thế nào?
-
-### 7.1. Course.java — JPA Entity (ánh xạ bảng MySQL)
+CÃ¡c field:
 
 ```java
-@Entity            // ← Spring Data JPA biết class này ánh xạ tới 1 bảng trong DB
-@Table(name = "courses")  // ← Tên bảng trong MySQL
-public class Course {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)  // ← AUTO_INCREMENT
-    private Long id;
-
-    @Column(name = "video_id", nullable = false, unique = true, length = 50)
-    private String videoId;   // Ví dụ: "EoFWcSKRMyg"
-
-    @Column(nullable = false, length = 500)
-    private String title;     // Có thể để trống → service fallback sang YouTube title
-
-    @Enumerated(EnumType.STRING)  // ← Lưu dạng chuỗi "BEGINNER" thay vì số 0,1,2
-    @Column(nullable = false)
-    private Difficulty difficulty;  // BEGINNER | INTERMEDIATE | ADVANCED
-
-    @Column(nullable = false)
-    private String category;  // "TRADING" | "BLOCKCHAIN" | "DEFI" | "ALTCOINS" | "SECURITY"
-
-    @Column(columnDefinition = "TEXT")
-    private String description;   // Mô tả, có thể null → fallback YouTube description
-
-    @Column(name = "sort_order")
-    private Integer sortOrder;    // Thứ tự hiển thị
-
-    @PrePersist   // ← Hook: chạy tự động trước khi INSERT
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate    // ← Hook: chạy tự động trước khi UPDATE
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public enum Difficulty { BEGINNER, INTERMEDIATE, ADVANCED }
-}
+private Long id;
+private String videoId;
+private String title;
+private Difficulty difficulty;
+private String category;
+private String learningPath;
+private String description;
+private Integer sortOrder;
+private LocalDateTime createdAt;
+private LocalDateTime updatedAt;
 ```
 
-**`@Enumerated(EnumType.STRING)` quan trọng như thế nào?**
+Ã nghÄ©a tá»«ng field:
 
-Nếu dùng `EnumType.ORDINAL` (mặc định), MySQL lưu số: BEGINNER=0, INTERMEDIATE=1, ADVANCED=2. Nếu sau này thêm enum value vào giữa list, toàn bộ data cũ sẽ sai. `EnumType.STRING` lưu chính tên enum → an toàn khi thay đổi.
+| Field | Ã nghÄ©a |
+|---|---|
+| `id` | khÃ³a chÃ­nh tá»± tÄƒng |
+| `videoId` | ID video YouTube, vÃ­ dá»¥ `bBC-nXj3Ng4` |
+| `title` | tÃªn bÃ i há»c hiá»ƒn thá»‹ |
+| `difficulty` | Ä‘á»™ khÃ³: BEGINNER, INTERMEDIATE, ADVANCED |
+| `category` | chá»§ Ä‘á»: BLOCKCHAIN, SECURITY, DEFI, ALTCOINS, TRADING |
+| `learningPath` | lá»™ trÃ¬nh há»c, vÃ­ dá»¥ `FOUNDATIONS` |
+| `description` | mÃ´ táº£ ngáº¯n |
+| `sortOrder` | thá»© tá»± bÃ i trong path |
+| `createdAt` | thá»i Ä‘iá»ƒm táº¡o |
+| `updatedAt` | thá»i Ä‘iá»ƒm cáº­p nháº­t |
 
-**`@PrePersist` và `@PreUpdate`** — JPA lifecycle hooks. Không cần gọi thủ công `setCreatedAt(LocalDateTime.now())` mỗi khi tạo object. JPA tự gọi method này trước khi INSERT/UPDATE.
+`@PrePersist` vÃ  `@PreUpdate` tá»± set timestamp.
 
----
+## 11. Báº£ng `course_progress` VÃ  `CourseProgress.java`
 
-### 7.2. CourseDto.java — DTO trả về frontend
+File:
 
-DTO (Data Transfer Object) là object chuyên dùng để trả về API response. **Khác với Entity** (ánh xạ 1-1 với DB), DTO chứa dữ liệu tổng hợp từ nhiều nguồn:
+```text
+academy-service/src/main/java/com/cryptotrading/academy/model/CourseProgress.java
+```
+
+`CourseProgress` map vá»›i báº£ng `course_progress`.
+
+CÃ¡c field:
 
 ```java
-@JsonInclude(JsonInclude.Include.NON_NULL)  // ← Field nào null → không xuất hiện trong JSON
-public class CourseDto {
-
-    // ── Từ DB (Course entity) ────────────────────────────────────────
-    private Long id;
-    private String videoId;      // "EoFWcSKRMyg"
-    private String title;        // Có thể từ DB hoặc YouTube (xem merge logic)
-    private String difficulty;   // "BEGINNER"
-    private String category;     // "TRADING"
-    private String description;
-    private Integer sortOrder;
-
-    // ── Từ YouTube API ───────────────────────────────────────────────
-    private String thumbnailUrl;        // URL ảnh thumbnail HD
-    private String duration;            // "PT7M25S" (ISO 8601)
-    private String durationFormatted;   // "7:25" (human-readable)
-    private String viewCount;           // "25700"
-    private String likeCount;           // "250"
-    private String publishedAt;         // "2024-03-15T10:00:00Z"
-    private String channelTitle;        // "Thời Báo Tài Chính"
-
-    // ── Tính toán ────────────────────────────────────────────────────
-    private String embedUrl;   // "https://www.youtube.com/embed/EoFWcSKRMyg"
-    private String watchUrl;   // "https://www.youtube.com/watch?v=EoFWcSKRMyg"
-}
+private Long id;
+private String userId;
+private String videoId;
+private boolean completed;
+private LocalDateTime completedAt;
+private LocalDateTime updatedAt;
 ```
 
-**Tại sao không trả thẳng `Course` entity ra API?**
+Ã nghÄ©a:
 
-1. Entity có `createdAt`, `updatedAt` — frontend không cần
-2. Entity không có `thumbnailUrl`, `durationFormatted` — những thứ frontend cần
-3. Trả Entity ra API = lộ cấu trúc DB nội bộ → bad practice về security
-4. `@JsonInclude(NON_NULL)` trên DTO tránh trả về `{ "thumbnailUrl": null }` gây JSON rác
+| Field | Ã nghÄ©a |
+|---|---|
+| `id` | khÃ³a chÃ­nh |
+| `userId` | id user láº¥y tá»« JWT qua Gateway |
+| `videoId` | video nÃ o user Ä‘ang há»c |
+| `completed` | Ä‘Ã£ hoÃ n thÃ nh hay chÆ°a |
+| `completedAt` | hoÃ n thÃ nh lÃºc nÃ o |
+| `updatedAt` | cáº­p nháº­t lÃºc nÃ o |
 
----
-
-### 7.3. YouTubeResponse.java — Ánh xạ JSON từ YouTube API
-
-YouTube Data API v3 trả về JSON phức tạp. Class này là "bản đồ" cho Jackson biết cách parse:
+Unique constraint:
 
 ```java
-// YouTube trả về dạng:
-// {
-//   "items": [{
-//     "snippet": {
-//       "resourceId": { "videoId": "EoFWcSKRMyg" },
-//       "title": "...",
-//       "thumbnails": { "maxres": { "url": "..." }, "high": { "url": "..." } }
-//     }
-//   }],
-//   "nextPageToken": "abc123"   ← dùng để phân trang playlist
-// }
-
-public class YouTubeResponse {
-
-    public static class PlaylistItemsResponse {
-        private String nextPageToken;         // null nếu là trang cuối
-        private List<PlaylistItem> items;
-    }
-
-    public static class Snippet {
-        private ResourceId resourceId;        // chứa videoId thực sự
-        private Thumbnails thumbnails;        // nhiều kích thước ảnh
-    }
-
-    @JsonProperty("videoId")   // ← Jackson map field "videoId" trong JSON vào field Java này
-    private String videoId;
-}
+uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "video_id"})
 ```
 
-**`@JsonProperty("videoId")` để làm gì?**
+NghÄ©a lÃ  má»™t user khÃ´ng thá»ƒ cÃ³ 2 dÃ²ng progress cho cÃ¹ng má»™t video.
 
-YouTube trả về JSON với key `"videoId"` (camelCase). Khi Jackson deserialize, nó tìm field Java có tên `videoId`. Nếu tên Java khác (ví dụ: `video_id`), dùng `@JsonProperty("videoId")` để chỉ định mapping.
+VÃ­ dá»¥:
 
----
-
-### 7.4. ApiResponse.java và PageResponse.java
-
-**ApiResponse** — Format JSON chuẩn cho mọi endpoint:
-
-```json
-// Thành công:
-{
-  "success": true,
-  "message": "Courses fetched successfully",
-  "data": { ... },
-  "timestamp": "2026-04-03T23:32:39"
-}
-
-// Lỗi:
-{
-  "success": false,
-  "message": "Course not found: abc123",
-  "timestamp": "2026-04-03T23:32:39"
-}
+```text
+user_id = 123
+video_id = bBC-nXj3Ng4
+completed = true
 ```
 
-**PageResponse** — Bao bọc danh sách có phân trang:
+NghÄ©a lÃ  user 123 Ä‘Ã£ há»c xong video Ä‘Ã³.
+
+## 12. DTO Tráº£ Vá» Frontend
+
+### `CourseDto.java`
+
+`CourseDto` lÃ  dá»¯ liá»‡u cá»§a má»™t bÃ i há»c sau khi Ä‘Ã£ merge nhiá»u nguá»“n.
+
+Nguá»“n 1: báº£ng `courses`
+
+```text
+title, category, difficulty, learningPath, description, sortOrder
+```
+
+Nguá»“n 2: YouTube API, náº¿u method hiện tại có gọi `YouTubeProvider.fetchSingleVideo(videoId)`
+
+```text
+thumbnailUrl, durationFormatted, viewCount, likeCount, channelTitle
+```
+
+Trong code hiện tại, `/academy/paths`, `/academy/courses` và update progress không lấy nguồn 2. Các field này có thể null và frontend vẫn dùng được nhờ title/description trong MySQL và fallback thumbnail theo `videoId`.
+
+Nguá»“n 3: báº£ng `course_progress`, náº¿u user Ä‘Ã£ Ä‘Äƒng nháº­p
+
+```text
+completed, completedAt
+```
+
+Nguá»“n 4: tá»± build trong backend
+
+```text
+embedUrl = https://www.youtube.com/embed/{videoId}
+watchUrl = https://www.youtube.com/watch?v={videoId}
+```
+
+ÄÃ¢y lÃ  lÃ½ do `CourseDto` nhÃ¬n dÃ i hÆ¡n `Course`.
+
+### `LearningPathDto.java`
+
+`LearningPathDto` Ä‘áº¡i diá»‡n cho má»™t lá»™ trÃ¬nh há»c.
+
+```java
+private String id;
+private String title;
+private String description;
+private int totalCourses;
+private int completedCourses;
+private int progressPercent;
+private List<CourseDto> courses;
+```
+
+VÃ­ dá»¥ response Ä‘Æ¡n giáº£n:
 
 ```json
 {
-  "content": [ ...5 courses... ],
-  "page": 0,
-  "size": 12,
-  "totalElements": 5,
-  "totalPages": 1,
-  "last": true
+  "id": "FOUNDATIONS",
+  "title": "Crypto Foundations",
+  "totalCourses": 6,
+  "completedCourses": 2,
+  "progressPercent": 33,
+  "courses": []
 }
 ```
 
-`PageResponse.from(Page<T> page)` là static factory method — nhận `Page` từ Spring Data JPA và convert sang format JSON thân thiện:
+Frontend dÃ¹ng object nÃ y Ä‘á»ƒ hiá»ƒn thá»‹ sidebar path vÃ  list video.
 
-```java
-public static <T> PageResponse<T> from(Page<T> page) {
-    return PageResponse.<T>builder()
-            .content(page.getContent())      // List các item trong trang này
-            .page(page.getNumber())          // Số trang hiện tại (0-based)
-            .totalElements(page.getTotalElements())  // Tổng số item
-            .totalPages(page.getTotalPages())
-            .last(page.isLast())
-            .build();
-}
-```
+### `ProgressRequest.java`
 
----
-
-## 8. Repository — Giao tiếp với MySQL
-
-```java
-@Repository
-public interface CourseRepository extends JpaRepository<Course, Long> {
-
-    Optional<Course> findByVideoId(String videoId);
-
-    Page<Course> findByCategory(String category, Pageable pageable);
-
-    Page<Course> findByDifficulty(Difficulty difficulty, Pageable pageable);
-
-    Page<Course> findByCategoryAndDifficulty(String category, Difficulty difficulty, Pageable pageable);
-}
-```
-
-**Đây là interface, không phải class. Ai implement nó?**
-
-Spring Data JPA tự động tạo một class implementation lúc runtime — bạn không cần viết SQL hay implement. Tên method theo convention `findBy[Field][And|Or][Field]` → Spring parse tên method và tạo câu SQL tương ứng:
-
-| Method | SQL được tạo |
-|--------|-------------|
-| `findByVideoId(String id)` | `SELECT * FROM courses WHERE video_id = ?` |
-| `findByCategory(String cat, Pageable p)` | `SELECT * FROM courses WHERE category = ? ORDER BY ? LIMIT ? OFFSET ?` |
-| `findByCategoryAndDifficulty(...)` | `SELECT * FROM courses WHERE category = ? AND difficulty = ?` |
-
-`Pageable` là object chứa `page`, `size`, `sort` — Spring Data tự thêm `LIMIT`, `OFFSET`, `ORDER BY` vào SQL.
-
-**`JpaRepository<Course, Long>`** — `Long` là kiểu dữ liệu của primary key (id). Kế thừa từ interface này, repository tự có sẵn: `findAll()`, `findById()`, `save()`, `deleteById()`, `count()`, v.v.
-
----
-
-## 9. YouTubeProvider — Lấy metadata từ YouTube API v3
-
-Đây là class phức tạp nhất. Nó thực hiện toàn bộ giao tiếp với YouTube.
-
-### 9.1. Hai bước gọi API
-
-Để lấy thông tin đầy đủ một playlist, cần **2 bước API** (YouTube không cho lấy tất cả trong 1 call):
-
-```
-Bước 1: playlistItems.list
-  → Truyền vào: playlistId
-  → Nhận về: danh sách videoId (không có metadata)
-  
-Bước 2: videos.list
-  → Truyền vào: danh sách videoId (tối đa 50 mỗi request)
-  → Nhận về: snippet (title, thumbnail) + contentDetails (duration) + statistics (viewCount, likeCount)
-```
-
-**Tại sao cần 2 bước?** YouTube API tách riêng vì lý do hiệu suất và quota. Nếu playlist có 200 video, `playlistItems.list` chỉ trả về array 200 `videoId` (nhẹ), sau đó `videos.list` fetch detail 200 video đó theo batch.
-
-### 9.2. Pagination của playlist
-
-Playlist có thể có nhiều trang (YouTube giới hạn 50 video/request). Code xử lý bằng vòng lặp `do-while`:
-
-```java
-private List<String> fetchAllVideoIdsFromPlaylist() throws Exception {
-    List<String> ids = new ArrayList<>();
-    String pageToken = null;  // null = trang đầu tiên
-
-    do {
-        UriComponentsBuilder builder = UriComponentsBuilder
-                .fromHttpUrl(baseUrl + "/playlistItems")
-                .queryParam("part", "snippet")
-                .queryParam("playlistId", playlistId)
-                .queryParam("maxResults", 50)   // Max 50 mỗi request
-                .queryParam("key", apiKey);
-
-        // Nếu có pageToken → thêm vào URL để lấy trang tiếp
-        if (pageToken != null) builder.queryParam("pageToken", pageToken);
-
-        String body = get(builder.build().toUriString());
-        YouTubeResponse.PlaylistItemsResponse response = objectMapper.readValue(body, ...);
-
-        // Thu thập videoId từ mỗi item
-        response.getItems().forEach(item -> {
-            String vid = item.getSnippet().getResourceId().getVideoId();
-            ids.add(vid);
-        });
-
-        // Chuyển sang trang tiếp nếu còn
-        pageToken = response.getNextPageToken();
-
-    } while (pageToken != null);  // Dừng khi trang cuối (không có nextPageToken)
-
-    return ids;
-}
-```
-
-**`UriComponentsBuilder`** — Builder pattern để tạo URL an toàn. Thay vì nối chuỗi (`"?key=" + apiKey` — nguy hiểm nếu apiKey có ký tự đặc biệt), builder tự encode đúng.
-
-### 9.3. Batch fetch video details
-
-```java
-private Map<String, CourseDto> fetchVideoDetails(List<String> videoIds) throws Exception {
-    Map<String, CourseDto> result = new HashMap<>();
-
-    // Chia thành batch tối đa 50 video
-    int batchSize = 50;
-    for (int i = 0; i < videoIds.size(); i += batchSize) {
-        List<String> batch = videoIds.subList(i, Math.min(i + batchSize, videoIds.size()));
-        String ids = String.join(",", batch);  // "EoFWcSKRMyg,vv0fl7x3QzQ,..."
-
-        String url = UriComponentsBuilder
-                .fromHttpUrl(baseUrl + "/videos")
-                .queryParam("part", "snippet,contentDetails,statistics")
-                .queryParam("id", ids)             // Nhiều video cùng lúc
-                .queryParam("key", apiKey)
-                .build().toUriString();
-
-        String body = get(url);
-        // Parse JSON → map mỗi videoId → CourseDto
-        response.getItems().forEach(item -> {
-            CourseDto dto = mapVideoItem(item);
-            result.put(item.getId(), dto);       // Key = videoId
-        });
-    }
-    return result;
-}
-```
-
-Kết quả: `Map<String, CourseDto>` — tra cứu O(1) theo videoId, dùng để merge với DB data.
-
-### 9.4. Chọn thumbnail tốt nhất
-
-YouTube cung cấp nhiều kích thước thumbnail. Code chọn theo độ ưu tiên:
-
-```java
-if (thumbs.getMaxres() != null) thumbnail = thumbs.getMaxres().getUrl();  // 1280x720 ✅ ưu tiên 1
-else if (thumbs.getHigh() != null)   thumbnail = thumbs.getHigh().getUrl();   // 480x360
-else if (thumbs.getMedium() != null) thumbnail = thumbs.getMedium().getUrl(); // 320x180
-```
-
-`maxres` là chất lượng cao nhất (1280x720), chỉ có ở video được upload HD. Nếu không có → fallback xuống `high` → `medium`. Frontend còn có thêm fallback URL cứng: `https://img.youtube.com/vi/{videoId}/hqdefault.jpg` phòng khi tất cả đều null.
-
-### 9.5. Parse duration ISO 8601
-
-YouTube trả về duration dạng ISO 8601: `"PT1H2M34S"` (1 giờ 2 phút 34 giây), `"PT7M25S"` (7 phút 25 giây).
-
-```java
-private static final Pattern DURATION_PATTERN =
-        Pattern.compile("PT(?:(\\d+)H)?(?:(\\d+)M)?(?:(\\d+)S)?");
-        //              └──────────────────────────────────────────┘
-        //         Regex: "PT" + optional hours + optional minutes + optional seconds
-
-private String formatDuration(String iso) {
-    Matcher m = DURATION_PATTERN.matcher(iso);   // "PT7M25S"
-    int hours   = m.group(1) != null ? Integer.parseInt(m.group(1)) : 0;  // null (không có H)
-    int minutes = m.group(2) != null ? Integer.parseInt(m.group(2)) : 7;  // "7"
-    int seconds = m.group(3) != null ? Integer.parseInt(m.group(3)) : 25; // "25"
-
-    if (hours > 0) return String.format("%d:%02d:%02d", hours, minutes, seconds);
-    return String.format("%d:%02d", minutes, seconds);  // → "7:25"
-}
-```
-
-`%02d` nghĩa là in số nguyên với ít nhất 2 chữ số, pad bằng 0 nếu cần: 5 → "05", 10 → "10".
-
-### 9.6. Guava Cache — Tránh gọi YouTube API liên tục
-
-```java
-private Cache<String, Map<String, CourseDto>> videoCache;
-
-private Cache<String, Map<String, CourseDto>> getCache() {
-    if (videoCache == null) {  // ← Lazy init: chỉ tạo cache khi lần đầu cần dùng
-        videoCache = CacheBuilder.newBuilder()
-                .maximumSize(1000)                              // Tối đa 1000 entry
-                .expireAfterWrite(cacheTtlHours, TimeUnit.HOURS) // Expire sau 24h
-                .build();
-    }
-    return videoCache;
-}
-
-public Map<String, CourseDto> fetchPlaylistVideos() {
-    // Kiểm tra cache trước
-    Map<String, CourseDto> cached = getCache().getIfPresent(PLAYLIST_CACHE_KEY);
-    if (cached != null) {
-        log.debug("Cache hit — {} videos", cached.size());
-        return cached;   // ← Trả về ngay, ~1ms
-    }
-
-    // Cache miss → gọi YouTube API (chậm ~500-1000ms)
-    List<String> videoIds = fetchAllVideoIdsFromPlaylist();
-    Map<String, CourseDto> details = fetchVideoDetails(videoIds);
-    getCache().put(PLAYLIST_CACHE_KEY, details);   // ← Lưu vào cache
-    return details;
-}
-```
-
-**Tại sao Lazy init thay vì `@PostConstruct`?**
-
-`@Value` fields (như `cacheTtlHours`) được inject SAU khi constructor chạy. Nếu tạo cache trong constructor, `cacheTtlHours` vẫn là 0 (giá trị mặc định, chưa inject). Lazy init trong `getCache()` đảm bảo cache chỉ được tạo khi method đầu tiên được gọi — lúc đó `@Value` đã inject xong.
-
-### 9.7. HTTP Client — Java 11 HttpClient
-
-Thay vì dùng `RestTemplate` (của Spring), YouTubeProvider dùng `java.net.http.HttpClient` (có sẵn từ Java 11):
-
-```java
-this.httpClient = HttpClient.newBuilder()
-        .connectTimeout(Duration.ofSeconds(10))  // Timeout kết nối
-        .build();
-
-private String get(String url) throws Exception {
-    HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(url))
-            .GET()
-            .timeout(Duration.ofSeconds(15))  // Timeout đọc response
-            .build();
-
-    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-    if (response.statusCode() != 200) {
-        throw new RuntimeException("YouTube API returned HTTP " + response.statusCode());
-    }
-    return response.body();
-}
-```
-
-**Tại sao check `statusCode() != 200`?**
-
-`HttpClient` không tự throw exception khi 4xx/5xx (khác `RestTemplate`). Phải check thủ công. Nếu không check, code sẽ cố parse response lỗi (ví dụ HTML error page) thành `YouTubeResponse` → crash với `JsonParseException` khó debug.
-
----
-
-## 10. AcademyService — Trái tim xử lý nghiệp vụ
-
-### 10.1. Lọc và phân trang từ DB
-
-```java
-public PageResponse<CourseDto> getCourses(String category, String difficultyStr, int page, int size) {
-    // Chuẩn bị: sắp xếp theo sortOrder rồi id, phân trang
-    Pageable pageable = PageRequest.of(page, size, Sort.by("sortOrder", "id").ascending());
-
-    // Parse difficulty string → enum (null nếu không hợp lệ)
-    Difficulty difficulty = parseDifficulty(difficultyStr);
-
-    // Chọn query phù hợp dựa trên filter được truyền vào
-    Page<Course> coursePage;
-    if (category != null && difficulty != null) {
-        coursePage = courseRepository.findByCategoryAndDifficulty(category, difficulty, pageable);
-    } else if (category != null) {
-        coursePage = courseRepository.findByCategory(category, pageable);
-    } else if (difficulty != null) {
-        coursePage = courseRepository.findByDifficulty(difficulty, pageable);
-    } else {
-        coursePage = courseRepository.findAll(pageable);  // Không lọc
-    }
-
-    // Lấy YouTube metadata (từ cache hoặc API)
-    Map<String, CourseDto> ytData = youTubeProvider.fetchPlaylistVideos();
-
-    // Merge từng Course entity với YouTube data tương ứng
-    Page<CourseDto> dtoPage = coursePage.map(course -> merge(course, ytData.get(course.getVideoId())));
-    return PageResponse.from(dtoPage);
-}
-```
-
-**Tại sao lọc ở DB thay vì lấy hết rồi lọc ở Java?**
-
-Lọc ở DB (bằng `WHERE` clause trong SQL) hiệu quả hơn nhiều:
-- Giả sử có 10,000 video → lọc TRADING ở Java cần load 10,000 row vào RAM → chậm, tốn bộ nhớ
-- Lọc ở DB: MySQL chỉ trả về 2,000 row TRADING → Java nhận ít hơn → nhanh hơn
-
-### 10.2. Merge logic — DB title ưu tiên hơn YouTube title
-
-```java
-private CourseDto merge(Course course, CourseDto yt) {
-    CourseDto.CourseDtoBuilder builder = CourseDto.builder()
-            .id(course.getId())
-            .videoId(course.getVideoId())
-            .title(course.getTitle())         // ← Dùng DB title trước
-            .difficulty(course.getDifficulty().name())
-            .category(course.getCategory())
-            // ... các field từ DB
-
-    if (yt != null) {
-        // Override title nếu DB title null hoặc rỗng
-        if (course.getTitle() == null || course.getTitle().isBlank()) {
-            builder.title(yt.getTitle());     // ← Fallback sang YouTube title
-        }
-        // Override description tương tự
-        if (course.getDescription() == null || course.getDescription().isBlank()) {
-            builder.description(yt.getDescription());
-        }
-        // YouTube fields: luôn dùng từ YouTube (DB không lưu những thứ này)
-        builder.thumbnailUrl(yt.getThumbnailUrl())
-               .duration(yt.getDuration())
-               .durationFormatted(yt.getDurationFormatted())
-               .viewCount(yt.getViewCount())
-               .likeCount(yt.getLikeCount())
-               .channelTitle(yt.getChannelTitle());
-    }
-
-    return builder.build();
-}
-```
-
-**Ưu tiên merge:**
-```
-Title:       DB title (nếu không rỗng) > YouTube title > null
-Description: DB description (nếu không rỗng) > YouTube description > null
-Thumbnail:   Luôn từ YouTube (DB không lưu)
-viewCount:   Luôn từ YouTube (live data, DB không lưu)
-```
-
-Khi DB title được set rỗng (`""`), service tự động dùng YouTube title — đây là cơ chế fix lỗi encoding tiếng Việt (xem mục 17).
-
-### 10.3. parseDifficulty — Xử lý input sai an toàn
-
-```java
-private Difficulty parseDifficulty(String value) {
-    if (value == null || value.isBlank()) return null;  // Không lọc
-    try {
-        return Difficulty.valueOf(value.toUpperCase());  // "beginner" → BEGINNER
-    } catch (IllegalArgumentException e) {
-        log.warn("Unknown difficulty '{}' — ignoring filter.", value);
-        return null;   // Request với ?difficulty=INVALID → bỏ qua, không báo lỗi
-    }
-}
-```
-
-Thay vì throw exception khi user truyền `?difficulty=INVALID`, service bỏ qua filter và trả về tất cả. **UX tốt hơn** — user không thấy lỗi vì một typo nhỏ.
-
----
-
-## 11. AcademyController — Cổng giao tiếp HTTP
-
-```java
-@RestController          // ← Tự serialize return value thành JSON
-@RequestMapping("/academy")  // ← Prefix cho mọi endpoint
-@RequiredArgsConstructor     // ← Lombok: tạo constructor inject các final fields
-@Slf4j                       // ← Lombok: tạo field `log` để dùng log.info(...)
-public class AcademyController {
-    private final AcademyService academyService;
-    private final YouTubeProvider youTubeProvider;
-```
-
-**Constructor Injection vs `@Autowired` field injection:**
-
-`@RequiredArgsConstructor` tạo constructor nhận `AcademyService` và `YouTubeProvider` làm tham số. Spring thấy constructor này → tự inject. Đây là **cách được khuyến nghị** thay vì `@Autowired` trên field vì:
-- Dễ test (có thể mock bằng constructor)
-- Field `final` → đảm bảo không bị gán lại sau khi inject
-- Tường minh về dependency
-
-### Endpoints
-
-```java
-// GET /academy/health — Consul health check
-@GetMapping("/health")
-public ResponseEntity<Map<String, Object>> health() {
-    return ResponseEntity.ok(Map.of(
-            "status", "UP",
-            "service", "academy-service",
-            "version", "1.0.0",
-            "timestamp", LocalDateTime.now().toString()
-    ));
-}
-
-// GET /academy/courses?category=TRADING&difficulty=BEGINNER&page=0&size=12
-@GetMapping("/courses")
-public ResponseEntity<ApiResponse<PageResponse<CourseDto>>> getCourses(
-        @RequestParam(required = false) String category,    // ← Không bắt buộc
-        @RequestParam(required = false) String difficulty,
-        @RequestParam(defaultValue = "0")  int page,       // ← Mặc định trang 0
-        @RequestParam(defaultValue = "12") int size         // ← Mặc định 12/trang
-) {
-    size = Math.min(size, 50);  // ← Cap max 50 để tránh request lạm dụng
-    log.info("[AcademyController] GET /courses — category={}, difficulty={}, page={}, size={}",
-            category, difficulty, page, size);
-
-    PageResponse<CourseDto> result = academyService.getCourses(category, difficulty, page, size);
-    return ResponseEntity.ok(ApiResponse.success("Courses fetched successfully", result));
-}
-
-// GET /academy/courses/{videoId}
-@GetMapping("/courses/{videoId}")
-public ResponseEntity<ApiResponse<CourseDto>> getCourseByVideoId(@PathVariable String videoId) {
-    log.info("[AcademyController] GET /courses/{}", videoId);
-    CourseDto course = academyService.getCourseByVideoId(videoId);
-    return ResponseEntity.ok(ApiResponse.success(course));
-}
-
-// GET /academy/debug/youtube — Endpoint debug tạm thời
-@GetMapping("/debug/youtube")
-public ResponseEntity<Map<String, Object>> debugYoutube() {
-    // Kiểm tra API key có load đúng không
-    // Thử gọi YouTube API trực tiếp và trả về raw response
-    // Hữu ích khi debug tại sao YouTube không trả data
-}
-```
-
-**Tại sao `@RequestParam(required = false)` thay vì bắt buộc?**
-
-Nếu `required = true` (mặc định), request không truyền `?category=` sẽ bị 400 Bad Request. Nhưng muốn hỗ trợ cả 4 case: không lọc, lọc category, lọc difficulty, lọc cả hai. `required = false` → Spring inject `null` nếu không truyền.
-
----
-
-## 12. AppConfig — Cấu hình Bean chung
-
-```java
-@Configuration
-public class AppConfig {
-
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                // LocalDateTime → "2026-04-03T23:32:39" (ISO string), không phải [2026,4,3,23,32,39]
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                // ← Bug fix quan trọng! (xem mục 17)
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
-
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/academy/**")
-                        .allowedOrigins("*")      // ← Cho phép mọi origin (dev)
-                        .allowedMethods("GET")    // ← Chỉ GET (read-only API)
-                        .allowedHeaders("*");
-            }
-        };
-    }
-}
-```
-
-**CORS là gì và tại sao cần?**
-
-Browser có chính sách bảo mật: script từ `localhost:5173` (frontend) không được gọi API ở domain/port khác (`localhost:3007`) trừ khi server đó cho phép. Đây gọi là **Same-Origin Policy**.
-
-`addCorsMappings` thêm header `Access-Control-Allow-Origin: *` vào response → browser cho phép frontend gọi API.
-
-Trong thực tế, Academy Service không cần CORS vì frontend gọi qua Gateway (port 3000) — Gateway mới là người cần cho phép. Nhưng config này vẫn hữu ích khi test trực tiếp service mà không qua Gateway.
-
----
-
-## 13. Exception Handling — Xử lý lỗi thống nhất
-
-```java
-@RestControllerAdvice   // ← Bắt exception từ mọi @RestController trong dự án
-@Slf4j
-public class GlobalExceptionHandler {
-
-    // VideoId không tồn tại trong DB
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiResponse<Void>> handleNotFound(ResourceNotFoundException ex) {
-        log.warn("Not found: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)   // 404
-                .body(ApiResponse.error(ex.getMessage()));
-    }
-
-    // Logic nghiệp vụ sai (ví dụ: constraint violation)
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBadRequest(IllegalArgumentException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)  // 400
-                .body(ApiResponse.error(ex.getMessage()));
-    }
-
-    // ?page=abc (không phải số)
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ApiResponse<Void>> handleTypeMismatch(...) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error("Invalid value for parameter: " + ex.getName()));
-    }
-
-    // Catch-all: bất kỳ exception nào khác
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleGeneric(Exception ex) {
-        log.error("Unhandled exception: {}", ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)  // 500
-                .body(ApiResponse.error("Internal server error"));
-    }
-}
-```
-
-**Luồng khi course không tồn tại:**
-
-```
-GET /academy/courses/nonexistent-id
-    ↓
-AcademyService.getCourseByVideoId("nonexistent-id")
-    ↓
-courseRepository.findByVideoId("nonexistent-id") → Optional.empty()
-    ↓
-throw new ResourceNotFoundException("Course not found: nonexistent-id")
-    ↓
-Spring tự động tìm @ExceptionHandler(ResourceNotFoundException.class)
-    ↓
-handleNotFound() chạy → HTTP 404 + JSON:
-{
-  "success": false,
-  "message": "Course not found: nonexistent-id",
-  "timestamp": "2026-04-03T23:32:39"
-}
-```
-
----
-
-## 14. Luồng request đầy đủ
-
-### Kịch bản: User mở trang Academy, chọn filter TRADING + BEGINNER
-
-```
-1. Browser request: GET http://localhost:5173/academy
-   React app load Academy.jsx, useEffect() chạy khi component mount
-
-2. React gọi: GET http://localhost:3000/api/academy/courses?category=TRADING&difficulty=BEGINNER&page=0&size=12
-   (qua academyAPI.getCourses() trong frontend/src/services/api.js)
-
-3. API Gateway nhận:
-   - Middleware: xác thực JWT? → academyProxy nằm sau auth middleware → cần token
-   - academyProxy: strip "/api" khỏi path:
-     "/api/academy/courses?..." → "/academy/courses?..."
-   - Hỏi Consul: "academy-service đang ở đâu?"
-   - Consul: "http://192.168.1.85:3007"
-   - Forward: GET http://192.168.1.85:3007/academy/courses?category=TRADING&difficulty=BEGINNER
-
-4. AcademyController nhận: GET /academy/courses?category=TRADING&difficulty=BEGINNER
-   - size = min(12, 50) = 12
-   - log.info: "[AcademyController] GET /courses — category=TRADING, difficulty=BEGINNER, page=0, size=12"
-   - Gọi academyService.getCourses("TRADING", "BEGINNER", 0, 12)
-
-5. AcademyService xử lý:
-   a) parseDifficulty("BEGINNER") → Difficulty.BEGINNER
-   b) Pageable = page 0, size 12, sort by sortOrder + id
-   c) courseRepository.findByCategoryAndDifficulty("TRADING", BEGINNER, pageable)
-      → SQL: SELECT * FROM courses WHERE category='TRADING' AND difficulty='BEGINNER'
-             ORDER BY sort_order ASC, id ASC LIMIT 12 OFFSET 0
-      → Trả về: Page<Course> với N course (ví dụ 5)
-   d) youTubeProvider.fetchPlaylistVideos()
-      → getCache().getIfPresent("playlist_all")
-      → Cache HIT (nếu đã fetch trước đó) → Map<videoId, CourseDto> ngay lập tức
-      → Hoặc Cache MISS → gọi YouTube API (xem bước 6)
-   e) coursePage.map(course -> merge(course, ytData.get(course.getVideoId())))
-      → Mỗi Course entity được merge với YouTube data tương ứng
-      → 5 Course → 5 CourseDto (đầy đủ thumbnail, duration, viewCount)
-   f) PageResponse.from(dtoPage)
-
-6. (Nếu cache miss) YouTubeProvider.fetchPlaylistVideos():
-   a) fetchAllVideoIdsFromPlaylist():
-      GET googleapis.com/youtube/v3/playlistItems?playlistId=PL...&maxResults=50&key=...
-      → ["EoFWcSKRMyg", "vv0fl7x3QzQ", "kJfcZDQULiY", "Wu8M77c05hk", "BO_yydwF1j0"]
-   b) fetchVideoDetails(["EoFWcSKRMyg", ...]):
-      GET googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=EoFWcSKRMyg,...
-      → Parse: title, thumbnail (maxres > high > medium), duration "PT7M25S" → "7:25", viewCount, likeCount
-   c) getCache().put("playlist_all", result)  ← Lưu vào cache, dùng cho request tiếp theo
-
-7. AcademyController trả về:
-   HTTP 200 + JSON:
-   {
-     "success": true,
-     "message": "Courses fetched successfully",
-     "data": {
-       "content": [
-         {
-           "id": 1,
-           "videoId": "EoFWcSKRMyg",
-           "title": "Kiến Thức Crypto - Bài 1: Mở Đầu",
-           "difficulty": "BEGINNER",
-           "category": "TRADING",
-           "thumbnailUrl": "https://i.ytimg.com/vi/EoFWcSKRMyg/maxresdefault.jpg",
-           "durationFormatted": "7:25",
-           "viewCount": "25700",
-           "likeCount": "250",
-           "channelTitle": "Thời Báo Tài Chính",
-           "embedUrl": "https://www.youtube.com/embed/EoFWcSKRMyg",
-           "watchUrl": "https://www.youtube.com/watch?v=EoFWcSKRMyg"
-         },
-         ...
-       ],
-       "page": 0,
-       "size": 12,
-       "totalElements": 5,
-       "totalPages": 1,
-       "last": true
-     },
-     "timestamp": "2026-04-03T23:32:39"
-   }
-
-8. React nhận JSON → render danh sách CourseCard với thumbnail + duration badge + tên kênh
-```
-
----
-
-## 15. Tích hợp với hệ thống SOA
-
-### 15.1. Consul Service Discovery
-
-Khi Academy Service start, nó tự đăng ký:
+Request body khi user tick hoÃ n thÃ nh:
 
 ```json
 {
-  "name": "academy-service",
-  "id": "academy-service-3007",
-  "address": "192.168.1.85",
-  "port": 3007,
-  "checks": [
-    {
-      "http": "http://192.168.1.85:3007/academy/health",
-      "interval": "10s"
-    }
-  ]
+  "completed": true
 }
 ```
 
-Consul gọi `GET /academy/health` mỗi 10 giây. Nếu nhận `200 OK` → service `healthy`. Nếu timeout hoặc lỗi → service `critical` → Gateway không route request đến đây nữa.
+## 13. Seeder: `AcademySeeder.java`
 
-**Tại sao health-check-path là `/academy/health` không phải `/health`?**
+File:
 
-Controller có `@RequestMapping("/academy")`, mọi endpoint đều có prefix này. Nếu config Consul là `/health`, nó gọi `http://localhost:3007/health` → 404 Not Found → Consul nghĩ service chết.
+```text
+academy-service/src/main/java/com/cryptotrading/academy/config/AcademySeeder.java
+```
 
-### 15.2. API Gateway — academyProxy
+Seeder cháº¡y khi service start.
+
+VÃ¬ sao cáº§n seeder?
+
+TrÆ°á»›c Ä‘Ã³ báº¡n xÃ³a MySQL/XAMPP nÃªn database rá»—ng. Náº¿u khÃ´ng cÃ³ seeder, trang Academy sáº½ khÃ´ng cÃ³ bÃ i há»c nÃ o. Seeder giÃºp service tá»± cÃ³ dá»¯ liá»‡u demo á»•n Ä‘á»‹nh.
+
+Hiá»‡n seeder táº¡o 21 khÃ³a há»c.
+
+Learning paths hiá»‡n táº¡i:
+
+| Path ID | Title | Sá»‘ bÃ i |
+|---|---|---|
+| `FOUNDATIONS` | Crypto Foundations | 6 |
+| `SECURITY_BASICS` | Wallet & Security | 4 |
+| `DEFI_ALTCOINS` | DeFi & Altcoins | 6 |
+| `TRADING_BASICS` | Trading Basics | 5 |
+
+Seeder dÃ¹ng upsert:
+
+```text
+Náº¿u videoId Ä‘Ã£ tá»“n táº¡i -> update láº¡i dá»¯ liá»‡u
+Náº¿u videoId chÆ°a tá»“n táº¡i -> insert má»›i
+```
+
+LÃ½ do dÃ¹ng upsert:
+
+- DB rá»—ng thÃ¬ tá»± seed má»›i.
+- DB Ä‘Ã£ cÃ³ dá»¯ liá»‡u cÅ© thÃ¬ tá»± cáº­p nháº­t.
+- Khi sá»­a title/path/sortOrder trong code, restart service lÃ  DB cáº­p nháº­t theo.
+
+Seeder cÅ©ng xÃ³a 3 video seed cÅ© bá»‹ há»ng:
+
+```text
+E5f_mAe4DyE
+H2_B6GxCdRQ
+3GJCBaahUc8
+```
+
+Ba ID nÃ y tá»«ng gÃ¢y thumbnail xÃ¡m/video lá»—i nÃªn Ä‘Ã£ Ä‘Æ°a vÃ o `BROKEN_SEED_VIDEO_IDS`.
+
+## 14. Repository
+
+### `CourseRepository.java`
+
+File:
+
+```text
+academy-service/src/main/java/com/cryptotrading/academy/repository/CourseRepository.java
+```
+
+CÃ¡c method:
+
+```java
+Optional<Course> findByVideoId(String videoId);
+Page<Course> findByCategory(String category, Pageable pageable);
+Page<Course> findByDifficulty(Difficulty difficulty, Pageable pageable);
+Page<Course> findByCategoryAndDifficulty(String category, Difficulty difficulty, Pageable pageable);
+```
+
+DÃ¹ng cho:
+
+- tÃ¬m course theo videoId
+- filter theo category
+- filter theo difficulty
+- filter cáº£ category vÃ  difficulty
+
+### `CourseProgressRepository.java`
+
+File:
+
+```text
+academy-service/src/main/java/com/cryptotrading/academy/repository/CourseProgressRepository.java
+```
+
+CÃ¡c method:
+
+```java
+Optional<CourseProgress> findByUserIdAndVideoId(String userId, String videoId);
+List<CourseProgress> findByUserIdAndCompletedTrue(String userId);
+```
+
+DÃ¹ng cho:
+
+- tÃ¬m progress cá»§a má»™t user á»Ÿ má»™t video
+- láº¥y danh sÃ¡ch video user Ä‘Ã£ hoÃ n thÃ nh
+
+## 15. YouTubeProvider: Pháº§n Dá»… GÃ¢y Rá»‘i
+
+File:
+
+```text
+academy-service/src/main/java/com/cryptotrading/academy/provider/YouTubeProvider.java
+```
+
+HÃ£y hiá»ƒu Ä‘Æ¡n giáº£n:
+
+```text
+Database lÆ°u videoId vÃ  thÃ´ng tin quáº£n lÃ½.
+YouTubeProvider chá»‰ bá»• sung metadata náº¿u cÃ³ thá»ƒ.
+```
+
+Metadata lÃ :
+
+- thumbnail
+- duration
+- viewCount
+- likeCount
+- channelTitle
+- publishedAt
+
+Náº¿u khÃ´ng cÃ³ YouTube API key, service váº«n hoáº¡t Ä‘á»™ng. Khi Ä‘Ã³ card váº«n cÃ³ title/description tá»« DB seed vÃ  frontend tá»± fallback thumbnail báº±ng:
+
+```text
+https://i.ytimg.com/vi/{videoId}/hqdefault.jpg
+```
+
+### `fetchSingleVideo(videoId)`
+
+Luồng hiện tại sau khi đã gỡ playlist:
+
+```text
+1. Nhận videoId từ AcademyService.
+2. Kiểm tra cache theo chính videoId đó.
+3. Nếu chưa có API key YouTube -> trả minimal DTO.
+4. Nếu có API key -> gọi YouTube videos.list cho đúng 1 video.
+5. Parse title, description, thumbnail, duration, viewCount, likeCount.
+6. Cache metadata video.
+7. Nếu API lỗi hoặc video không lấy được -> trả minimal DTO.
+```
+
+Service không còn `fetchPlaylistVideos()` nữa. Lý do xóa:
+
+- Danh sách khóa học đã được quản lý bằng MySQL.
+- Admin đã có chức năng thêm/sửa/xóa khóa học bằng link YouTube hoặc videoId.
+- Playlist làm code dài hơn vì phải xử lý playlistItems, phân trang, batch nhiều video và cache toàn playlist.
+- Hiệu quả không đáng kể trong đồ án này vì nhu cầu chính là quản lý khóa học rõ ràng trong database.
+
+Minimal DTO vẫn có:
+
+```text
+embedUrl
+watchUrl
+```
+
+VÃ¬ váº­y frontend váº«n cÃ³ thá»ƒ má»Ÿ video báº±ng URL.
+
+## 16. AcademyService: TrÃ¡i Tim Logic
+
+File:
+
+```text
+academy-service/src/main/java/com/cryptotrading/academy/service/AcademyService.java
+```
+
+ÄÃ¢y lÃ  file quan trá»ng nháº¥t.
+
+### Tư duy chung
+
+`AcademyService` hiện làm 3 việc lớn:
+
+```text
+1. Lấy course từ MySQL.
+2. Gắn progress cá nhân nếu request có userId.
+3. Chỉ lấy YouTube metadata khi thật sự cần một video cụ thể.
+```
+
+Cụ thể:
+
+```text
+getCourses() và getLearningPaths()
+  -> không gọi YouTube API
+  -> chỉ merge Course trong DB + progress
+
+getCourseByVideoId(), previewCourse(), createCourse(), updateCourse()
+  -> có gọi YouTubeProvider.fetchSingleVideo(videoId)
+  -> nếu không có YOUTUBE_API_KEY thì vẫn trả minimal DTO
+```
+
+### `getCourses()`
+
+Method nÃ y giá»¯ láº¡i API catalog cÅ©.
+
+```text
+getCourses(category, difficulty, page, size, userId)
+```
+
+Luồng:
+
+```text
+1. Tạo Pageable để phân trang.
+2. Parse difficulty string sang enum.
+3. Query DB theo filter category/difficulty.
+4. Lấy progress của user nếu có userId.
+5. Gọi merge(course, null, progress) cho từng course.
+6. Trả PageResponse<CourseDto>.
+```
+
+Điểm quan trọng: method này không gọi YouTube API nữa. Thumbnail trên frontend có fallback theo `videoId`, còn metadata phụ như duration/viewCount chỉ có ở luồng detail/preview nếu có API key.
+
+Hiá»‡n frontend Academy má»›i khÃ´ng dÃ¹ng chÃ­nh endpoint nÃ y, nhÆ°ng giá»¯ láº¡i Ä‘á»ƒ tÆ°Æ¡ng thÃ­ch vÃ  váº«n cÃ³ thá»ƒ test API.
+
+### `getLearningPaths()`
+
+ÄÃ¢y lÃ  method quan trá»ng nháº¥t vá»›i UI hiá»‡n táº¡i.
+
+```text
+getLearningPaths(userId)
+```
+
+Luá»“ng dá»… hiá»ƒu:
+
+```text
+1. Láº¥y táº¥t cáº£ courses tá»« database.
+2. Sort theo thá»© tá»± path.
+3. Trong má»—i path, sort theo sortOrder.
+4. Merge tá»«ng course thÃ nh CourseDto.
+5. Group cÃ¡c CourseDto theo learningPath.
+6. Vá»›i má»—i group, táº¡o LearningPathDto.
+7. TÃ­nh completedCourses vÃ  progressPercent.
+```
+
+VÃ­ dá»¥:
+
+```text
+courses:
+  FOUNDATIONS bÃ i 1
+  FOUNDATIONS bÃ i 2
+  TRADING_BASICS bÃ i 1
+
+Sau group:
+  LearningPathDto FOUNDATIONS:
+    courses = [bÃ i 1, bÃ i 2]
+
+  LearningPathDto TRADING_BASICS:
+    courses = [bÃ i 1]
+```
+
+### `updateProgress()`
+
+Method nÃ y cháº¡y khi user báº¥m `HoÃ n thÃ nh`.
+
+```text
+updateProgress(userId, videoId, completed)
+```
+
+Luá»“ng:
+
+```text
+1. Náº¿u userId rá»—ng -> bÃ¡o lá»—i vÃ¬ progress cáº§n Ä‘Äƒng nháº­p.
+2. Kiá»ƒm tra videoId cÃ³ tá»“n táº¡i trong courses khÃ´ng.
+3. TÃ¬m course_progress theo userId + videoId.
+4. Náº¿u chÆ°a cÃ³ -> táº¡o má»›i.
+5. Set completed.
+6. Náº¿u completed=true -> set completedAt.
+7. Náº¿u completed=false -> completedAt = null.
+8. Save vÃ o MySQL.
+9. Tráº£ CourseDto má»›i cho frontend.
+```
+
+### `merge()`
+
+ÄÃ¢y lÃ  method dá»… gÃ¢y rá»‘i nhÆ°ng ráº¥t quan trá»ng.
+
+NÃ³ nháº­n:
+
+```text
+Course course
+CourseDto youtube
+Map<String, CourseProgress> progress
+```
+
+Rá»“i táº¡o ra `CourseDto` cuá»‘i cÃ¹ng cho frontend.
+
+NÃ³i Ä‘Æ¡n giáº£n:
+
+```text
+CourseDto = Course trong DB + optional YouTube metadata + Progress của user
+```
+
+VÃ­ dá»¥:
+
+```text
+Course DB:
+  title = "How Bitcoin Actually Works"
+  videoId = "bBC-nXj3Ng4"
+  learningPath = "FOUNDATIONS"
+
+YouTube:
+  thumbnailUrl = "..."
+  durationFormatted = "26:21"
+
+Progress:
+  completed = true
+
+CourseDto tráº£ frontend:
+  title = "How Bitcoin Actually Works"
+  thumbnailUrl = "..."
+  durationFormatted = "26:21"
+  completed = true
+```
+
+### `completedProgress()`
+
+Náº¿u user chÆ°a Ä‘Äƒng nháº­p:
+
+```text
+return Map.of()
+```
+
+Náº¿u user Ä‘Ã£ Ä‘Äƒng nháº­p:
+
+```text
+láº¥y táº¥t cáº£ course_progress completed=true cá»§a user
+map theo videoId
+```
+
+Nhá» váº­y `merge()` chá»‰ cáº§n kiá»ƒm tra:
+
+```java
+progress.get(course.getVideoId())
+```
+
+### `pathTitle()`, `pathDescription()`, `pathOrder()`
+
+CÃ¡c method nÃ y map path ID ká»¹ thuáº­t sang ná»™i dung hiá»ƒn thá»‹.
+
+VÃ­ dá»¥:
+
+```text
+FOUNDATIONS -> Crypto Foundations
+SECURITY_BASICS -> Wallet & Security
+DEFI_ALTCOINS -> DeFi & Altcoins
+TRADING_BASICS -> Trading Basics
+```
+
+`pathOrder()` giÃºp path hiá»ƒn thá»‹ Ä‘Ãºng thá»© tá»±:
+
+```text
+1. Foundations
+2. Wallet & Security
+3. DeFi & Altcoins
+4. Trading Basics
+```
+
+## 17. AcademyController
+
+File:
+
+```text
+academy-service/src/main/java/com/cryptotrading/academy/controller/AcademyController.java
+```
+
+Controller expose API.
+
+Endpoints:
+
+| Method | Path | Auth | Ã nghÄ©a |
+|---|---|---|---|
+| GET | `/academy/health` | Public | Health check |
+| GET | `/academy/courses` | Public/optional auth | Láº¥y course dáº¡ng paging/filter |
+| GET | `/academy/courses/{videoId}` | Public/optional auth | Láº¥y chi tiáº¿t course |
+| GET | `/academy/paths` | Public/optional auth | Láº¥y learning paths |
+| PUT | `/academy/progress/{videoId}` | Required auth qua Gateway | Cập nhật tiến độ |
+| POST | `/academy/admin/courses/preview` | Admin | Preview link YouTube/videoId |
+| POST | `/academy/admin/courses` | Admin | Tạo course mới |
+| PUT | `/academy/admin/courses/{id}` | Admin | Cập nhật course |
+| DELETE | `/academy/admin/courses/{id}` | Admin | Xóa course và progress liên quan |
+
+CORS trong `AppConfig.java` hiện cho phép các method REST mà frontend cần:
+
+```text
+GET, POST, PUT, DELETE, OPTIONS
+```
+
+Điểm này quan trọng vì Admin Panel dùng `POST` để preview/tạo course và `DELETE` để xóa course. Trước khi sửa CORS, POST preview từng bị Spring trả 403.
+Controller cÃ³ dÃ²ng:
+
+```java
+@RequestHeader(value = "X-User-Id", required = false) String userId
+```
+
+Header nÃ y khÃ´ng pháº£i frontend tá»± gá»­i. API Gateway gá»­i xuá»‘ng sau khi verify JWT.
+
+## 18. API Gateway VÃ  Auth
+
+File:
+
+```text
+backend/api-gateway/server.js
+```
+
+Route hiá»‡n táº¡i:
 
 ```javascript
-// backend/api-gateway/server.js
-const academyProxy = createProxyMiddleware({
-    target: 'http://localhost:3007',
-    router: async () => await getServiceTarget('academy-service'),  // Consul lookup
-    changeOrigin: true,
-    pathRewrite: (path) => path.replace('/api', ''),
-    // /api/academy/courses → /academy/courses ✅
-});
-
-app.use('/api/academy', academyProxy);
+app.use('/api/academy/progress', authMiddleware, academyProxy);
+app.use('/api/academy', optionalAuth, academyProxy);
 ```
 
-**Tại sao chỉ strip `/api` chứ không strip `/api/academy`?**
+Ã nghÄ©a:
 
-Nếu strip `/api/academy`, Spring nhận `/courses` — không match `@RequestMapping("/academy")` + `@GetMapping("/courses")`. Cần giữ `/academy` trong path để Spring route đúng.
+- Xem khÃ³a há»c khÃ´ng cáº§n Ä‘Äƒng nháº­p.
+- Náº¿u Ä‘Ã£ Ä‘Äƒng nháº­p, Gateway gá»­i `X-User-Id` xuá»‘ng Academy Ä‘á»ƒ tráº£ progress.
+- Cáº­p nháº­t progress báº¯t buá»™c Ä‘Äƒng nháº­p.
 
-Đây là lý do mỗi Java service (News, Academy) có proxy riêng với pathRewrite riêng, khác với các Node.js service.
-
-### 15.3. So sánh với các service khác
-
-| | Node.js Services | News Service | Academy Service |
-|--|--|--|--|
-| Port | 3001-3005 | 3006 | 3007 |
-| DB | MongoDB | Không dùng | MySQL |
-| External API | CoinPaprika | CryptoCompare | YouTube Data API v3 |
-| Cache | Không | Guava | Guava |
-| Data model | Document (NoSQL) | In-memory | Relational (SQL) |
-| Auth | JWT middleware | Public | JWT (qua Gateway) |
-
-Academy Service minh họa thêm một mô hình khác trong SOA: **hybrid persistence** — MySQL cho metadata quản lý (ai kiểm soát, category, difficulty) + external API cho live data (YouTube metadata).
-
----
-
-## 16. Frontend — Academy.jsx
-
-### 16.1. Cấu trúc component
-
-```
-Academy.jsx
-├── CourseCard          ← Hiển thị 1 video: thumbnail, duration badge, tên kênh, stats
-├── VideoModal          ← Popup xem video (iframe embed YouTube với autoplay)
-└── Pagination          ← Nút < > điều hướng trang
-```
-
-### 16.2. API call qua academyAPI
+Trong `academyProxy.onProxyReq`:
 
 ```javascript
-// frontend/src/services/api.js
+if (req.userId) {
+  proxyReq.setHeader('X-User-Id', req.userId);
+}
+```
+
+ÄÃ¢y lÃ  cáº§u ná»‘i giá»¯a JWT á»Ÿ Gateway vÃ  `userId` trong Academy Service.
+
+Path rewrite:
+
+```text
+/api/academy/paths -> /academy/paths
+```
+
+Gateway chá»‰ xÃ³a `/api`, giá»¯ `/academy` vÃ¬ Spring Controller cÃ³ prefix `/academy`.
+
+## 19. Frontend Academy
+
+File:
+
+```text
+frontend/src/pages/Academy.jsx
+frontend/src/services/api.js
+```
+
+API helper:
+
+```javascript
 export const academyAPI = {
   getCourses: (params) => api.get('/academy/courses', { params }),
   getCourseById: (videoId) => api.get(`/academy/courses/${videoId}`),
+  getPaths: () => api.get('/academy/paths'),
+  updateProgress: (videoId, completed) => api.put(`/academy/progress/${videoId}`, { completed }),
   getHealth: () => api.get('/academy/health'),
 };
-
-// Academy.jsx dùng:
-const response = await academyAPI.getCourses({
-  page: currentPage,
-  size: 12,
-  category: selectedCategory || undefined,   // undefined → không gửi param
-  difficulty: selectedDifficulty || undefined,
-});
 ```
 
-### 16.3. Thumbnail fallback
+Trang hiá»‡n dÃ¹ng chÃ­nh:
 
-```jsx
-<img
-  src={course.thumbnailUrl || `https://img.youtube.com/vi/${course.videoId}/hqdefault.jpg`}
-  alt={course.title}
-  onError={(e) => {
-    // Nếu thumbnailUrl lỗi (404, expired) → thử hqdefault.jpg
-    e.target.src = `https://img.youtube.com/vi/${course.videoId}/hqdefault.jpg`;
-  }}
-/>
+```text
+GET /api/academy/paths
+PUT /api/academy/progress/{videoId}
 ```
 
-URL `https://img.youtube.com/vi/{videoId}/hqdefault.jpg` luôn tồn tại cho mọi video YouTube — đây là fallback cuối cùng, không cần gọi API.
+CÃ¡c component trong `Academy.jsx`:
 
-### 16.4. YouTube embed với autoplay
+| Component | Vai trÃ² |
+|---|---|
+| `PathButton` | nÃºt chá»n learning path bÃªn trÃ¡i |
+| `CourseCard` | card video |
+| `ProgressButton` | nÃºt HoÃ n thÃ nh / ÄÃ£ há»c |
+| `VideoModal` | modal xem video |
+| `ProgressBar` | thanh tiáº¿n Ä‘á»™ |
 
-```jsx
-<iframe
-  src={`https://www.youtube.com/embed/${selectedCourse.videoId}?autoplay=1&rel=0`}
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-  allowFullScreen
-/>
+Luá»“ng frontend:
+
+```text
+1. Component mount.
+2. loadPaths() gá»i academyAPI.getPaths().
+3. LÆ°u paths vÃ o state.
+4. Chá»n path Ä‘áº§u tiÃªn lÃ m active.
+5. Render sidebar path.
+6. Render courses cá»§a activePath.
+7. User báº¥m course -> má»Ÿ VideoModal.
+8. User báº¥m HoÃ n thÃ nh -> updateProgress().
+9. Sau khi lÆ°u, gá»i loadPaths(false) Ä‘á»ƒ reload progress.
 ```
 
-`autoplay=1` — video tự chạy khi modal mở. `rel=0` — không hiển thị video "gợi ý" của YouTube sau khi xem xong (tránh distraction). `allowFullScreen` — cho phép xem toàn màn hình.
+## 20. Luá»“ng Má»Ÿ Trang Academy
 
----
+```text
+1. User vÃ o /academy trÃªn frontend.
+2. React gá»i GET /api/academy/paths.
+3. Axios tá»± gáº¯n Authorization Bearer token náº¿u user Ä‘Ã£ login.
+4. Gateway optionalAuth kiá»ƒm tra token náº¿u cÃ³.
+5. Náº¿u token há»£p lá»‡, Gateway set X-User-Id.
+6. Gateway forward sang Academy Service: GET /academy/paths.
+7. Controller gá»i academyService.getLearningPaths(userId).
+8. Service láº¥y courses tá»« MySQL.
+9. Service láº¥y completed progress náº¿u cÃ³ userId.
+10. Service group courses thÃ nh learning paths.
+11. Frontend render lá»™ trÃ¬nh vÃ  video.
 
-## 17. Những vấn đề đã gặp và cách fix
-
-### Vấn đề 1: Jackson `FAIL_ON_UNKNOWN_PROPERTIES = true` — YouTube data bị mất hoàn toàn
-
-**Triệu chứng:** `GET /academy/courses` trả về data nhưng thiếu `thumbnailUrl`, `durationFormatted`, `viewCount`, `likeCount` — tất cả null.
-
-**Debug:** Thêm endpoint `/academy/debug/youtube` gọi trực tiếp YouTube API và trả về raw response → YouTube API trả về đúng format. Vậy lỗi xảy ra khi parse JSON.
-
-**Nguyên nhân:** Mặc định Jackson `FAIL_ON_UNKNOWN_PROPERTIES = true`. YouTube Data API v3 trả về `playlistItems.list` với field `videoOwnerChannelTitle`, `videoOwnerChannelId` trong `snippet` — những field này không có trong class `Snippet` của `YouTubeResponse.java`. Jackson gặp field lạ → throw exception → bắt ở catch → trả về `Collections.emptyMap()` (silent failure, không log error rõ ràng).
-
-**Fix:**
-```java
-// AppConfig.java — thêm dòng này:
-.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-// ← Jackson bỏ qua field không biết thay vì crash
+Ghi nhớ theo code hiện tại: luồng mở trang `/academy` không gọi YouTube API. YouTube metadata chỉ được dùng ở các luồng một video cụ thể như xem chi tiết, preview, tạo hoặc sửa course trong Admin.
 ```
 
-**Bài học:** Khi parse JSON từ API bên ngoài, LUÔN cấu hình `FAIL_ON_UNKNOWN_PROPERTIES = false`. API ngoài có thể thêm field mới bất cứ lúc nào. Jackson mặc định quá strict cho usecase này.
+## 21. Luá»“ng Tick HoÃ n ThÃ nh BÃ i
 
----
-
-### Vấn đề 2: Tiêu đề tiếng Việt hiển thị sai ("Ki?n Th?c Crypto")
-
-**Triệu chứng:** Title tiếng Việt bị thành chuỗi dấu "?" như `"Ki?n Th?c Crypto"`. Dữ liệu trong DB bị corrupt.
-
-**Nguyên nhân:** Khi seed data vào MySQL, JDBC URL không chỉ định charset. MySQL mặc định dùng `latin1` — không hỗ trợ Unicode → ký tự tiếng Việt bị mất, thay bằng `?`.
-
-**Fix — 3 bước:**
-
-**Bước 1:** Fix JDBC URL thêm charset:
-```yaml
-# application.yml:
-url: jdbc:mysql://localhost:3306/crypto_academy?useSSL=false
-     &allowPublicKeyRetrieval=true
-     &useUnicode=true
-     &characterEncoding=UTF-8    # ← Thêm hai param này
+```text
+1. User báº¥m nÃºt HoÃ n thÃ nh trÃªn CourseCard.
+2. Frontend gá»i PUT /api/academy/progress/{videoId}.
+3. Body gá»­i lÃªn: { "completed": true }.
+4. Gateway cháº¡y authMiddleware.
+5. Náº¿u khÃ´ng cÃ³ token -> tráº£ 401.
+6. Náº¿u token há»£p lá»‡ -> set X-User-Id.
+7. AcademyController gá»i updateProgress().
+8. AcademyService kiá»ƒm tra course tá»“n táº¡i.
+9. TÃ¬m hoáº·c táº¡o CourseProgress.
+10. Save completed=true vÃ o MySQL.
+11. Frontend reload paths Ä‘á»ƒ cáº­p nháº­t sá»‘ bÃ i Ä‘Ã£ há»c.
 ```
 
-**Bước 2:** Fix charset database và table (chạy trong MySQL):
-```sql
-ALTER DATABASE crypto_academy CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-ALTER TABLE courses CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+## 22. VÃ¬ Sao Code CÃ³ Cáº£ YouTube API VÃ  Seeder?
+
+Hai pháº§n nÃ y phá»¥c vá»¥ hai má»¥c Ä‘Ã­ch khÃ¡c nhau.
+
+Seeder:
+
+```text
+Äáº£m báº£o DB luÃ´n cÃ³ danh sÃ¡ch bÃ i há»c máº«u.
+KhÃ´ng phá»¥ thuá»™c internet/API key.
 ```
 
-**Bước 3:** Xóa data cũ bị corrupt, để service tự fallback sang YouTube title:
-```sql
-UPDATE courses SET title = '', description = NULL;
+YouTubeProvider:
+
+```text
+Bá»• sung metadata live náº¿u cÃ³ API key.
+VÃ­ dá»¥ thumbnail tá»‘t hÆ¡n, duration, viewCount, channelTitle.
 ```
 
-Vì `merge()` logic: khi `title` rỗng → `if (course.getTitle() == null || course.getTitle().isBlank()) → builder.title(yt.getTitle())` → dùng YouTube title được fetch qua HTTPS → UTF-8 chuẩn.
+Náº¿u khÃ´ng cÃ³ YouTube API key:
 
-**`utf8mb4` thay vì `utf8`?**
-
-MySQL `utf8` thực ra chỉ là `utf8mb3` — không hỗ trợ emoji (cần 4 bytes). `utf8mb4` là UTF-8 thực sự, hỗ trợ đầy đủ Unicode bao gồm emoji. Với text tiếng Việt và crypto content (có thể chứa emoji), `utf8mb4` là lựa chọn đúng.
-
----
-
-### Vấn đề 3: Consul config crash service khi start
-
-**Triệu chứng:** Service crash ngay khi start với exception liên quan Consul Config.
-
-**Nguyên nhân:** Spring Cloud Consul tự động cố đọc config từ Consul Key-Value store. Consul chưa có config cho `academy-service` → exception.
-
-**Fix:**
-```yaml
-cloud:
-  consul:
-    config:
-      enabled: false     # ← Tắt Consul Config, chỉ dùng Consul cho Service Discovery
-    discovery:
-      fail-fast: false   # ← Không crash nếu Consul chưa start khi service boot
+```text
+Academy váº«n cháº¡y.
+Frontend váº«n cÃ³ title, description, category, path tá»« DB.
+Thumbnail fallback báº±ng URL áº£nh YouTube public.
 ```
 
----
+## 23. VÃ¬ Sao Frontend DÃ¹ng `/paths` Thay VÃ¬ `/courses`?
 
-### Vấn đề 4: Academy Service không có trong start-all-services.ps1
+`/courses` tráº£ dá»¯ liá»‡u pháº³ng:
 
-**Triệu chứng:** Chạy `.\start-all-services.ps1` thấy mọi service khởi động nhưng không có cửa sổ Academy Service.
+```text
+[course1, course2, course3]
+```
 
-**Nguyên nhân:** Script chỉ có News Service Java, chưa thêm Academy Service.
+Frontend pháº£i tá»± group thÃ nh path.
 
-**Fix:** Thêm block khởi động Academy Service vào cuối script, sau phần News Service:
-```powershell
-$academyJar = "D:\CryptoTradingSOA\academy-service\target\academy-service-1.0.0.jar"
-if (Test-Path $academyJar) {
-    # Kill process cũ trên port 3007 nếu có
-    $existingPid = netstat -ano | Select-String ":3007\s.*LISTENING" | ...
-    if ($existingPid) { Stop-Process -Id $existingPid -Force }
+`/paths` tráº£ dá»¯ liá»‡u Ä‘Ã£ Ä‘Æ°á»£c backend chuáº©n bá»‹:
 
-    # Start trong cửa sổ mới với charset URL đúng
-    $academyCmd = "java '-Dspring.datasource.password=123456'
-                       '-Dspring.datasource.url=jdbc:mysql://...'
-                       -jar '$academyJar'"
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", $academyCmd
+```text
+[
+  {
+    id: "FOUNDATIONS",
+    title: "Crypto Foundations",
+    progressPercent: 33,
+    courses: [...]
+  }
+]
+```
+
+NhÆ° váº­y frontend Ä‘Æ¡n giáº£n hÆ¡n vÃ  logic group/progress náº±m á»Ÿ backend, nÆ¡i gáº§n database hÆ¡n.
+
+## 24. Nhá»¯ng Äiá»ƒm ÄÃ£ Clean/Cáº£i Thiá»‡n
+
+- ThÃªm báº£ng `course_progress` Ä‘á»ƒ lÆ°u tiáº¿n Ä‘á»™ há»c.
+- ThÃªm `LearningPathDto` Ä‘á»ƒ backend tráº£ sáºµn path cho frontend.
+- ThÃªm `ProgressRequest` nhá» gá»n cho update progress.
+- ThÃªm `CourseProgressRepository`.
+- `AcademyService` giá»¯ business logic, controller má»ng.
+- Seeder chuyá»ƒn sang upsert, khÃ´ng phá»¥ thuá»™c DB rá»—ng.
+- Seeder tÄƒng lÃªn 21 video.
+- Seeder tá»± dá»n 3 video cÅ© bá»‹ há»ng.
+- Gateway tÃ¡ch route public vÃ  route cáº§n auth.
+- Frontend chuyá»ƒn sang learning path cÃ³ progress.
+- Modal video Ä‘Ã£ cÄƒn láº¡i Ä‘á»ƒ khÃ´ng trÃ n mÃ n hÃ¬nh.
+- Modal cÃ³ nÃºt má»Ÿ YouTube trá»±c tiáº¿p náº¿u embed bá»‹ cháº·n.
+- Admin Panel cÃ³ tab KhÃ³a há»c Ä‘á»ƒ thÃªm/sá»­a/xÃ³a course báº±ng link YouTube hoáº·c videoId.
+- ÄÃ£ bá» logic YouTube playlist/import playlist Ä‘á»ƒ service gá»n vÃ  dá»… review hÆ¡n.
+- CORS Ä‘Ã£ cho phÃ©p `POST`, `PUT`, `DELETE` Ä‘á»ƒ Admin Preview/Create/Update/Delete cháº¡y qua Gateway.
+- Script start khÃ´ng cÃ²n nháº¯c `YOUTUBE_PLAYLIST_ID` vÃ  khÃ´ng Ã©p MySQL password cá»©ng.
+
+## 25. CÃ¡c Lá»—i/Dá»… Nháº§m Khi Há»c Service NÃ y
+
+### Nháº§m 1: SOA lÃ  má»—i database chá»‰ cÃ³ má»™t báº£ng
+
+KhÃ´ng Ä‘Ãºng.
+
+ÄÃºng lÃ :
+
+```text
+Má»—i service sá»Ÿ há»¯u database riÃªng.
+Database Ä‘Ã³ cÃ³ thá»ƒ cÃ³ nhiá»u báº£ng ná»™i bá»™.
+```
+
+### Nháº§m 2: CourseDto lÃ  báº£ng database
+
+KhÃ´ng Ä‘Ãºng.
+
+`CourseDto` chá»‰ lÃ  response object tráº£ frontend. Báº£ng database lÃ  `Course` vÃ  `CourseProgress`.
+
+### Nháº§m 3: YouTube API lÃ  báº¯t buá»™c
+
+KhÃ´ng Ä‘Ãºng.
+
+Náº¿u YouTube API chÆ°a cáº¥u hÃ¬nh, service váº«n cháº¡y báº±ng dá»¯ liá»‡u seed.
+
+### Nháº§m 4: Frontend tá»± biáº¿t userId
+
+KhÃ´ng Ä‘Ãºng.
+
+Frontend chá»‰ gá»­i JWT token. Gateway verify token rá»“i set `X-User-Id` cho Academy Service.
+
+### Nháº§m 5: Progress nÃªn lÆ°u á»Ÿ User Service
+
+KhÃ´ng nÃªn trong Ä‘á»“ Ã¡n nÃ y.
+
+Progress nÃ y thuá»™c nghiá»‡p vá»¥ há»c táº­p, nÃªn Ä‘á»ƒ trong Academy Service lÃ  Ä‘Ãºng hÆ¡n.
+
+## 26. Thá»© Tá»± Äá»c Code Äá»ƒ KhÃ´ng Bá»‹ Rá»‘i
+
+Äá»c theo thá»© tá»± nÃ y:
+
+1. `Course.java` - hiá»ƒu báº£ng khÃ³a há»c.
+2. `CourseProgress.java` - hiá»ƒu báº£ng tiáº¿n Ä‘á»™.
+3. `CourseDto.java` - hiá»ƒu dá»¯ liá»‡u tráº£ ra frontend.
+4. `LearningPathDto.java` - hiá»ƒu lá»™ trÃ¬nh há»c.
+5. `AcademySeeder.java` - hiá»ƒu 21 bÃ i há»c Ä‘Æ°á»£c táº¡o ra tháº¿ nÃ o.
+6. `CourseRepository.java` - hiá»ƒu query course.
+7. `CourseProgressRepository.java` - hiá»ƒu query progress.
+8. `AcademyController.java` - xem API public.
+9. `AcademyService.java` - Ä‘á»c logic tháº­t.
+10. `YouTubeProvider.java` - Ä‘á»c sau cÃ¹ng vÃ¬ Ä‘Ã¢y lÃ  pháº§n bá»• sung metadata.
+11. `backend/api-gateway/server.js` - hiá»ƒu auth/proxy.
+12. `frontend/src/pages/Academy.jsx` - hiá»ƒu UI dÃ¹ng API.
+
+Khi Ä‘á»c `AcademyService.java`, Ä‘á»c theo thá»© tá»± method nÃ y:
+
+1. `getLearningPaths()`
+2. `merge()`
+3. `completedProgress()`
+4. `toLearningPath()`
+5. `updateProgress()`
+6. `getCourses()`
+7. `getCourseByVideoId()`
+
+## 27. CÃ¢u TrÃ¬nh BÃ y Ngáº¯n Vá»›i Giáº£ng ViÃªn
+
+Academy Service lÃ  má»™t Java Spring Boot service Ä‘á»™c láº­p trong há»‡ thá»‘ng SOA, sá»Ÿ há»¯u database MySQL riÃªng `crypto_academy`. Service lÆ°u danh sÃ¡ch khÃ³a há»c trong báº£ng `courses`, lÆ°u tiáº¿n Ä‘á»™ há»c theo user trong báº£ng `course_progress`, seed sáºµn 21 video crypto theo learning path, cÃ³ thá»ƒ láº¥y thÃªm metadata tá»« YouTube API, vÃ  expose API qua Gateway Ä‘á»ƒ frontend hiá»ƒn thá»‹ lá»™ trÃ¬nh há»c cÅ©ng nhÆ° lÆ°u tiáº¿n Ä‘á»™ cÃ¡ nhÃ¢n.
+
+## 28. CÃ¢u TrÃ¬nh BÃ y DÃ i HÆ¡n
+
+Trong Ä‘á»“ Ã¡n 2, em nÃ¢ng cáº¥p pháº§n Academy tá»« má»™t danh sÃ¡ch video Ä‘Æ¡n giáº£n thÃ nh má»™t service há»c táº­p cÃ³ lá»™ trÃ¬nh. Backend dÃ¹ng Spring Boot vÃ  MySQL. Báº£ng `courses` lÆ°u metadata quáº£n lÃ½ cá»§a bÃ i há»c nhÆ° videoId, title, category, difficulty, learningPath vÃ  sortOrder. Báº£ng `course_progress` lÆ°u tráº¡ng thÃ¡i há»c cá»§a tá»«ng user theo tá»«ng video. Khi frontend má»Ÿ trang Academy, nÃ³ gá»i `/api/academy/paths`; Gateway optional auth token, set `X-User-Id` náº¿u user Ä‘Ã£ Ä‘Äƒng nháº­p, rá»“i forward sang Academy Service. Service lấy courses từ MySQL, merge progress nếu có userId, group thành learning path và trả về frontend. Luồng `/paths` không gọi YouTube API nữa; YouTube metadata chỉ dùng ở detail/preview một video. Khi user báº¥m hoÃ n thÃ nh, frontend gá»i `/api/academy/progress/{videoId}`, Gateway báº¯t buá»™c Ä‘Äƒng nháº­p, sau Ä‘Ã³ Academy Service upsert progress vÃ o MySQL.
+
+## 29. Báº£n Äá»“ Dá»¯ Liá»‡u: Tá»« Database Äáº¿n MÃ n HÃ¬nh
+
+ÄÃ¢y lÃ  pháº§n quan trá»ng nháº¥t Ä‘á»ƒ háº¿t rá»‘i.
+
+Má»™t card video trÃªn frontend khÃ´ng Ä‘áº¿n tá»« má»™t nÆ¡i duy nháº¥t. Trong luồng `/academy/paths` hiện tại, dữ liệu card chủ yếu được ghép từ MySQL và progress:
+
+```text
+courses table
+  -> thÃ´ng tin quáº£n lÃ½: title, category, difficulty, learningPath, description
+
+course_progress table
+  -> thÃ´ng tin cÃ¡ nhÃ¢n: user nÃ y Ä‘Ã£ hoÃ n thÃ nh video chÆ°a
+
+AcademyService.merge()
+  -> ghÃ©p courses + progress thÃ nh CourseDto
+
+Academy.jsx
+  -> render CourseDto thÃ nh CourseCard
+```
+
+YouTubeProvider chỉ bổ sung thumbnail/duration/views/likes/channelTitle khi service đang xử lý một video cụ thể và có truyền `CourseDto youtube` vào `merge()`, ví dụ preview course hoặc xem chi tiết course. Trang learning path không phụ thuộc vào API này.
+
+VÃ­ dá»¥ má»™t dÃ²ng trong báº£ng `courses`:
+
+```text
+id: 3
+video_id: bBC-nXj3Ng4
+title: How Bitcoin Actually Works
+difficulty: INTERMEDIATE
+category: BLOCKCHAIN
+learning_path: FOUNDATIONS
+description: A deeper visual explanation of transactions, hashes, and consensus.
+sort_order: 3
+```
+
+Náº¿u user Ä‘Ã£ há»c xong video nÃ y, báº£ng `course_progress` cÃ³ thá»ƒ cÃ³:
+
+```text
+id: 10
+user_id: 696213ae19b0e3c9dad5aafe
+video_id: bBC-nXj3Ng4
+completed: true
+completed_at: 2026-05-30T22:54:38
+```
+
+Khi frontend gá»i `/academy/paths`, backend tráº£ vá» `CourseDto` gáº§n giá»‘ng:
+
+```json
+{
+  "videoId": "bBC-nXj3Ng4",
+  "title": "How Bitcoin Actually Works",
+  "difficulty": "INTERMEDIATE",
+  "category": "BLOCKCHAIN",
+  "learningPath": "FOUNDATIONS",
+  "description": "A deeper visual explanation of transactions, hashes, and consensus.",
+  "sortOrder": 3,
+  "embedUrl": "https://www.youtube.com/embed/bBC-nXj3Ng4",
+  "watchUrl": "https://www.youtube.com/watch?v=bBC-nXj3Ng4",
+  "completed": true,
+  "completedAt": "2026-05-30T22:54:38"
 }
 ```
 
-Script cũng tự kill process cũ trên port 3007 trước khi start mới — tránh lỗi "Address already in use".
+Náº¿u YouTube API cÃ³ metadata, object trÃªn cÃ³ thÃªm:
 
----
-
-## 18. Tóm tắt kiến trúc
-
-```
-@SpringBootApplication
-├── @Configuration → AppConfig (ObjectMapper với FAIL_ON_UNKNOWN=false, CORS)
-├── @Component → YouTubeProvider (Guava Cache + Java HttpClient)
-├── @Repository → CourseRepository (Spring Data JPA tự generate SQL)
-├── @Service → AcademyService (merge DB + YouTube, filter, paginate)
-├── @RestController → AcademyController (HTTP endpoints /academy/*)
-└── @RestControllerAdvice → GlobalExceptionHandler
-
-Annotations Spring Boot quan trọng đã dùng:
-- @Entity, @Table, @Column    → Ánh xạ Java class → MySQL table
-- @GeneratedValue              → AUTO_INCREMENT
-- @Enumerated(STRING)          → Lưu enum dạng chuỗi, an toàn khi thay đổi
-- @PrePersist, @PreUpdate      → JPA lifecycle hooks (auto-set timestamps)
-- @Repository                  → Spring Data JPA (tự generate SQL từ tên method)
-- @Value("${key:default}")     → Inject config từ application.yml / env vars
-- @Slf4j (Lombok)              → Tạo field `log` tự động
-- @RequiredArgsConstructor     → Constructor injection thay vì @Autowired field
-- @JsonInclude(NON_NULL)        → Không serialized field null vào JSON
-- @JsonProperty("videoId")     → Map tên JSON khác với tên field Java
-
-Design patterns sử dụng:
-- Hybrid Data Model     → DB cho metadata, YouTube API cho live data
-- Cache-Aside           → Kiểm tra cache → hit: trả về; miss: fetch, lưu cache, trả về
-- Fallback Chain        → DB title → YouTube title → null (graceful degradation)
-- DTO Pattern           → Tách entity (DB model) khỏi API response model
-- Builder Pattern       → CourseDto.builder()...build() (Lombok @Builder)
-- Repository Pattern    → CourseRepository interface (Spring Data JPA implement)
-- Exception Handler AOP → @RestControllerAdvice bắt exception tập trung
+```json
+{
+  "thumbnailUrl": "...",
+  "durationFormatted": "26:21",
+  "viewCount": "1234567",
+  "likeCount": "45000",
+  "channelTitle": "3Blue1Brown"
+}
 ```
 
----
+Náº¿u khÃ´ng cÃ³ YouTube API key, cÃ¡c field YouTube cÃ³ thá»ƒ null. Frontend váº«n hiá»ƒn thá»‹ Ä‘Æ°á»£c vÃ¬ Ä‘Ã£ cÃ³ fallback thumbnail vÃ  dá»¯ liá»‡u seed.
 
-> **Tóm gọn trong một câu:** Academy Service là minh chứng của SOA — một Java service độc lập, dùng MySQL lưu metadata do admin kiểm soát, dùng YouTube API v3 lấy live media data, Guava Cache tối ưu performance, tất cả được expose qua REST API chuẩn và tích hợp vào hệ thống qua Consul + API Gateway.
+## 30. API Response Thá»±c Táº¿ Cá»§a `/academy/paths`
+
+Frontend hiá»‡n dÃ¹ng API nÃ y nhiá»u nháº¥t.
+
+Request:
+
+```http
+GET /api/academy/paths
+```
+
+Qua Gateway sáº½ thÃ nh:
+
+```http
+GET /academy/paths
+```
+
+Response Ä‘Æ°á»£c bá»c trong `ApiResponse`:
+
+```json
+{
+  "success": true,
+  "message": "Learning paths fetched successfully",
+  "data": [
+    {
+      "id": "FOUNDATIONS",
+      "title": "Crypto Foundations",
+      "description": "Build the minimum crypto knowledge needed before using trading features.",
+      "totalCourses": 6,
+      "completedCourses": 0,
+      "progressPercent": 0,
+      "courses": [
+        {
+          "videoId": "GmOzih6I1zs",
+          "title": "Bitcoin Mining Explained",
+          "difficulty": "BEGINNER",
+          "category": "BLOCKCHAIN",
+          "learningPath": "FOUNDATIONS",
+          "completed": false
+        }
+      ]
+    }
+  ],
+  "timestamp": "2026-05-30T23:07:46"
+}
+```
+
+Báº¡n cÃ³ thá»ƒ hiá»ƒu response nÃ y nhÆ° sau:
+
+```text
+data = danh sÃ¡ch lá»™ trÃ¬nh há»c
+má»—i lá»™ trÃ¬nh cÃ³ courses
+má»—i course Ä‘Ã£ cÃ³ Ä‘á»§ dá»¯ liá»‡u Ä‘á»ƒ render card
+```
+
+Frontend khÃ´ng cáº§n tá»± query tá»«ng course ná»¯a.
+
+## 31. API Response Thá»±c Táº¿ Cá»§a `/academy/courses`
+
+Endpoint nÃ y lÃ  API catalog cÅ©, váº«n giá»¯ Ä‘á»ƒ tÆ°Æ¡ng thÃ­ch.
+
+Request:
+
+```http
+GET /api/academy/courses?page=0&size=12
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Courses fetched successfully",
+  "data": {
+    "content": [
+      {
+        "videoId": "GmOzih6I1zs",
+        "title": "Bitcoin Mining Explained",
+        "difficulty": "BEGINNER",
+        "category": "BLOCKCHAIN",
+        "learningPath": "FOUNDATIONS"
+      }
+    ],
+    "page": 0,
+    "size": 12,
+    "totalElements": 21,
+    "totalPages": 2,
+    "last": false
+  },
+  "timestamp": "..."
+}
+```
+
+Äiá»ƒm khÃ¡c nhau:
+
+```text
+/academy/courses -> tráº£ PageResponse, dá»¯ liá»‡u pháº³ng, cÃ³ phÃ¢n trang
+/academy/paths   -> tráº£ List<LearningPathDto>, dá»¯ liá»‡u Ä‘Ã£ group theo lá»™ trÃ¬nh
+```
+
+UI má»›i dÃ¹ng `/paths` vÃ¬ há»£p vá»›i mÃ n hÃ¬nh learning path hÆ¡n.
+
+## 32. API Cáº­p Nháº­t Progress
+
+Request:
+
+```http
+PUT /api/academy/progress/bBC-nXj3Ng4
+Authorization: Bearer <JWT>
+Content-Type: application/json
+
+{
+  "completed": true
+}
+```
+
+Gateway kiá»ƒm tra JWT. Náº¿u token há»£p lá»‡, Gateway set header:
+
+```http
+X-User-Id: 696213ae19b0e3c9dad5aafe
+```
+
+Academy Service nháº­n:
+
+```http
+PUT /academy/progress/bBC-nXj3Ng4
+X-User-Id: 696213ae19b0e3c9dad5aafe
+```
+
+Sau Ä‘Ã³ service lÆ°u vÃ o `course_progress`.
+
+Náº¿u khÃ´ng Ä‘Äƒng nháº­p, Gateway tráº£:
+
+```http
+401 Unauthorized
+```
+
+VÃ¬ váº­y logic báº£o vá»‡ progress náº±m á»Ÿ Gateway, khÃ´ng pháº£i frontend.
+
+## 33. Giáº£i ThÃ­ch CÃ¡c Annotation Hay Gáº·p
+
+### `@Entity`
+
+ÄÃ¡nh dáº¥u class lÃ  JPA entity, tá»©c lÃ  class nÃ y map vá»›i báº£ng database.
+
+VÃ­ dá»¥:
+
+```java
+@Entity
+@Table(name = "courses")
+public class Course
+```
+
+### `@Table`
+
+Chá»‰ Ä‘á»‹nh tÃªn báº£ng.
+
+```java
+@Table(name = "course_progress")
+```
+
+### `@Id`
+
+ÄÃ¡nh dáº¥u khÃ³a chÃ­nh.
+
+### `@GeneratedValue(strategy = GenerationType.IDENTITY)`
+
+NÃ³i vá»›i Hibernate ráº±ng ID do MySQL tá»± tÄƒng.
+
+TÆ°Æ¡ng Ä‘Æ°Æ¡ng:
+
+```sql
+AUTO_INCREMENT
+```
+
+### `@Column`
+
+Cáº¥u hÃ¬nh column trong database.
+
+VÃ­ dá»¥:
+
+```java
+@Column(name = "video_id", nullable = false, unique = true, length = 50)
+private String videoId;
+```
+
+NghÄ©a lÃ :
+
+```text
+column name: video_id
+khÃ´ng Ä‘Æ°á»£c null
+khÃ´ng Ä‘Æ°á»£c trÃ¹ng
+tá»‘i Ä‘a 50 kÃ½ tá»±
+```
+
+### `@Enumerated(EnumType.STRING)`
+
+LÆ°u enum dÆ°á»›i dáº¡ng chuá»—i.
+
+VÃ­ dá»¥:
+
+```text
+BEGINNER
+INTERMEDIATE
+ADVANCED
+```
+
+KhÃ´ng lÆ°u dáº¡ng sá»‘ `0`, `1`, `2`, vÃ¬ dáº¡ng sá»‘ khÃ³ Ä‘á»c vÃ  dá»… lá»—i náº¿u Ä‘á»•i thá»© tá»± enum.
+
+### `@PrePersist`
+
+Cháº¡y trÆ°á»›c khi insert record má»›i.
+
+Trong `Course`, nÃ³ dÃ¹ng Ä‘á»ƒ set:
+
+```java
+createdAt = now
+updatedAt = now
+```
+
+### `@PreUpdate`
+
+Cháº¡y trÆ°á»›c khi update record.
+
+DÃ¹ng Ä‘á»ƒ cáº­p nháº­t:
+
+```java
+updatedAt = now
+```
+
+### `@RestController`
+
+ÄÃ¡nh dáº¥u class lÃ  controller tráº£ JSON.
+
+### `@RequestMapping("/academy")`
+
+Táº¥t cáº£ endpoint trong controller cÃ³ prefix `/academy`.
+
+VÃ¬ váº­y:
+
+```java
+@GetMapping("/paths")
+```
+
+trá»Ÿ thÃ nh:
+
+```text
+GET /academy/paths
+```
+
+### `@RequiredArgsConstructor`
+
+Lombok tá»± táº¡o constructor cho cÃ¡c field `final`.
+
+Trong controller:
+
+```java
+private final AcademyService academyService;
+```
+
+Spring dÃ¹ng constructor Ä‘Ã³ Ä‘á»ƒ inject `AcademyService`.
+
+### `@Builder`
+
+Lombok giÃºp táº¡o object kiá»ƒu:
+
+```java
+CourseDto.builder()
+    .videoId(...)
+    .title(...)
+    .build();
+```
+
+CÃ¡ch nÃ y dá»… Ä‘á»c hÆ¡n constructor dÃ i.
+
+## 34. Giáº£i ThÃ­ch `AcademyService.getLearningPaths()` SÃ¢u HÆ¡n
+
+ÄÃ¢y lÃ  method quan trá»ng nháº¥t.
+
+Code logic cÃ³ thá»ƒ hiá»ƒu theo tá»«ng khá»‘i:
+
+### Khối 1: Lấy dữ liệu phụ
+
+```java
+Map<String, CourseProgress> progress = completedProgress(userId);
+```
+
+Ý nghĩa:
+
+```text
+progress:
+  key = videoId
+  value = progress completed của user hiện tại
+```
+
+`getLearningPaths()` không gọi YouTube API nữa. Lý do là lộ trình học phải mở nhanh và ổn định, còn dữ liệu khóa học chính đã nằm trong MySQL.
+
+Nếu user chưa đăng nhập:
+
+```text
+progress = empty map
+```
+
+### Khối 2: Lấy course từ DB và sort
+
+```java
+courseRepository.findAll().stream()
+    .sorted(Comparator
+        .comparingInt((Course course) -> pathOrder(pathId(course)))
+        .thenComparing(course -> course.getSortOrder() == null ? 0 : course.getSortOrder())
+        .thenComparing(Course::getId))
+```
+
+Sort theo 3 táº§ng:
+
+1. Thá»© tá»± learning path.
+2. Thá»© tá»± bÃ i trong path.
+3. ID trong database Ä‘á»ƒ á»•n Ä‘á»‹nh náº¿u trÃ¹ng sortOrder.
+
+### Khá»‘i 3: Merge tá»«ng course
+
+```java
+.map(course -> merge(course, null, progress))
+```
+
+Má»—i `Course` trong DB Ä‘Æ°á»£c biáº¿n thÃ nh `CourseDto`.
+
+### Khá»‘i 4: Group theo learningPath
+
+```java
+.collect(Collectors.groupingBy(
+    CourseDto::getLearningPath,
+    LinkedHashMap::new,
+    Collectors.toList()
+))
+```
+
+`LinkedHashMap` giÃºp giá»¯ thá»© tá»± Ä‘Ã£ sort.
+
+Náº¿u dÃ¹ng `HashMap`, thá»© tá»± path cÃ³ thá»ƒ bá»‹ Ä‘áº£o ngáº«u nhiÃªn.
+
+### Khá»‘i 5: Táº¡o LearningPathDto
+
+```java
+return coursesByPath.entrySet().stream()
+    .map(entry -> toLearningPath(entry.getKey(), entry.getValue()))
+    .toList();
+```
+
+Má»—i group course Ä‘Æ°á»£c biáº¿n thÃ nh má»™t object lá»™ trÃ¬nh há»c.
+
+## 35. Giáº£i ThÃ­ch `merge()` SÃ¢u HÆ¡n
+
+`merge()` lÃ  nÆ¡i ghÃ©p dá»¯ liá»‡u.
+
+NÃ³ báº¯t Ä‘áº§u báº±ng dá»¯ liá»‡u cháº¯c cháº¯n cÃ³ tá»« DB:
+
+```java
+CourseDto.builder()
+    .id(course.getId())
+    .videoId(course.getVideoId())
+    .title(course.getTitle())
+    .difficulty(...)
+    .category(course.getCategory())
+    .learningPath(pathId(course))
+    .description(course.getDescription())
+    .sortOrder(course.getSortOrder())
+```
+
+Sau Ä‘Ã³ tá»± build URL:
+
+```java
+.embedUrl("https://www.youtube.com/embed/" + course.getVideoId())
+.watchUrl("https://www.youtube.com/watch?v=" + course.getVideoId())
+```
+
+Sau Ä‘Ã³ gáº¯n progress:
+
+```java
+.completed(courseProgress != null)
+.completedAt(courseProgress == null ? null : courseProgress.getCompletedAt().toString())
+```
+
+á»ž Ä‘Ã¢y chá»‰ map progress completed. VÃ¬ `completedProgress(userId)` chá»‰ láº¥y cÃ¡c dÃ²ng `completed=true`.
+
+Cuá»‘i cÃ¹ng, náº¿u cÃ³ YouTube data:
+
+```java
+if (youtube != null) {
+    builder.thumbnailUrl(...)
+           .duration(...)
+           .durationFormatted(...)
+           .viewCount(...)
+           .likeCount(...)
+           .publishedAt(...)
+           .channelTitle(...);
+}
+```
+
+Káº¿t quáº£ lÃ  frontend nháº­n má»™t object Ä‘áº§y Ä‘á»§ Ä‘á»ƒ render.
+
+## 36. Giáº£i ThÃ­ch `updateProgress()` SÃ¢u HÆ¡n
+
+Method nÃ y lÃ  upsert progress.
+
+Upsert nghÄ©a lÃ :
+
+```text
+Náº¿u dÃ²ng Ä‘Ã£ tá»“n táº¡i -> update
+Náº¿u dÃ²ng chÆ°a tá»“n táº¡i -> insert
+```
+
+Code tÃ¬m dÃ²ng cÅ©:
+
+```java
+progressRepository.findByUserIdAndVideoId(userId, videoId)
+```
+
+Náº¿u khÃ´ng cÃ³, táº¡o má»›i:
+
+```java
+.orElseGet(() -> CourseProgress.builder()
+    .userId(userId)
+    .videoId(videoId)
+    .build())
+```
+
+Sau Ä‘Ã³ set tráº¡ng thÃ¡i:
+
+```java
+progress.setCompleted(completed);
+progress.setCompletedAt(completed ? completedAt(progress) : null);
+```
+
+Náº¿u user tick hoÃ n thÃ nh:
+
+```text
+completed = true
+completedAt = now náº¿u trÆ°á»›c Ä‘Ã³ chÆ°a cÃ³
+```
+
+Náº¿u user bá» hoÃ n thÃ nh:
+
+```text
+completed = false
+completedAt = null
+```
+
+Sau Ä‘Ã³:
+
+```java
+progressRepository.save(progress);
+```
+
+Spring Data JPA sáº½ tá»± quyáº¿t Ä‘á»‹nh insert hay update dá»±a trÃªn entity cÃ³ ID hay chÆ°a.
+
+## 37. Quan Há»‡ Giá»¯a Academy VÃ  User Service
+
+Academy Service khÃ´ng query database cá»§a User Service.
+
+NÃ³ chá»‰ nháº­n `userId` tá»« Gateway.
+
+Luá»“ng Ä‘Ãºng SOA:
+
+```text
+User Ä‘Äƒng nháº­p
+  -> User Service cáº¥p JWT
+Frontend lÆ°u JWT
+  -> gá»i /api/academy/progress
+Gateway verify JWT
+  -> láº¥y userId tá»« token
+  -> set X-User-Id
+Academy Service
+  -> lÆ°u progress theo userId
+```
+
+Academy khÃ´ng cáº§n biáº¿t email, username, role cá»§a user. NÃ³ chá»‰ cáº§n `userId` Ä‘á»ƒ lÆ°u tiáº¿n Ä‘á»™.
+
+ÄÃ¢y lÃ  cÃ¡ch giáº£m coupling giá»¯a services.
+
+## 38. CÃ¡c CÃ¢u Há»i Giáº£ng ViÃªn CÃ³ Thá»ƒ Há»i
+
+### VÃ¬ sao dÃ¹ng MySQL cho Academy?
+
+VÃ¬ dá»¯ liá»‡u khÃ³a há»c vÃ  progress cÃ³ cáº¥u trÃºc rÃµ rÃ ng:
+
+```text
+courses: má»—i dÃ²ng lÃ  má»™t video
+course_progress: má»—i dÃ²ng lÃ  progress cá»§a má»™t user vá»›i má»™t video
+```
+
+Quan há»‡ nÃ y phÃ¹ há»£p vá»›i relational database.
+
+### VÃ¬ sao khÃ´ng lÆ°u course trong MongoDB nhÆ° cÃ¡c service Ä‘á»“ Ã¡n 1?
+
+Äá»“ Ã¡n 2 muá»‘n thá»ƒ hiá»‡n SOA cÃ³ thá»ƒ dÃ¹ng cÃ´ng nghá»‡ khÃ¡c nhau cho tá»«ng service. Academy dÃ¹ng Java + MySQL Ä‘á»ƒ minh há»a polyglot persistence.
+
+### VÃ¬ sao khÃ´ng gá»i YouTube trá»±c tiáº¿p tá»« frontend?
+
+VÃ¬ backend cáº§n kiá»ƒm soÃ¡t danh sÃ¡ch video nÃ o Ä‘Æ°á»£c Ä‘Æ°a vÃ o há»‡ thá»‘ng. Náº¿u frontend tá»± gá»i YouTube, frontend sáº½ phá»¥ thuá»™c API key vÃ  khÃ³ quáº£n lÃ½ dá»¯ liá»‡u há»c táº­p.
+
+### VÃ¬ sao cáº§n Seeder?
+
+Äá»ƒ service tá»± cÃ³ dá»¯ liá»‡u demo á»•n Ä‘á»‹nh, Ä‘áº·c biá»‡t sau khi MySQL bá»‹ xÃ³a/cÃ i láº¡i.
+
+### VÃ¬ sao progress route cáº§n auth?
+
+VÃ¬ progress lÃ  dá»¯ liá»‡u cÃ¡ nhÃ¢n cá»§a user. KhÃ´ng thá»ƒ cho ngÆ°á»i chÆ°a Ä‘Äƒng nháº­p ghi tiáº¿n Ä‘á»™.
+
+### VÃ¬ sao `/academy/paths` public?
+
+VÃ¬ xem danh sÃ¡ch khÃ³a há»c lÃ  ná»™i dung cÃ´ng khai. NhÆ°ng náº¿u user cÃ³ token, backend sáº½ tráº£ thÃªm progress cÃ¡ nhÃ¢n.
+
+### VÃ¬ sao khÃ´ng lÆ°u completed courses trong JWT?
+
+JWT chá»‰ nÃªn chá»©a thÃ´ng tin xÃ¡c thá»±c cÆ¡ báº£n. Progress thay Ä‘á»•i thÆ°á»ng xuyÃªn, pháº£i lÆ°u trong database.
+
+### VÃ¬ sao `course_progress` khÃ´ng cÃ³ foreign key tá»›i `courses.video_id`?
+
+Code hiá»‡n táº¡i Ä‘áº£m báº£o video tá»“n táº¡i báº±ng:
+
+```java
+Course course = findCourse(videoId);
+```
+
+Tá»©c lÃ  kiá»ƒm tra á»Ÿ táº§ng service trÆ°á»›c khi lÆ°u progress. Vá»›i Ä‘á»“ Ã¡n nÃ y nhÆ° váº­y Ä‘á»§ gá»n vÃ  dá»… hiá»ƒu.
+
+Náº¿u muá»‘n cháº·t hÆ¡n á»Ÿ má»©c database, cÃ³ thá»ƒ thÃªm quan há»‡ foreign key, nhÆ°ng code sáº½ phá»©c táº¡p hÆ¡n.
+
+## 39. CÃ¡ch Tá»± Test Service Báº±ng API
+
+### Health check
+
+```powershell
+Invoke-RestMethod http://localhost:3007/academy/health
+```
+
+Ká»³ vá»ng:
+
+```json
+{
+  "status": "UP",
+  "service": "academy-service",
+  "version": "1.1.0"
+}
+```
+
+### Láº¥y learning paths trá»±c tiáº¿p service
+
+```powershell
+Invoke-RestMethod http://localhost:3007/academy/paths
+```
+
+### Test progress trá»±c tiáº¿p service
+
+Direct service cáº§n tá»± gá»­i `X-User-Id`:
+
+```powershell
+Invoke-RestMethod `
+  -Method Put `
+  -Uri http://localhost:3007/academy/progress/bBC-nXj3Ng4 `
+  -Headers @{ "X-User-Id" = "test-user" } `
+  -ContentType "application/json" `
+  -Body '{"completed":true}'
+```
+
+Qua Gateway thÃ¬ khÃ´ng tá»± gá»­i `X-User-Id`; Gateway láº¥y tá»« JWT.
+
+## 40. CÃ¡ch NhÃ¬n Nhanh Trong phpMyAdmin
+
+Trong database `crypto_academy`:
+
+### Báº£ng `courses`
+
+Báº¡n nÃªn tháº¥y khoáº£ng 21 dÃ²ng seed.
+
+CÃ¡c cá»™t Ä‘Ã¡ng xem:
+
+```text
+video_id
+title
+difficulty
+category
+learning_path
+sort_order
+```
+
+### Báº£ng `course_progress`
+
+Ban Ä‘áº§u cÃ³ thá»ƒ rá»—ng.
+
+Khi user tick hoÃ n thÃ nh, báº£ng nÃ y cÃ³ dÃ²ng má»›i:
+
+```text
+user_id
+video_id
+completed
+completed_at
+```
+
+Náº¿u báº¡n test báº±ng `test-user`, sau test cÃ³ thá»ƒ xÃ³a dÃ²ng Ä‘Ã³ Ä‘á»ƒ DB sáº¡ch.
+
+## 41. Admin Course Management
+
+Sau nÃ¢ng cáº¥p má»›i nháº¥t, Academy Service khÃ´ng chá»‰ seed course trong code ná»¯a. Admin Ä‘Ã£ cÃ³ thá»ƒ quáº£n lÃ½ khÃ³a há»c trá»±c tiáº¿p trong Admin Panel.
+
+### Ã tÆ°á»Ÿng thiáº¿t káº¿
+
+Nguá»“n dá»¯ liá»‡u chÃ­nh váº«n lÃ  MySQL:
+
+```text
+crypto_academy.courses
+```
+
+YouTube chá»‰ lÃ  nÆ¡i cung cáº¥p video vÃ  metadata. Playlist khÃ´ng pháº£i database chÃ­nh.
+
+Luá»“ng Ä‘Ãºng hiá»‡n táº¡i:
+
+```text
+Admin dÃ¡n link YouTube hoáº·c nháº­p videoId
+  -> Frontend gá»i API admin
+  -> Gateway kiá»ƒm tra JWT + quyá»n admin
+  -> Academy Service tÃ¡ch videoId
+  -> LÆ°u course vÃ o MySQL
+  -> YouTubeProvider lấy thêm thumbnail/thời lượng nếu có API key; nếu không có key thì vẫn lưu course bình thường
+```
+
+Vì vậy video admin thêm mới không cần nằm trong playlist. Project hiện tại đã bỏ chức năng playlist để code gọn hơn; mỗi khóa học được quản lý trực tiếp bằng một link YouTube hoặc videoId trong MySQL.
+
+### API admin má»›i
+
+CÃ¡c endpoint má»›i trong `AcademyController`:
+
+| Method | Path | Vai trÃ² |
+|---|---|---|
+| POST | `/academy/admin/courses/preview` | Preview metadata tá»« link YouTube/videoId |
+| POST | `/academy/admin/courses` | Táº¡o khÃ³a há»c má»›i |
+| PUT | `/academy/admin/courses/{id}` | Cáº­p nháº­t khÃ³a há»c |
+| DELETE | `/academy/admin/courses/{id}` | XÃ³a khÃ³a há»c |
+
+Qua API Gateway:
+
+```text
+/api/academy/admin/*
+```
+
+Route nÃ y Ä‘Æ°á»£c báº£o vá»‡ trong `backend/api-gateway/server.js` báº±ng:
+
+```text
+authMiddleware + adminMiddleware
+```
+
+NghÄ©a lÃ  user thÆ°á»ng khÃ´ng thá»ƒ thÃªm/sá»­a/xÃ³a khÃ³a há»c.
+
+### `CourseRequest.java`
+
+File má»›i:
+
+```text
+academy-service/src/main/java/com/cryptotrading/academy/model/CourseRequest.java
+```
+
+ÄÃ¢y lÃ  request body admin gá»­i lÃªn khi táº¡o/sá»­a course:
+
+```text
+youtubeUrl
+videoId
+title
+difficulty
+category
+learningPath
+description
+sortOrder
+```
+
+Admin cÃ³ thá»ƒ nháº­p `youtubeUrl` hoáº·c `videoId`. Backend sáº½ Æ°u tiÃªn láº¥y videoId tá»« dá»¯ liá»‡u gá»­i lÃªn.
+
+CÃ¡c dáº¡ng link Ä‘Æ°á»£c há»— trá»£:
+
+```text
+https://www.youtube.com/watch?v=bBC-nXj3Ng4
+https://youtu.be/bBC-nXj3Ng4
+https://www.youtube.com/embed/bBC-nXj3Ng4
+https://www.youtube.com/shorts/bBC-nXj3Ng4
+bBC-nXj3Ng4
+```
+
+### Logic trong `AcademyService`
+
+CÃ¡c method admin chÃ­nh:
+
+```text
+previewCourse()
+createCourse()
+updateCourse()
+deleteCourse()
+```
+
+`previewCourse()`:
+
+```text
+Láº¥y videoId tá»« link
+Gá»i YouTubeProvider.fetchSingleVideo(videoId)
+Tráº£ CourseDto preview cho frontend
+```
+
+`createCourse()`:
+
+```text
+Validate videoId
+Kiá»ƒm tra videoId Ä‘Ã£ tá»“n táº¡i chÆ°a
+Táº¡o Course má»›i
+LÆ°u vÃ o courses
+Tráº£ CourseDto Ä‘Ã£ merge metadata YouTube
+```
+
+`updateCourse()`:
+
+```text
+TÃ¬m Course theo id
+Náº¿u Ä‘á»•i videoId thÃ¬ kiá»ƒm tra trÃ¹ng
+Cáº­p nháº­t title/category/difficulty/learningPath/description/sortOrder
+LÆ°u láº¡i vÃ o courses
+```
+
+Náº¿u admin Ä‘á»•i videoId cá»§a course, service xÃ³a progress cÅ© theo videoId cÅ© Ä‘á»ƒ trÃ¡nh dá»¯ liá»‡u tiáº¿n Ä‘á»™ bá»‹ gáº¯n nháº§m sang video má»›i.
+
+`deleteCourse()`:
+
+```text
+TÃ¬m course theo id
+XÃ³a course_progress theo videoId
+XÃ³a course
+```
+
+### Frontend Admin Panel
+
+File:
+
+```text
+frontend/src/pages/Admin.jsx
+```
+
+Admin Panel hiá»‡n cÃ³ 2 tab:
+
+```text
+NgÆ°á»i dÃ¹ng
+KhÃ³a há»c
+```
+
+Tab khÃ³a há»c cho phÃ©p:
+
+- xem danh sÃ¡ch courses
+- lá»c theo category/difficulty
+- dÃ¡n link YouTube hoáº·c videoId
+- preview metadata YouTube
+- thÃªm khÃ³a há»c
+- sá»­a khÃ³a há»c
+- xÃ³a khÃ³a há»c
+- má»Ÿ video trÃªn YouTube
+
+API helper náº±m trong:
+
+```text
+frontend/src/services/api.js
+```
+
+CÃ¡c hÃ m má»›i:
+
+```javascript
+getAcademyCourses()
+previewAcademyCourse()
+createAcademyCourse()
+updateAcademyCourse()
+deleteAcademyCourse()
+```
+
+## 42. Káº¿t Luáº­n Dá»… Nhá»›
+
+Náº¿u pháº£i nhá»› Academy Service báº±ng má»™t hÃ¬nh áº£nh, hÃ£y nhá»›:
+
+```text
+courses = giÃ¡o trÃ¬nh
+course_progress = sá»• theo dÃµi há»c táº­p cá»§a tá»«ng user
+AcademySeeder = ngÆ°á»i nháº­p sáºµn giÃ¡o trÃ¬nh máº«u
+YouTubeProvider = ngÆ°á»i láº¥y thÃªm áº£nh/thá»i lÆ°á»£ng/lÆ°á»£t xem tá»« YouTube
+AcademyService = ngÆ°á»i gom má»i thá»© láº¡i thÃ nh lá»™ trÃ¬nh há»c
+AcademyController = cá»•ng API
+API Gateway = ngÆ°á»i gÃ¡c cá»•ng xÃ¡c thá»±c
+Academy.jsx = mÃ n hÃ¬nh hiá»ƒn thá»‹ cho user
+```
+
+Khi hiá»ƒu theo cÃ¡ch nÃ y, service khÃ´ng cÃ²n lÃ  má»™t Ä‘á»‘ng file rá»i ráº¡c ná»¯a. NÃ³ lÃ  má»™t luá»“ng ráº¥t rÃµ: seed khÃ³a há»c, láº¥y lá»™ trÃ¬nh, xem video, lÆ°u tiáº¿n Ä‘á»™.
+
+## 43. Trạng Thái Sau Khi Dọn Code Mới Nhất
+
+Những điểm đã chốt theo code hiện tại:
+
+```text
+- Không còn chức năng YouTube playlist/import playlist.
+- Không còn cấu hình youtube.playlist-id trong application.yml.
+- Không còn YOUTUBE_PLAYLIST_ID trong start.ps1.
+- Không còn method invalidateCache() trong YouTubeProvider vì hiện không có endpoint nào gọi.
+- backend/start-all-services.ps1 không ép MySQL password 123456 nữa; dùng DB_USERNAME/DB_PASSWORD, mặc định root/password rỗng.
+```
+
+Những phần vẫn giữ vì đang phục vụ chức năng:
+
+```text
+- YouTubeProvider.fetchSingleVideo(videoId): dùng cho preview/detail/tạo/sửa course.
+- YouTubeResponse.java: map response của YouTube videos.list.
+- CourseRequest.java: request body cho Admin tạo/sửa/preview course.
+- CourseProgress.java và CourseProgressRepository.java: lưu tiến độ học theo user.
+```
+
+Kết luận hiện tại: dữ liệu khóa học chuẩn nằm trong MySQL. Admin quản lý course bằng link YouTube hoặc videoId. YouTube API chỉ là phần phụ để lấy metadata một video, không bắt buộc và không liên quan playlist.
