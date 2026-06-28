@@ -1,4 +1,4 @@
-﻿package com.cryptotrading.news.model;
+package com.cryptotrading.news.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;

@@ -6,8 +6,10 @@
 module.exports = {
   // API Gateway
   API_GATEWAY: {
+    name: 'api-gateway',
     host: 'localhost',
     port: 3000,
+    healthCheck: '/health',
   },
 
   // User Service
@@ -55,7 +57,23 @@ module.exports = {
     name: 'news-service',
     host: 'localhost',
     port: 3006,
-    healthCheck: '/health',
+    healthCheck: '/news/health',
+  },
+
+  // Academy Service (Java Spring Boot)
+  ACADEMY_SERVICE: {
+    name: 'academy-service',
+    host: 'localhost',
+    port: 3007,
+    healthCheck: '/academy/health',
+  },
+
+  // Sentiment Service (Python FastAPI)
+  SENTIMENT_SERVICE: {
+    name: 'sentiment-service',
+    host: 'localhost',
+    port: 3008,
+    healthCheck: '/sentiment/health',
   },
 
   // Consul Configuration

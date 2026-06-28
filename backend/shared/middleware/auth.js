@@ -142,9 +142,9 @@ const adminMiddleware = async (req, res, next) => {
 };
 
 /**
- * Internal Service Middleware - Cho phép service-to-service calls qua gateway
+ * Internal Service Middleware - Cho phép request nội bộ đi qua gateway
  * Accepts either:
- *   1. X-Internal-Service-Key header (cho service calls nội bộ)
+ *   1. X-Internal-Service-Key header (cho request nội bộ)
  *   2. Bearer JWT token (cho user calls thông thường)
  * Đảm bảo gateway vẫn là trung tâm điều phối, không cần bypass gateway.
  */

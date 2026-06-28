@@ -8,6 +8,7 @@ from typing import List
 import uvicorn
 from fastapi import FastAPI, Query
 
+from consul_registry import deregister_service, register_service
 import finbert_service
 from config import MODEL_NAME, PORT, UVICORN_LOG_LEVEL
 from finbert_service import analyze_text
@@ -25,8 +26,12 @@ logger = logging.getLogger("sentiment-service")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     finbert_service.load_model()
-    yield
-    logger.info("Sentiment service shutting down")
+    await register_service()
+    try:
+        yield
+    finally:
+        await deregister_service()
+        logger.info("Sentiment service shutting down")
 
 
 app = FastAPI(

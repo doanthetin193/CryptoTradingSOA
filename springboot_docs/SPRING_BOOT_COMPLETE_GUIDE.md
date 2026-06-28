@@ -709,8 +709,11 @@ cache:
   trending-ttl-hours: 6
   max-size: 100
 
-sentiment:
-  service-url: ${SENTIMENT_SERVICE_URL:http://localhost:3008}
+api:
+  gateway-url: ${API_GATEWAY_URL:http://localhost:3000}
+
+internal:
+  service-key: ${INTERNAL_SERVICE_KEY:cryptotrading-internal-svc-key-2026}
 
 # Logging
 logging:
@@ -1879,8 +1882,11 @@ public class NewsService {
 @Component
 public class SentimentAnalyzer {
 
-    @Value("${sentiment.service-url:http://localhost:3008}")
-    private String sentimentServiceUrl;
+    @Value("${api.gateway-url:http://localhost:3000}")
+    private String apiGatewayUrl;
+
+    @Value("${internal.service-key:cryptotrading-internal-svc-key-2026}")
+    private String internalServiceKey;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -1890,14 +1896,18 @@ public class SentimentAnalyzer {
 
     public String analyze(String title, String summary) {
         try {
-            // Gá»i POST Ä‘áº¿n Python service:
+            // Gá»i POST qua API Gateway Ä‘á»ƒ khÃ´ng bypass gateway:
             Map<String, String> request = Map.of("text", title + ". " + summary);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("X-Internal-Service-Key", internalServiceKey);
 
-            Map<String, Object> response = restTemplate.postForObject(
-                    sentimentServiceUrl + "/sentiment/analyze",   // URL
-                    request,                                       // Request body
-                    Map.class                                       // Response type
+            ResponseEntity<Map> responseEntity = restTemplate.postForEntity(
+                    apiGatewayUrl + "/api/sentiment/analyze",
+                    new HttpEntity<>(request, headers),
+                    Map.class
             );
+            Map<String, Object> response = responseEntity.getBody();
 
             if (response != null && response.containsKey("label")) {
                 return (String) response.get("label");  // "positive"/"negative"/"neutral"
@@ -2178,7 +2188,8 @@ management:
               â†’ GET https://min-api.cryptocompare.com/data/v2/news/
               â†’ Parse 50 bÃ i JSON â†’ List<News>
               â†’ Vá»›i má»—i bÃ i: sentimentAnalyzer.analyze(title, body)
-                   â†’ POST http://localhost:3008/sentiment/analyze
+                   â†’ POST http://localhost:3000/api/sentiment/analyze
+                   â†’ Gateway discover sentiment-service qua Consul
                    â†’ FinBERT inference â†’ "positive"/"negative"/"neutral"
               â†’ List<News> vá»›i sentiment labels
          â†’ LÆ°u vÃ o cache, TTL 24h

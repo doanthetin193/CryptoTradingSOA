@@ -108,6 +108,10 @@ foreach ($service in $services) {
 
 $envFile = "$backendPath\.env"
 $envMap = Read-EnvFile -Path $envFile
+$apiGatewayUrl = Get-EnvValue -Map $envMap -Key "API_GATEWAY_URL" -Default "http://localhost:3000"
+$internalServiceKey = Get-EnvValue -Map $envMap -Key "INTERNAL_SERVICE_KEY" -Default "cryptotrading-internal-svc-key-2026"
+$consulHost = Get-EnvValue -Map $envMap -Key "CONSUL_HOST" -Default "localhost"
+$consulPort = Get-EnvValue -Map $envMap -Key "CONSUL_PORT" -Default "8500"
 
 Write-Host ""
 Write-Host "Starting Do An 2 services in new windows..." -ForegroundColor Green
@@ -119,10 +123,9 @@ if (Test-Path (Join-Path $newsDir "mvnw.cmd")) {
 
     $cryptoCompareKey = Get-EnvValue -Map $envMap -Key "CRYPTOCOMPARE_API_KEY"
     $newsApiKey = Get-EnvValue -Map $envMap -Key "NEWSAPI_KEY"
-    $sentimentUrl = Get-EnvValue -Map $envMap -Key "SENTIMENT_SERVICE_URL" -Default "http://localhost:3008"
 
     Write-Host "  - Starting: News Service (Java Spring Boot) on port 3006" -ForegroundColor Green
-    $newsCmd = "Set-Location '$newsDir'; `$host.UI.RawUI.WindowTitle='News Service (Java) :3006'; `$env:CRYPTOCOMPARE_API_KEY='$cryptoCompareKey'; `$env:NEWSAPI_KEY='$newsApiKey'; `$env:SENTIMENT_SERVICE_URL='$sentimentUrl'; Write-Host 'Starting News Service on port 3006...'; .\mvnw.cmd spring-boot:run"
+    $newsCmd = "Set-Location '$newsDir'; `$host.UI.RawUI.WindowTitle='News Service (Java) :3006'; `$env:CRYPTOCOMPARE_API_KEY='$cryptoCompareKey'; `$env:NEWSAPI_KEY='$newsApiKey'; `$env:API_GATEWAY_URL='$apiGatewayUrl'; `$env:INTERNAL_SERVICE_KEY='$internalServiceKey'; `$env:CONSUL_HOST='$consulHost'; `$env:CONSUL_PORT='$consulPort'; Write-Host 'Starting News Service on port 3006...'; .\mvnw.cmd spring-boot:run"
     Start-Process powershell -ArgumentList "-NoExit", "-Command", $newsCmd
     Start-Sleep -Seconds 2
 } else {
@@ -138,7 +141,7 @@ if (Test-Path (Join-Path $academyDir "mvnw.cmd")) {
     $youtubeApiKey = Get-EnvValue -Map $envMap -Key "YOUTUBE_API_KEY"
 
     Write-Host "  - Starting: Academy Service (Java Spring Boot) on port 3007" -ForegroundColor Green
-    $academyCmd = "Set-Location '$academyDir'; `$host.UI.RawUI.WindowTitle='Academy Service (Java) :3007'; `$env:DB_USERNAME='$dbUsername'; `$env:DB_PASSWORD='$dbPassword'; `$env:YOUTUBE_API_KEY='$youtubeApiKey'; Write-Host 'Starting Academy Service on port 3007...'; .\mvnw.cmd spring-boot:run"
+    $academyCmd = "Set-Location '$academyDir'; `$host.UI.RawUI.WindowTitle='Academy Service (Java) :3007'; `$env:DB_USERNAME='$dbUsername'; `$env:DB_PASSWORD='$dbPassword'; `$env:YOUTUBE_API_KEY='$youtubeApiKey'; `$env:CONSUL_HOST='$consulHost'; `$env:CONSUL_PORT='$consulPort'; Write-Host 'Starting Academy Service on port 3007...'; .\mvnw.cmd spring-boot:run"
     Start-Process powershell -ArgumentList "-NoExit", "-Command", $academyCmd
     Start-Sleep -Seconds 2
 } else {
@@ -151,7 +154,7 @@ if (Test-Path $sentimentStartScript) {
     Stop-PortIfListening -Port 3008
 
     Write-Host "  - Starting: Sentiment Service (Python FinBERT) on port 3008" -ForegroundColor Green
-    $sentimentCmd = "Set-Location '$sentimentDir'; `$host.UI.RawUI.WindowTitle='Sentiment Service (Python FinBERT) :3008'; Write-Host 'Starting Sentiment Service with start.ps1...'; .\start.ps1"
+    $sentimentCmd = "Set-Location '$sentimentDir'; `$host.UI.RawUI.WindowTitle='Sentiment Service (Python FinBERT) :3008'; `$env:API_GATEWAY_URL='$apiGatewayUrl'; `$env:INTERNAL_SERVICE_KEY='$internalServiceKey'; `$env:CONSUL_HOST='$consulHost'; `$env:CONSUL_PORT='$consulPort'; Write-Host 'Starting Sentiment Service with start.ps1...'; .\start.ps1"
     Start-Process powershell -ArgumentList "-NoExit", "-Command", $sentimentCmd
     Start-Sleep -Seconds 2
 } else {

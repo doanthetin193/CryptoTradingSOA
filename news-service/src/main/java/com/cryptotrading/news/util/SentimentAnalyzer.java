@@ -4,6 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -15,7 +19,7 @@ import java.util.Map;
  * Phân tích sentiment bài báo crypto.
  *
  * Chiến lược 2 lớp:
- *   1. Gọi Python FinBERT service (localhost:3008) — AI thực sự, chính xác hơn
+ *   1. Gọi Sentiment Service qua API Gateway — AI FinBERT chính xác hơn
  *   2. Fallback về keyword matching nếu Python service chưa chạy / bị lỗi
  *
  * → News Service hoạt động bình thường kể cả khi sentiment-service down.
@@ -25,8 +29,11 @@ public class SentimentAnalyzer {
 
     private static final Logger log = LoggerFactory.getLogger(SentimentAnalyzer.class);
 
-    @Value("${sentiment.service-url:http://localhost:3008}")
-    private String sentimentServiceUrl;
+    @Value("${api.gateway-url:http://localhost:3000}")
+    private String apiGatewayUrl;
+
+    @Value("${internal.service-key:cryptotrading-internal-svc-key-2026}")
+    private String internalServiceKey;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -56,7 +63,7 @@ public class SentimentAnalyzer {
     public String analyze(String title, String summary) {
         if (title == null) return "neutral";
 
-        // ── Bước 1: Thử Python FinBERT service ───────────────────────────
+        // ── Bước 1: Thử FinBERT qua API Gateway ───────────────────────────
         try {
             // Gộp title + phần đầu summary (max ~300 ký tự) để FinBERT có context
             String summarySnippet = (summary != null && summary.length() > 200)
@@ -64,13 +71,19 @@ public class SentimentAnalyzer {
             String text = title + ". " + summarySnippet;
 
             Map<String, String> request = Map.of("text", text);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("X-Internal-Service-Key", internalServiceKey);
+
+            HttpEntity<Map<String, String>> entity = new HttpEntity<>(request, headers);
 
             @SuppressWarnings("unchecked")
-            Map<String, Object> response = restTemplate.postForObject(
-                    sentimentServiceUrl + "/sentiment/analyze",
-                    request,
+            ResponseEntity<Map> responseEntity = restTemplate.postForEntity(
+                    apiGatewayUrl + "/api/sentiment/analyze",
+                    entity,
                     Map.class
             );
+            Map<String, Object> response = responseEntity.getBody();
 
             if (response != null && response.containsKey("label")) {
                 String label = (String) response.get("label");

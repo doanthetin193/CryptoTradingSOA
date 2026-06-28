@@ -5,12 +5,14 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const Consul = require('consul');
 
 // Import shared utilities and middleware
 const logger = require('../shared/utils/logger');
 const { errorHandler, notFoundHandler } = require('../shared/middleware/errorHandler');
 const { authMiddleware, optionalAuth, adminMiddleware, internalOrAuth } = require('../shared/middleware/auth');
 const serviceDiscovery = require('../shared/utils/serviceDiscovery');
+const serviceConfig = require('../shared/config/services');
 
 // Import orchestration
 const tradeOrchestration = require('./orchestration/tradeOrchestration');
@@ -19,6 +21,17 @@ const portfolioOrchestration = require('./orchestration/portfolioOrchestration')
 // Initialize Express app
 const app = express();
 const PORT = process.env.API_GATEWAY_PORT || 3000;
+const gatewayConfig = {
+  ...serviceConfig.API_GATEWAY,
+  host: process.env.SERVICE_HOST || serviceConfig.API_GATEWAY.host,
+  port: Number(PORT),
+};
+const gatewayServiceId = `${gatewayConfig.name}-${gatewayConfig.port}`;
+const gatewayConsul = new Consul({
+  host: process.env.CONSUL_HOST || serviceConfig.CONSUL.host,
+  port: process.env.CONSUL_PORT || serviceConfig.CONSUL.port,
+  promisify: true,
+});
 
 // ===========================
 // Middleware Configuration
@@ -222,8 +235,10 @@ const academyProxy = createProxyMiddleware({
 
 // Sentiment proxy: Python FastAPI dùng prefix "/sentiment" nên chỉ strip "/api"
 // /api/sentiment/analyze -> /sentiment/analyze
+const sentimentFallbackTarget = `http://${serviceConfig.SENTIMENT_SERVICE.host}:${serviceConfig.SENTIMENT_SERVICE.port}`;
 const sentimentProxy = createProxyMiddleware({
-  target: 'http://localhost:3008',
+  target: sentimentFallbackTarget,
+  router: async () => await getServiceTarget('sentiment-service'),
   changeOrigin: true,
   pathRewrite: (path) => {
     const newPath = path.replace('/api', '');
@@ -231,6 +246,12 @@ const sentimentProxy = createProxyMiddleware({
     return newPath;
   },
   logLevel: 'warn',
+  onProxyReq: (proxyReq, req) => {
+    logger.info(`📤 Proxying to sentiment-service: ${req.method} ${req.url}`);
+  },
+  onProxyRes: (proxyRes) => {
+    logger.info(`✅ Response from sentiment-service: ${proxyRes.statusCode}`);
+  },
   onError: (err, req, res) => {
     logger.error(`❌ Proxy error for sentiment-service: ${err.message}`);
     if (!res.headersSent) {
@@ -274,6 +295,7 @@ app.get('/', (req, res) => {
       notifications: '/api/notifications',
       news: '/api/news',
       academy: '/api/academy',
+      sentiment: '/api/sentiment',
     },
   });
 });
@@ -293,7 +315,7 @@ app.use('/api/users/admin', authMiddleware, adminMiddleware, userProxy);
 app.use('/api/users', authMiddleware, userProxy);
 
 // MARKET SERVICE
-// internalOrAuth: chấp nhận JWT (user calls) HOẶC X-Internal-Service-Key (service-to-service calls)
+// internalOrAuth: chấp nhận JWT (user calls) HOẶC X-Internal-Service-Key (internal calls through Gateway)
 app.use('/api/market', internalOrAuth, marketProxy);
 
 // PORTFOLIO SERVICE - Orchestrated route for enriched data
@@ -326,8 +348,9 @@ app.use('/api/academy/admin', authMiddleware, adminMiddleware, academyProxy);
 app.use('/api/academy/progress', authMiddleware, academyProxy);
 app.use('/api/academy', optionalAuth, academyProxy);
 
-// SENTIMENT SERVICE - Internal/public route (phân tích sentiment)
-app.use('/api/sentiment', sentimentProxy);
+// SENTIMENT SERVICE - health is public; analyze/suggestion use JWT or internal service key.
+app.get('/api/sentiment/health', sentimentProxy);
+app.use('/api/sentiment', internalOrAuth, sentimentProxy);
 
 // ===========================
 // Error Handling
@@ -383,7 +406,38 @@ io.on('connection', (socket) => {
 // Export io for use in other modules
 global.io = io;
 
-server.listen(PORT, () => {
+async function registerGatewayWithConsul() {
+  try {
+    await gatewayConsul.agent.service.register({
+      id: gatewayServiceId,
+      name: gatewayConfig.name,
+      address: gatewayConfig.host,
+      port: gatewayConfig.port,
+      tags: ['soa', 'crypto-trading', 'gateway'],
+      check: {
+        http: `http://${gatewayConfig.host}:${gatewayConfig.port}${gatewayConfig.healthCheck}`,
+        interval: '10s',
+        timeout: '5s',
+        deregistercriticalserviceafter: '1m',
+      },
+    });
+    logger.info(`✅ API Gateway registered with Consul: ${gatewayServiceId}`);
+  } catch (error) {
+    logger.warn(`⚠️ API Gateway could not register with Consul: ${error.message}`);
+  }
+}
+
+async function deregisterGatewayFromConsul() {
+  try {
+    await gatewayConsul.agent.service.deregister(gatewayServiceId);
+    logger.info(`✅ API Gateway deregistered from Consul: ${gatewayServiceId}`);
+  } catch (error) {
+    logger.warn(`⚠️ API Gateway could not deregister from Consul: ${error.message}`);
+  }
+}
+
+server.listen(PORT, async () => {
+  await registerGatewayWithConsul();
   logger.info(`
   ╔═══════════════════════════════════════════════════════╗
   ║                                                       ║
@@ -400,14 +454,23 @@ server.listen(PORT, () => {
 });
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM signal received: closing HTTP server');
-  process.exit(0);
-});
+let isShuttingDown = false;
 
-process.on('SIGINT', () => {
-  logger.info('SIGINT signal received: closing HTTP server');
-  process.exit(0);
-});
+async function shutdown(signal) {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+
+  logger.info(`${signal} signal received: deregistering gateway and closing HTTP server`);
+  await deregisterGatewayFromConsul();
+
+  server.close(() => {
+    process.exit(0);
+  });
+
+  setTimeout(() => process.exit(0), 5000).unref();
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
 module.exports = app;

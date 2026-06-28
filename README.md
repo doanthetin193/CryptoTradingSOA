@@ -36,12 +36,12 @@ API Gateway (:3000)
         +-- Portfolio Service (:3003)     -> MongoDB
         +-- Trade Service (:3004)         -> MongoDB
         +-- Notification Service (:3005)  -> MongoDB + WebSocket
-        +-- News Service (:3006)          -> CryptoCompare/NewsAPI + Sentiment Service
+        +-- News Service (:3006)          -> CryptoCompare/NewsAPI + Gateway sentiment route
         +-- Academy Service (:3007)       -> MySQL crypto_academy
         +-- Sentiment Service (:3008)     -> FinBERT pretrained model
 ```
 
-Consul duoc dung cho service discovery. Neu chay local ma Consul bi tat, mot so service van co co che fallback/static config tuy tung service, nhung de demo day du nen bat Consul truoc.
+Consul duoc dung cho service discovery. API Gateway va cac backend service deu dang ky Consul; khi can goi service noi bo, luong request di qua Gateway va Gateway discover service dich qua Consul. Cac service nghiep vu khong goi thang nhau bang port noi bo; vi du News goi Sentiment qua `/api/sentiment/analyze`, Sentiment lay Market/News qua Gateway, Notification lay gia Market qua Gateway. Ngoai le hop le la API Gateway duoc proxy/orchestrate den service dich va service duoc goi API ben ngoai nhu CoinGecko, CryptoCompare, NewsAPI, YouTube hoac FinBERT model. Neu chay local ma Consul bi tat, mot so service van co co che fallback/static config tuy tung service, nhung de demo day du nen bat Consul truoc.
 
 ## Bang Service
 
@@ -70,7 +70,7 @@ News Service lay tin tuc crypto tu API ngoai:
 Backend xu ly:
 
 - Chuan hoa du lieu tin tuc ve model `News`.
-- Gan sentiment cho moi bai tin bang Sentiment Service.
+- Gan sentiment cho moi bai tin bang Sentiment Service thong qua API Gateway.
 - Neu Sentiment Service khong san sang, dung keyword fallback.
 - Cache tin tuc bang Guava Cache.
 - Co scheduler that su dung `@EnableScheduling` va `NewsFetchScheduler` de refresh dinh ky.
@@ -89,6 +89,7 @@ Backend xu ly:
 - `POST /sentiment/analyze`: phan tich mot doan text.
 - `POST /sentiment/analyze-batch`: phan tich nhieu doan text.
 - `GET /sentiment/suggestion?symbol=BTC`: goi Market/News, tong hop sentiment va rule de tra ve xu huong.
+- Tu dang ky Consul de API Gateway co the discover giong cac service khac.
 - Tach code thanh `main.py`, `config.py`, `models.py`, `finbert_service.py`, `suggestion_service.py` de de review.
 
 Tai lieu chi tiet:
@@ -138,7 +139,7 @@ Tao/cap nhat file `.env` cho backend Node.js theo cau hinh hien co cua project. 
 # News Service
 CRYPTOCOMPARE_API_KEY=
 NEWSAPI_KEY=
-SENTIMENT_SERVICE_URL=http://localhost:3008
+API_GATEWAY_URL=http://localhost:3000
 
 # Academy Service
 DB_USERNAME=root
@@ -146,7 +147,7 @@ DB_PASSWORD=
 YOUTUBE_API_KEY=
 
 # Internal
-INTERNAL_SERVICE_KEY=your-internal-key
+INTERNAL_SERVICE_KEY=cryptotrading-internal-svc-key-2026
 JWT_SECRET=your-jwt-secret
 ```
 
@@ -154,6 +155,8 @@ Ghi chu:
 
 - `CRYPTOCOMPARE_API_KEY` co the de trong khi demo free tier, tuy nhien co key se on dinh hon.
 - `NEWSAPI_KEY` chi la fallback.
+- `API_GATEWAY_URL` la dia chi Gateway de News/Sentiment goi service noi bo qua Gateway.
+- `INTERNAL_SERVICE_KEY` dung cho request noi bo di qua Gateway, vi du News goi `/api/sentiment/analyze`.
 - `YOUTUBE_API_KEY` la optional. Khong co key thi preview metadata co the khong day du, nhung them/sua/xoa course van dung neu admin nhap title/description.
 
 ## Cach Chay Local
@@ -300,7 +303,7 @@ Health check khi da chay day du:
 ```powershell
 Invoke-WebRequest http://localhost:3006/news/health
 Invoke-WebRequest http://localhost:3007/academy/health
-Invoke-WebRequest http://localhost:3008/sentiment/health
+Invoke-WebRequest http://localhost:3000/api/sentiment/health
 ```
 
 ## Thu Tu Nen Hoc 3 Service Moi
@@ -308,7 +311,7 @@ Invoke-WebRequest http://localhost:3008/sentiment/health
 De de review va trinh bay voi giang vien, nen hoc theo thu tu:
 
 1. Sentiment Service: nam FinBERT, analyze text va suggestion logic.
-2. News Service: hieu cach lay tin, cache, scheduler va goi Sentiment Service.
+2. News Service: hieu cach lay tin, cache, scheduler va goi Sentiment qua API Gateway.
 3. Academy Service: hieu MySQL, JPA, course CRUD, progress va admin flow.
 
 Thu tu doc code goi y:

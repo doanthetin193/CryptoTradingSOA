@@ -1,7 +1,7 @@
 const { mongoose } = require('../../../shared/config/db');
 
 /**
- * Price Alert Schema - Collection: price_alerts
+ * Price Alert Schema - Collection: pricealerts
  * Lưu trữ ngưỡng giá để gửi thông báo
  */
 

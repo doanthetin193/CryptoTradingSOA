@@ -76,6 +76,8 @@ class ServiceDiscovery {
       'trade-service': serviceConfig.TRADE_SERVICE,
       'notification-service': serviceConfig.NOTIFICATION_SERVICE,
       'news-service': serviceConfig.NEWS_SERVICE,
+      'academy-service': serviceConfig.ACADEMY_SERVICE,
+      'sentiment-service': serviceConfig.SENTIMENT_SERVICE,
     };
 
     const config = configMap[serviceName];

@@ -47,9 +47,12 @@ cache:
 scheduler:
   news-fetch-interval-ms: 900000  # 15 minutes
 
-# Sentiment Service (Python FinBERT)
-sentiment:
-  service-url: ${SENTIMENT_SERVICE_URL:http://localhost:3008}
+# Internal calls go through API Gateway
+api:
+  gateway-url: ${API_GATEWAY_URL:http://localhost:3000}
+
+internal:
+  service-key: ${INTERNAL_SERVICE_KEY:cryptotrading-internal-svc-key-2026}
 
 # Logging
 logging:
